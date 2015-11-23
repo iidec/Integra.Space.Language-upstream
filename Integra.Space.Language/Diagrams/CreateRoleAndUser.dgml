@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="CreateRole" Category="NodeType:CreateRole" Bounds="20,211.92,110.846666666667,25.96" Label="Create/Alter Role" />
+    <Node Id="CreateRole1" Category="NodeType:CreateUser/AlterUser" Bounds="0,171.92,150.846666666667,141.91962368" Group="Expanded" Label="Create Role" />
+    <Node Id="CreateUser" Category="NodeType:CreateUser/AlterUser" Bounds="118.486666666667,40,109.79,25.96" Label="Create/Alter user" />
+    <Node Id="CreateUser1" Category="NodeType:CreateUser" Bounds="0,0,330.762392243785,141.92" Group="Expanded" Label="Create/Alter User" />
+    <Node Id="IdentifierNode" Category="NodeType:Constant" Bounds="20,95.96,96.7633333333333,25.96">
+      <Category Ref="Position:0" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="Status" Category="Position:2" Bounds="147.133333333333,95.96,52.4966666666667,25.96">
+      <Category Ref="NodeType:Status" />
+      <Category Ref="Property:Status" />
+    </Node>
+    <Node Id="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="NodeTypeConstant" Bounds="230.000941089548,95.9603762462414,80.7614511542373,25.9592475075175" Label="StringNode">
+      <Category Ref="Posicion:1" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="27.0361120266667,267.88,96.7744426133336,25.9596236800001" Label="IdentifierNode">
+      <Category Ref="Posicion:0" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="CreateRole" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="75.4233322143555,237.880004882813,0,21" />
+    <Link Source="CreateRole1" Target="CreateRole" Category="Contains" />
+    <Link Source="CreateRole1" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="Contains" />
+    <Link Source="CreateUser" Target="IdentifierNode" Bounds="100.678993225098,65.9599990844727,48.347770690918,25.7670593261719" />
+    <Link Source="CreateUser" Target="Status" Bounds="173.38166809082,65.9599990844727,0,21" />
+    <Link Source="CreateUser" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Bounds="195.880950927734,65.9599990844727,44.2063598632813,25.5029678344727" />
+    <Link Source="CreateUser1" Target="CreateUser" Category="Contains" />
+    <Link Source="CreateUser1" Target="IdentifierNode" Category="Contains" />
+    <Link Source="CreateUser1" Target="Status" Category="Contains" />
+    <Link Source="CreateUser1" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:CreateRole" Label="NodeType:CreateRole/AlterRole" IsTag="True" />
+    <Category Id="NodeType:CreateUser" Label="NodeType:CreateUser/AlterUser" IsTag="True" />
+    <Category Id="NodeType:CreateUser/AlterUser" Label="NodeType:CreateRole" IsTag="True" />
+    <Category Id="NodeType:Status" Label="NodeType:Status" IsTag="True" />
+    <Category Id="NodeTypeConstant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="Posicion:0" Label="Posicion:0" IsTag="True" />
+    <Category Id="Posicion:1" Label="Posicion:1" IsTag="True" />
+    <Category Id="Position:0" Label="Position:0" IsTag="True" />
+    <Category Id="Position:2" Label="Position:2" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Status" Label="Property:Status" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

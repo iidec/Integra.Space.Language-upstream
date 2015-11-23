@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Language", "Language", "{7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integra.Space.Language", "Integra.Space.Language\Integra.Space.Language.csproj", "{6D4D259B-281F-454F-9B47-4CE2D108BA6A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{CF1253B7-1BCB-4396-9EA1-B444A492FC52}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\NuGet.Config = .nuget\NuGet.Config
+		.nuget\NuGet.exe = .nuget\NuGet.exe
+		.nuget\NuGet.targets = .nuget\NuGet.targets
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{5F9164B3-2246-4136-9E56-67213982D10E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integra.Space.Event", "Integra.Space.Event\Integra.Space.Event.csproj", "{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integra.Space.LanguageUnitTests", "Integra.Space.LanguageUnitTests\Integra.Space.LanguageUnitTests.csproj", "{50D251F6-E471-4477-B6B9-D7811A705E26}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6D4D259B-281F-454F-9B47-4CE2D108BA6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D4D259B-281F-454F-9B47-4CE2D108BA6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D4D259B-281F-454F-9B47-4CE2D108BA6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D4D259B-281F-454F-9B47-4CE2D108BA6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50D251F6-E471-4477-B6B9-D7811A705E26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50D251F6-E471-4477-B6B9-D7811A705E26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50D251F6-E471-4477-B6B9-D7811A705E26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50D251F6-E471-4477-B6B9-D7811A705E26}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6D4D259B-281F-454F-9B47-4CE2D108BA6A} = {7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}
+		{38ABF8B4-FC77-4FFC-96A2-1EE03BD22056} = {5F9164B3-2246-4136-9E56-67213982D10E}
+		{50D251F6-E471-4477-B6B9-D7811A705E26} = {7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}
+	EndGlobalSection
+EndGlobal

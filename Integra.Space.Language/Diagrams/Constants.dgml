@@ -1,0 +1,76 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="1a8eee48-ff16-4a74-b315-e6329939b8ae1" Category="NodeType:Constant" Bounds="9.87366438479227,-127.822061173264,92.3956579033984,25.9592475075174" Label="BooleanNode" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="3367988e-46a7-4927-9258-abced05b09141" Category="NodeType:Constant" Bounds="-151.887787445472,-12.5564524357618,100.482647307052,25.9592475075174" Label="NullValueNode">
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="Constants" Bounds="-171.887787047691,-167.822162552068,334.542084792059,201.225058721283" Group="Expanded" Label="Constant Nodes" UseManualLocation="True" />
+    <Node Id="DateFunctions" Category="NodeType:Constant" Bounds="-2.84783975824803,-71.8627136657464,122.673333333333,25.96" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="NodeTypeConstant" Bounds="-151.887787445472,-124.475147450797,80.7614511542373,25.9592475075175" Label="StringNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="NodeType:Constant" Bounds="-151.826986938806,-68.5157999432792,92.981864713548,25.9592475075174" Label="NumberNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="e162b9c9-6783-4e66-ae57-1791329cac871" Category="NodeType:Constant" Bounds="-21.4051417461383,-14.4100650004313,164.059440444181,25.9592475075174" Label="DateTimeOrTimespanNode" UseManualLocation="True">
+      <Category Ref="Propert:Value" />
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="-340.349979822257,-80.5484496879004,96.7744426133334,25.95962368" Label="IdentifierNode" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="Constants" Target="1a8eee48-ff16-4a74-b315-e6329939b8ae1" Category="Contains" />
+    <Link Source="Constants" Target="3367988e-46a7-4927-9258-abced05b09141" Category="Contains" />
+    <Link Source="Constants" Target="DateFunctions" Category="Contains" />
+    <Link Source="Constants" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="Contains" />
+    <Link Source="Constants" Target="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="Contains" />
+    <Link Source="Constants" Target="e162b9c9-6783-4e66-ae57-1791329cac871" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:Constant" Label="NodeType:Property" IsTag="True" />
+    <Category Id="NodeTypeConstant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="Propert:Value" Label="Propert:Value" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

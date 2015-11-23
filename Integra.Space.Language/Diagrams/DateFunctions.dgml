@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="DataFuntionsNode" Bounds="180.59918016121,-144.529975643144,204.050800444181,141.914456805866" Group="Expanded" />
+    <Node Id="DateFunctions" Category="NodeType:Property" Bounds="234.745282228258,-104.629207579035,95.7563549002217,25.9592475075174" Label="DateFunctions">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="e162b9c9-6783-4e66-ae57-1791329cac871" Category="NodeType:Constant" Bounds="200.59486016121,-48.475534408905,164.059440444181,25.9592475075174" Label="DateTimeOrTimespanNode">
+      <Category Ref="Propert:Value" />
+      <Category Ref="Property:DataType" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="DataFuntionsNode" Target="DateFunctions" Category="Contains" />
+    <Link Source="DataFuntionsNode" Target="e162b9c9-6783-4e66-ae57-1791329cac871" Category="Contains" />
+    <Link Source="DateFunctions" Target="e162b9c9-6783-4e66-ae57-1791329cac871" Bounds="282.624572753906,-78.5726013183594,0,20.999397277832" />
+  </Links>
+  <Categories>
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:Property" Label="NodeType:Property" IsTag="True" />
+    <Category Id="Propert:Value" Label="Propert:Value" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

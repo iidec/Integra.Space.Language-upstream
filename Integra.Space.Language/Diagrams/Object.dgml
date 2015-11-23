@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph ZoomLevel="-1" xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="#" Category="reserved word" Bounds="21.9378501872383,-99.6183188379331,50,25.96" Label="#" UseManualLocation="True" />
+    <Node Id="Event" Category="reserved word" Bounds="-228.078881824744,-144.80965233731,50,25.96" Label="event" UseManualLocation="True">
+      <Category Ref="Position:1" />
+    </Node>
+    <Node Id="EventNode" Category="Property:DataType" Bounds="-244.149045428767,-222.470599900638,81.5866666666667,25.96" Label="Event Node" UseManualLocation="True">
+      <Category Ref="NodeType:Event" />
+    </Node>
+    <Node Id="FieldNode" Category="NodeType:ObjectField" Bounds="80.1928561054863,-551.533889774763,77.6533333333333,25.96" Label="Field Node" UseManualLocation="True">
+      <Category Ref="Position:0" />
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="Message" Category="NodeType:ObjectMessage" Bounds="-252.113461844636,-294.884836910735,99.3266666666667,25.96" Label="Message Node" UseManualLocation="True">
+      <Category Ref="Position:0" />
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="NunberIdentifier" Category="NodeType:Constant" Bounds="44.7547103936817,-160.578414334106,110.473333333333,25.96" Label="Nunber identifier" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="ObjectIdOrNumberNode" Category="NodeType:Constant" Bounds="55.7716092681885,-386.067043217916,151.33,25.96" Label="ObjectIdOrNumberNode" UseManualLocation="True">
+      <Category Ref="Position:1" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="ObjectIdOrNumberNode1" Category="NodeType:Constant" Bounds="220.502640686035,-442.027143217916,151.33,25.96" Label="ObjectIdOrNumberNode" UseManualLocation="True">
+      <Category Ref="Position:1" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="ObjectValueNode" Category="NodeType:ObjectValue" Bounds="58.19287109375,-656.605980810485,120.35,25.96" Label="Object Value Node" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="PartAndFieldIdentifier" Bounds="1.93785095214844,-330.106942732135,337.923526107743,278.879648337125" Group="Expanded" Label="Part and field identifier" UseManualLocation="True" />
+    <Node Id="PartNode" Category="NodeType:ObjectType" Bounds="-57.6134618446362,-418.68113207675,73.7033333333333,25.96" Label="Part Node" UseManualLocation="True">
+      <Category Ref="Position:0" />
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="VerConstants.dgml" Category="Comment" Bounds="40.5947103957884,-216.53864280035,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="VerConstants.dgml1" Category="Comment" Bounds="196.228043726558,-234.147119543199,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="VerConstants.dgml2" Category="Comment" Bounds="187.228043726558,-153.147119543199,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="NodeTypeConstant" Bounds="163.453949980137,-290.106843223199,80.74406232,25.9596236800001" Label="StringNode" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="NodeType:Constant" Bounds="108.801990828447,-97.1870195431987,92.9692681600001,25.95962368" Label="NumberNode" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="28.7038471776786,-272.498242514153,96.7744426133333,25.95962368" Label="IdentifierNode" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="EventNode" Target="Event" Bounds="-203.309443577906,-196.510599900638,0.152212032845313,42.7010047414858" />
+    <Link Source="FieldNode" Target="FieldNode" Bounds="99.6061859130859,-581.533874511719,38.8241119384766,30" />
+    <Link Source="FieldNode" Target="ObjectIdOrNumberNode1" Bounds="140.017156642396,-525.573889774763,127.497441081321,78.8144414490816" />
+    <Link Source="FieldNode" Target="PartNode" Bounds="-0.581275256432896,-525.573889774763,105.943862798707,100.692528446544" />
+    <Link Source="Message" Target="EventNode" Bounds="-203.080847776392,-268.924836910735,0.468396558846166,37.4549406828617" />
+    <Link Source="NunberIdentifier" Target="#" Bounds="64.1427806650228,-134.618383780098,24.552110138276,28.2111128477319" />
+    <Link Source="NunberIdentifier" Target="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Bounds="111.313649961097,-134.618383780098,26.7347541321823,30.6490620385677" />
+    <Link Source="ObjectIdOrNumberNode" Target="PartAndFieldIdentifier" Bounds="134.244579831252,-360.107051391602,4.58698410349567,21.2035889715399" />
+    <Link Source="ObjectValueNode" Target="FieldNode" Bounds="118.448372382934,-630.645980810485,0.434832638617081,70.112264119462" />
+    <Link Source="PartAndFieldIdentifier" Target="#" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="NunberIdentifier" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="VerConstants.dgml" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="VerConstants.dgml1" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="VerConstants.dgml2" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="Contains" />
+    <Link Source="PartAndFieldIdentifier" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="Contains" />
+    <Link Source="PartNode" Target="Message" Bounds="-175.962557452597,-392.72113207675,136.150801502343,92.7685586666192" />
+    <Link Source="PartNode" Target="ObjectIdOrNumberNode" Bounds="16.0898714886971,-397.804311241891,45.9734538335244,9.85149820676656" />
+    <Link Source="VerConstants.dgml" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="86.6742050914786,-238.339021723425,9.86408149557123,21.800409977018" />
+    <Link Source="VerConstants.dgml1" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Bounds="222.664536146514,-257.683493725689,22.8040446109587,23.5363746735541" />
+    <Link Source="VerConstants.dgml2" Target="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Bounds="184.76180309477,-127.187119052135,42.5355548040098,25.3875271252938" />
+  </Links>
+  <Categories>
+    <Category Id="Comment" Label="Comment" Description="Represents a user defined comment on the diagram" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Comments" />
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:Event" Label="NodeType:Event" IsTag="True" />
+    <Category Id="NodeType:ObjectField" Label="NodeType:ObjectField" IsTag="True" />
+    <Category Id="NodeType:ObjectMessage" Label="NodeType:ObjectMessage" IsTag="True" />
+    <Category Id="NodeType:ObjectType" Label="NodeType:ObjectPart" IsTag="True" />
+    <Category Id="NodeType:ObjectValue" Label="NodeType:ObjectValue" IsTag="True" />
+    <Category Id="NodeTypeConstant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="Position:0" Label="Position:0" IsTag="True" />
+    <Category Id="Position:1" Label="Position:0" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+    <Category Id="reserved word" Label="reserved word" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+    <Property Id="ZoomLevel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

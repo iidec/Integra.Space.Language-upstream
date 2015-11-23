@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="Event" Category="reserved word" Bounds="-71.078881824744,139.19034766269,50,25.96" Label="event" UseManualLocation="True">
+      <Category Ref="Position:1" />
+    </Node>
+    <Node Id="EventNode" Category="Property:DataType" Bounds="-87.149045428767,61.529400099362,81.5866666666667,25.96" Label="Event Node" UseManualLocation="True">
+      <Category Ref="NodeType:Event" />
+      <Category Ref="Posicion:0" />
+    </Node>
+    <Node Id="Send" Category="NodeType:Send" Bounds="0,-3.20398759724609,50,25.96" />
+    <Node Id="VerConstants.dgml" Category="Comment" Bounds="142.360135316319,24.6904532691362,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="49.5232553779036,80.6505532669092,96.7744426133334,25.95962368" Label="IdentifierNode" UseManualLocation="True">
+      <Category Ref="Posicion:1" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="EventNode" Target="Event" Bounds="-46.3094452634615,87.4893994140625,0.152209111399827,42.7010068829885" />
+    <Link Source="Send" Target="EventNode" Bounds="-25.3820841319905,22.7560121822357,36.0742100514428,32.726262743976" />
+    <Link Source="Send" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="36.2859732900909,22.7560121822357,44.4333782330084,51.1028366486416" />
+    <Link Source="VerConstants.dgml" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="130.522106657393,50.6504532691362,49.0060368572861,25.8066117158247" />
+  </Links>
+  <Categories>
+    <Category Id="Comment" Label="Comment" Description="Represents a user defined comment on the diagram" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Comments" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:Event" Label="NodeType:Event" IsTag="True" />
+    <Category Id="NodeType:Send" Label="NodeType:Send" IsTag="True" />
+    <Category Id="Posicion:0" Label="Posicion:0" IsTag="True" />
+    <Category Id="Posicion:1" Label="Posicion:1" IsTag="True" />
+    <Category Id="Position:1" Label="Position:0" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+    <Category Id="reserved word" Label="reserved word" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

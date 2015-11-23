@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="33efc4c7-cbed-4271-95fb-dcfe20caeae51" Category="NodeType:View" Bounds="799.835700192887,-59.8637910261993,86.55,25.96" Label="System View" UseManualLocation="True" />
+    <Node Id="From" Category="NodeType:Constant" Bounds="617.962640752075,-22.0988041683051,50.0728268708237,25.9586027487312" Label="From" UseManualLocation="True">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="FromNode" Category="Posicion:0" Bounds="640.114555828054,-3.90379102619937,100.036666666667,25" Group="Collapsed" Label="From Node" UseManualLocation="True" />
+    <Node Id="Select" Category="NodeType:Select" Bounds="1000.58203123772,-18.8809772001763,51.4500732667566,25.95987712" Label="Select" UseManualLocation="True" />
+    <Node Id="StringLiteral" Category="cadena de texto" Bounds="745.757941767084,77.9372141881518,83.4886934527831,25.9589813508506" Label="StringLiteral" UseManualLocation="True" />
+    <Node Id="StringLiteral1" Category="cadena de texto" Bounds="987.675535839251,37.0789999198237,83.4633333333331,25.96" Label="StringLiteral" UseManualLocation="True" />
+    <Node Id="StringLiteral2" Category="system_view_name" Bounds="602.478508126289,35.8599031051083,83.4633333333334,25.96" Label="StringLiteral" UseManualLocation="True" />
+    <Node Id="Where" Category="Property:DataType" Bounds="760.075247865956,22.0541266235761,54.8540812550393,25.9576761825438" Label="Where" UseManualLocation="True">
+      <Category Ref="NodeType:And, Or, Not" />
+    </Node>
+    <Node Id="WhereNode" Category="Posicion:1" Bounds="770.15132249472,-1.03080674626625,107.363333333333,25" Group="Collapsed" Label="Where Node" UseManualLocation="True" />
+    <Node Id="a23e68be-d25a-4941-91ad-a02608e6c3fe" Category="Posicion:2" Bounds="907.514755828054,-3.90379102619939,104.08,25" Group="Collapsed" Label="Select Node" UseManualLocation="True" />
+  </Nodes>
+  <Links>
+    <Link Source="33efc4c7-cbed-4271-95fb-dcfe20caeae51" Target="FromNode" Bounds="733.060511510776,-33.9038410261994,74.2598102093286,26.9316050192124" />
+    <Link Source="33efc4c7-cbed-4271-95fb-dcfe20caeae51" Target="WhereNode" Bounds="830.785730601804,-33.9038410261994,8.03685171895165,24.3273012595959" />
+    <Link Source="33efc4c7-cbed-4271-95fb-dcfe20caeae51" Target="a23e68be-d25a-4941-91ad-a02608e6c3fe" Bounds="870.353690781304,-33.9038410261994,54.8406023557776,26.12896026476" />
+    <Link Source="From" Target="StringLiteral2" Bounds="643.270269620214,3.85979835312534,0.480651594423648,23.0020706841285" />
+    <Link Source="FromNode" Target="From" Category="Contains" />
+    <Link Source="FromNode" Target="StringLiteral2" Category="Contains" />
+    <Link Source="Select" Target="StringLiteral1" Bounds="1027.02615009405,7.07889943646485,1.16415862538452,21.0138798445613" />
+    <Link Source="Where" Target="StringLiteral" Bounds="787.502258300781,47.9936218261719,0,20.9766082763672" />
+    <Link Source="WhereNode" Target="StringLiteral" Category="Contains" />
+    <Link Source="WhereNode" Target="Where" Category="Contains" />
+    <Link Source="a23e68be-d25a-4941-91ad-a02608e6c3fe" Target="Select" Category="Contains" />
+    <Link Source="a23e68be-d25a-4941-91ad-a02608e6c3fe" Target="StringLiteral1" Category="Contains" />
+  </Links>
+  <Categories>
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:And, Or, Not" Label="NodeType:And, Or, Not" IsTag="True" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:Select" Label="NodeType:Select" IsTag="True" />
+    <Category Id="NodeType:View" Label="NodeType:SystemView" IsTag="True" />
+    <Category Id="Posicion:0" Label="Posicion:0" IsTag="True" />
+    <Category Id="Posicion:1" Label="Posicion:1" IsTag="True" />
+    <Category Id="Posicion:2" Label="Posicion:2" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="cadena de texto" Label="linq filter condition" IsTag="True" />
+    <Category Id="system_view_name" Label="system view name" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

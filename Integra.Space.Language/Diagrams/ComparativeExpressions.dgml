@@ -1,0 +1,153 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="1a8eee48-ff16-4a74-b315-e6329939b8ae1" Category="NodeType:Constant" Bounds="-23.3859582006828,602.099231078078,92.3828314666667,25.9596236800001" Label="BooleanNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="3367988e-46a7-4927-9258-abced05b09141" Category="NodeType:Constant" Bounds="87.3580964052321,546.139511890469,100.472992213333,25.9596236800003" Label="NullValueNode">
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="3566e4dc-ad30-4540-9571-8fb538231ba5" Category="ProperTy:DataType" Bounds="-349.676361796061,77.791488957388,870.620974246111,722.186539097689" Group="Expanded" Label="Comparative Expression">
+      <Category Ref="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like" />
+    </Node>
+    <Node Id="40ff1ba1-26c9-4391-923b-cb4e5002aea4" Category="Position:0" Bounds="30.2477027108732,390.179105712687,111.89,85.9602" Group="Expanded" Label="Cast Optional" />
+    <Node Id="Cast" Category="Property:DataType" Bounds="-271.359169006348,213.751788957388,50,25.96">
+      <Category Ref="NodeType:Cast" />
+    </Node>
+    <Node Id="Cast1" Category="Property:DataType" Bounds="22.6005617141732,214.415997175474,50,25.96" Label="Cast">
+      <Category Ref="NodeType:Cast" />
+    </Node>
+    <Node Id="CastOptional" Category="Position:1" Bounds="-8.3444382858268,174.368635810808,111.89,85.9600002704" Group="Expanded" Label="Optional Cast" UseManualLocation="True" />
+    <Node Id="CastOptional1" Category="Position:0" Bounds="-303.947502339681,173.751688957388,115.176666666667,85.9602000000001" Group="Expanded" Label="Optional Cast " UseManualLocation="True" />
+    <Node Id="ComparativeExpression" Category="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like" Bounds="-169.687012201945,117.791588957388,146.513333333333,25.96" Label="Comparative Expression" UseManualLocation="True">
+      <Category Ref="ProperTy:DataType" />
+    </Node>
+    <Node Id="ComparativeExpression1" Category="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like" Bounds="354.431279116717,440.098216552734,146.513333333333,25.96" Label="Comparative Expression" UseManualLocation="True">
+      <Category Ref="Position:0" />
+      <Category Ref="ProperTy:DataType" />
+    </Node>
+    <Node Id="Constants" Category="Position:0" Bounds="-43.3859725073544,506.139407398078,259.157249369133,253.838420657" Group="Expanded" Label="Constant Nodes" />
+    <Node Id="DateFunctions" Category="NodeType:Property" Bounds="99.5832533096069,658.058945484219,95.7448463733334,25.9596236799998" Label="DateFunctions">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="Not" Bounds="399.855594098813,236.033320922852,50,25.96" />
+    <Node Id="OptionalCast" Category="Position:0" Bounds="368.910563581234,291.993349707031,111.89,85.9602" Group="Expanded" Label="Optional Cast" />
+    <Node Id="OptionalNegation" Category="Position:0" Bounds="348.910563581235,196.033220922852,151.89,201.92042878418" Group="Expanded" Label="Optional negation" UseManualLocation="True" />
+    <Node Id="UnaryArithmeticExpression" Category="Property:DataType" Bounds="1.91922225760175,334.219590985457,168.546804503955,25.9594147272296" Label="Unary Arithmetic Expression" />
+    <Node Id="UnaryArithmeticExpression1" Category="NodeType:Cast" Bounds="61.1927027108732,430.179205712687,50,25.96" Label="Cast">
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="UnaryArithmeticExpression2" Category="Comment" Bounds="-306.472639174021,641.701640625,213.086666666667,25.96" Label="Ver UnaryArithmeticExpression.dgml" UseManualLocation="True" />
+    <Node Id="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="NodeTypeConstant" Bounds="-23.3859725073543,546.139507398078,80.74406232,25.9596236800003" Label="StringNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="a77cb82a-0d54-48ac-9120-f891e0de3157" Category="Property:DataType" Bounds="-63.3859725073544,294.219490985457,299.157249369133,485.75843706962" Group="Expanded" Label="Unary Arithmetic Expression" UseManualLocation="True">
+      <Category Ref="Position:0" />
+    </Node>
+    <Node Id="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="NodeType:Constant" Bounds="-23.3859579346786,658.058954758078,92.9692681600001,25.9596236799998" Label="NumberNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="d16555a0-9905-40b0-8a6a-2664def3d7de1" Category="Property:DataType" Bounds="399.855563581234,331.993449707031,50,25.96" Label="Cast">
+      <Category Ref="NodeType:Cast" />
+    </Node>
+    <Node Id="e162b9c9-6783-4e66-ae57-1791329cac871" Category="NodeType:Constant" Bounds="-23.3859458482177,714.018689418421,164.130882246966,25.9590386366563" Label="DateTimeOrTimespanNode">
+      <Category Ref="Propert:Value" />
+      <Category Ref="Property:DataType" />
+    </Node>
+    <Node Id="f4950a7b-1a79-4b07-a54c-9ee018ed7cf91" Category="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like" Bounds="340.86580227646,140.073012873538,146.513333333333,25.96" Label="Comparative Expression" UseManualLocation="True">
+      <Category Ref="ProperTy:DataType" />
+    </Node>
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="98.9968342484448,602.099228687344,96.7744426133333,25.9596236800001" Label="IdentifierNode">
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="fd1096bb-283a-47a8-9313-10fbfe0e2bcf1" Category="Property:DataType" Bounds="-329.676360620821,559.661755883789,168.493333333333,25.96" Label="Unary Arithmetic Expression" UseManualLocation="True">
+      <Category Ref="Position:0" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="CastOptional" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="CastOptional1" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="ComparativeExpression" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="ComparativeExpression1" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="OptionalNegation" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="UnaryArithmeticExpression2" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="a77cb82a-0d54-48ac-9120-f891e0de3157" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="f4950a7b-1a79-4b07-a54c-9ee018ed7cf91" Category="Contains" />
+    <Link Source="3566e4dc-ad30-4540-9571-8fb538231ba5" Target="fd1096bb-283a-47a8-9313-10fbfe0e2bcf1" Category="Contains" />
+    <Link Source="40ff1ba1-26c9-4391-923b-cb4e5002aea4" Target="Constants" Bounds="86.1926865369695,476.139305712687,5.30873009552124E-06,21.0001016853907" />
+    <Link Source="40ff1ba1-26c9-4391-923b-cb4e5002aea4" Target="UnaryArithmeticExpression1" Category="Contains" />
+    <Link Source="CastOptional" Target="Cast1" Category="Contains" />
+    <Link Source="CastOptional" Target="a77cb82a-0d54-48ac-9120-f891e0de3157" Bounds="52.7887939163498,260.376097175474,3.00673622583523,24.9082574996944" />
+    <Link Source="CastOptional1" Target="Cast" Category="Contains" />
+    <Link Source="CastOptional1" Target="fd1096bb-283a-47a8-9313-10fbfe0e2bcf1" Bounds="-246.246924663436,259.711888957388,0.759827917657276,290.949895883531" />
+    <Link Source="ComparativeExpression" Target="CastOptional" Bounds="-74.84842405893,143.751588957388,58.7914170516421,35.3588810044837" />
+    <Link Source="ComparativeExpression" Target="CastOptional1" Bounds="-180.963084462719,143.751588957388,61.8934694904857,35.4860052451667" />
+    <Link Source="Constants" Target="1a8eee48-ff16-4a74-b315-e6329939b8ae1" Category="Contains" />
+    <Link Source="Constants" Target="3367988e-46a7-4927-9258-abced05b09141" Category="Contains" />
+    <Link Source="Constants" Target="DateFunctions" Category="Contains" />
+    <Link Source="Constants" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="Contains" />
+    <Link Source="Constants" Target="b475d32a-1e07-4bb9-a0b7-de0d23daf29e1" Category="Contains" />
+    <Link Source="Constants" Target="e162b9c9-6783-4e66-ae57-1791329cac871" Category="Contains" />
+    <Link Source="Constants" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="Contains" />
+    <Link Source="Not" Target="OptionalCast" Bounds="424.855582035218,261.993320922852,7.45543349012223E-06,21.0000287841802" />
+    <Link Source="OptionalCast" Target="d16555a0-9905-40b0-8a6a-2664def3d7de1" Category="Contains" />
+    <Link Source="OptionalNegation" Target="ComparativeExpression1" Bounds="426.687631461918,397.953649707031,0.601482582274684,33.146048298662" />
+    <Link Source="OptionalNegation" Target="Not" Category="Contains" />
+    <Link Source="OptionalNegation" Target="OptionalCast" Category="Contains" />
+    <Link Source="UnaryArithmeticExpression" Target="40ff1ba1-26c9-4391-923b-cb4e5002aea4" Bounds="86.1926363177575,360.179005712687,1.91046621864643E-05,21.0001000000037" />
+    <Link Source="UnaryArithmeticExpression2" Target="fd1096bb-283a-47a8-9313-10fbfe0e2bcf1" Bounds="-233.865701552417,593.492316861595,26.7375186977998,48.2093237634052" />
+    <Link Source="a77cb82a-0d54-48ac-9120-f891e0de3157" Target="40ff1ba1-26c9-4391-923b-cb4e5002aea4" Category="Contains" />
+    <Link Source="a77cb82a-0d54-48ac-9120-f891e0de3157" Target="Constants" Category="Contains" />
+    <Link Source="a77cb82a-0d54-48ac-9120-f891e0de3157" Target="UnaryArithmeticExpression" Category="Contains" />
+    <Link Source="f4950a7b-1a79-4b07-a54c-9ee018ed7cf91" Target="OptionalNegation" Bounds="415.090338607809,166.033012873538,1.56776428630246,21.0251247443304" />
+  </Links>
+  <Categories>
+    <Category Id="Comment" Label="Comment" Description="Represents a user defined comment on the diagram" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Comments" />
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="NodeType:Cast" Label="NodeType:Cast" IsTag="True" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like" Label="NodeType:Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like, Not" IsTag="True" />
+    <Category Id="NodeType:Property" Label="NodeType:Property" IsTag="True" />
+    <Category Id="NodeTypeConstant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="Position:0" Label="Position:0" IsTag="True" />
+    <Category Id="Position:1" Label="Position:1" IsTag="True" />
+    <Category Id="ProperTy:DataType" Label="ProperTy:DataType" IsTag="True" />
+    <Category Id="Propert:Value" Label="Propert:Value" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

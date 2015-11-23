@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="CreateAssembly" Category="NodeType:CreateAssembly" Bounds="-599.750138979951,-116,136.13,25.96" Label="Create/Alter assembly" UseManualLocation="True" />
+    <Node Id="VerConstants.dgml" Category="Comment" Bounds="-757.383472313284,-114.229827470286,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="a2bc22eb-e591-479c-8e66-221dc56d959f1" Category="NodeTypeConstant" Bounds="-494.266763914413,-43.458902448089,80.7614511542373,25.9592475075175" Label="StringNode" UseManualLocation="True">
+      <Category Ref="Posicion:1" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+    <Node Id="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Category="NodeType:Constant" Bounds="-694.281909826293,-41.5323399979628,96.7548877248107,25.954231755264" Label="IdentifierNode" UseManualLocation="True">
+      <Category Ref="Posicion:0" />
+      <Category Ref="Property:DataType" />
+      <Category Ref="Property:Value" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="CreateAssembly" Target="a2bc22eb-e591-479c-8e66-221dc56d959f1" Bounds="-517.764236235043,-90.04,43.3751729559889,40.4434795131864" />
+    <Link Source="CreateAssembly" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="-618.459966816019,-90.04,66.8651880535322,43.5924582470919" />
+    <Link Source="VerConstants.dgml" Target="f6bbbaf5-6032-45ed-bd5b-8cf2f749431d1" Bounds="-686.699336269577,-88.269827470286,26.8525143145454,39.3060997430957" />
+  </Links>
+  <Categories>
+    <Category Id="Comment" Label="Comment" Description="Represents a user defined comment on the diagram" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Comments" />
+    <Category Id="NodeType:Constant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="NodeType:CreateAssembly" Label="NodeType:CreateAssembly/AlterAssembly" IsTag="True" />
+    <Category Id="NodeTypeConstant" Label="NodeType:Constant" IsTag="True" />
+    <Category Id="Posicion:0" Label="Posicion:0" IsTag="True" />
+    <Category Id="Posicion:1" Label="Posicion:1" IsTag="True" />
+    <Category Id="Property:DataType" Label="Property:DataType" IsTag="True" />
+    <Category Id="Property:Value" Label="Property:Value" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>

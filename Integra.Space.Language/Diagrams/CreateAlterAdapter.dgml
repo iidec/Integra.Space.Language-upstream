@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DirectedGraph xmlns="http://schemas.microsoft.com/vs/2009/dgml">
+  <Nodes>
+    <Node Id="..." Category="Mas asignaciones" Bounds="159.07245316765,266.380016410197,50,25.96" />
+    <Node Id="AsigNode" Bounds="57.9304479110196,198.424330291048,92.4966666666667,25.96" Label="Parameter list" UseManualLocation="True" />
+    <Node Id="AsigNode1" Category="Position:2" Bounds="-106.442536290487,158.424235021973,380.966493606567,293.341753649902" Group="Expanded" Label="Parameter list" UseManualLocation="True" />
+    <Node Id="Assembly" Category="Position:4" Bounds="394.983816440437,80.4040901755588,102.003333333333,25.96" Label="AssemblyName" UseManualLocation="True" />
+    <Node Id="CreateAdapter" Category="NodeType:CreateAdapter" Bounds="9.56260287988534,-121.398994120339,128.306666666667,25.96" Label="Create/Alter adapter" UseManualLocation="True" />
+    <Node Id="IdentifierNode" Category="Posicion:0" Bounds="40.3207956816879,403.356624686564,51.6966666666667,25.96" Label="Name">
+      <Category Ref="name" />
+    </Node>
+    <Node Id="IdentifierNode2" Category="Posicion:0" Bounds="-372.047447807274,60.6463859992113,50,25.96" Label="name" UseManualLocation="True" />
+    <Node Id="IdentifierNode3" Category="Posicion:0" Bounds="-86.4425376516455,405.805889212931,70.1166666666667,25.96" Label="DataType" UseManualLocation="True">
+      <Category Ref="datatype" />
+    </Node>
+    <Node Id="ParameterNode" Category="Posicion:0" Bounds="-12.6784250009391,284.279657333985,74.2366666666667,25.96" Label="Parameter" />
+    <Node Id="Values" Category="Position:2" Bounds="154.638544883145,405.3002129434,54.6266666666667,25.96" UseManualLocation="True" />
+    <Node Id="VerConstants.dgml1" Category="Comment" Bounds="130.890628419929,322.340114676799,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="VerConstants.dgml2" Category="Comment" Bounds="-408.388885194901,-31.1272395847468,123.633333333333,25.96" Label="Ver Constants.dgml" UseManualLocation="True" />
+    <Node Id="f94fcf78-64d9-40c0-9b3a-d6ce7a189c681" Category="Type:input,output" Bounds="-188.176308966716,71.9477911956603,50,25.96" Label="Type" UseManualLocation="True">
+      <Category Ref="Position:1" />
+    </Node>
+  </Nodes>
+  <Links>
+    <Link Source="AsigNode" Target="..." Bounds="119.439017310665,224.384330291048,42.5176925666606,36.1645551954181" />
+    <Link Source="AsigNode" Target="ParameterNode" Bounds="42.6199175459369,224.384330291048,49.5035771361786,53.3008010975342" />
+    <Link Source="AsigNode1" Target="..." Category="Contains" />
+    <Link Source="AsigNode1" Target="AsigNode" Category="Contains" />
+    <Link Source="AsigNode1" Target="IdentifierNode" Category="Contains" />
+    <Link Source="AsigNode1" Target="IdentifierNode3" Category="Contains" />
+    <Link Source="AsigNode1" Target="ParameterNode" Category="Contains" />
+    <Link Source="AsigNode1" Target="Values" Category="Contains" />
+    <Link Source="AsigNode1" Target="VerConstants.dgml1" Category="Contains" />
+    <Link Source="CreateAdapter" Target="AsigNode1" Bounds="74.0400256903965,-95.438994120339,6.11390637016376,244.866033219643" />
+    <Link Source="CreateAdapter" Target="Assembly" Bounds="97.6603607275514,-95.438994120339,316.468468756801,171.55395495116" />
+    <Link Source="CreateAdapter" Target="IdentifierNode2" Bounds="-313.893427161815,-95.438994120339,357.608554120774,154.721127458535" />
+    <Link Source="CreateAdapter" Target="f94fcf78-64d9-40c0-9b3a-d6ce7a189c681" Bounds="-140.300510066027,-95.438994120339,198.113097602359,161.696008754175" />
+    <Link Source="ParameterNode" Target="IdentifierNode" Bounds="28.9886069309892,310.239657333985,29.6553492215525,84.6234202052107" />
+    <Link Source="ParameterNode" Target="IdentifierNode3" Bounds="-38.521439701127,310.239657333985,54.8627099559373,87.9305839335026" />
+    <Link Source="ParameterNode" Target="Values" Bounds="41.3337744410567,310.239657333985,116.587498649906,89.577230146262" />
+    <Link Source="VerConstants.dgml1" Target="Values" Bounds="184.791800942676,348.300114135742,6.23268932181054,48.0748091821994" />
+    <Link Source="VerConstants.dgml2" Target="IdentifierNode2" Bounds="-346.93362989778,-5.1672395847468,0.294197330624229,56.813746247031" />
+  </Links>
+  <Categories>
+    <Category Id="Comment" Label="Comment" Description="Represents a user defined comment on the diagram" CanBeDataDriven="True" IsProviderRoot="False" NavigationActionLabel="Comments" />
+    <Category Id="Contains" Label="Contains" Description="Whether the source of the link contains the target object" CanBeDataDriven="False" CanLinkedNodesBeDataDriven="True" IncomingActionLabel="Contained By" IsContainment="True" OutgoingActionLabel="Contains" />
+    <Category Id="Mas asignaciones" Label="Mas asignaciones" IsTag="True" />
+    <Category Id="NodeType:CreateAdapter" Label="NodeType:CreateAdapter/AlterAdapter" IsTag="True" />
+    <Category Id="Posicion:0" Label="Posicion:0" IsTag="True" />
+    <Category Id="Position:1" Label="Posicion:1" IsTag="True" />
+    <Category Id="Position:2" Label="Posicion:2" IsTag="True" />
+    <Category Id="Position:4" Label="Posicion:3" IsTag="True" />
+    <Category Id="Type:input,output" Label="Type:input,output" IsTag="True" />
+    <Category Id="datatype" Label="datatype" IsTag="True" />
+    <Category Id="name" Label="name" IsTag="True" />
+  </Categories>
+  <Properties>
+    <Property Id="Bounds" DataType="System.Windows.Rect" />
+    <Property Id="CanBeDataDriven" Label="CanBeDataDriven" Description="CanBeDataDriven" DataType="System.Boolean" />
+    <Property Id="CanLinkedNodesBeDataDriven" Label="CanLinkedNodesBeDataDriven" Description="CanLinkedNodesBeDataDriven" DataType="System.Boolean" />
+    <Property Id="Expression" DataType="System.String" />
+    <Property Id="Group" Label="Group" Description="Display the node as a group" DataType="Microsoft.VisualStudio.GraphModel.GraphGroupStyle" />
+    <Property Id="GroupLabel" DataType="System.String" />
+    <Property Id="IncomingActionLabel" Label="IncomingActionLabel" Description="IncomingActionLabel" DataType="System.String" />
+    <Property Id="IsContainment" DataType="System.Boolean" />
+    <Property Id="IsEnabled" DataType="System.Boolean" />
+    <Property Id="IsProviderRoot" Label="IsProviderRoot" Description="IsProviderRoot" DataType="System.Boolean" />
+    <Property Id="IsTag" DataType="System.Boolean" />
+    <Property Id="Label" Label="Label" Description="Displayable label of an Annotatable object" DataType="System.String" />
+    <Property Id="NavigationActionLabel" Label="NavigationActionLabel" Description="NavigationActionLabel" DataType="System.String" />
+    <Property Id="OutgoingActionLabel" Label="OutgoingActionLabel" Description="OutgoingActionLabel" DataType="System.String" />
+    <Property Id="TargetType" DataType="System.Type" />
+    <Property Id="UseManualLocation" DataType="System.Boolean" />
+    <Property Id="Value" DataType="System.String" />
+    <Property Id="ValueLabel" DataType="System.String" />
+  </Properties>
+  <Styles>
+    <Style TargetType="Node" GroupLabel="Comment" ValueLabel="Has comment">
+      <Condition Expression="HasCategory('Comment')" />
+      <Setter Property="Background" Value="#FFFFFACD" />
+      <Setter Property="Stroke" Value="#FFE5C365" />
+      <Setter Property="StrokeThickness" Value="1" />
+      <Setter Property="NodeRadius" Value="2" />
+      <Setter Property="MaxWidth" Value="250" />
+    </Style>
+  </Styles>
+</DirectedGraph>
