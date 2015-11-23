@@ -163,7 +163,6 @@ namespace Integra.Space.Language.Grammars
             /* OPERADORES */
             KeyTerm terminalLike = ToTerm("like", "like");
             KeyTerm terminalNot = ToTerm("not", "not");
-            KeyTerm terminalIn = ToTerm("in", "in");
             KeyTerm terminalAnd = ToTerm("and", "and");
             KeyTerm terminalOr = ToTerm("or", "or");
 
@@ -262,7 +261,7 @@ namespace Integra.Space.Language.Grammars
             this.RegisterBracePair("(", ")");
             this.RegisterBracePair("[", "]");
             this.RegisterOperators(40, Associativity.Right, terminalParentesisIz, terminalParentesisDer, terminalCorcheteIz, terminalCorcheteDer);
-            this.RegisterOperators(30, Associativity.Right, terminalIgualIgual, terminalNoIgual, terminalMayorIgual, terminalMayorQue, terminalMenorIgual, terminalMenorQue, terminalLike, terminalIn);
+            this.RegisterOperators(30, Associativity.Right, terminalIgualIgual, terminalNoIgual, terminalMayorIgual, terminalMayorQue, terminalMenorIgual, terminalMenorQue, terminalLike);
             this.RegisterOperators(20, Associativity.Right, terminalAnd);
             this.RegisterOperators(10, Associativity.Right, terminalOr);
             this.RegisterOperators(5, Associativity.Right, terminalNot);

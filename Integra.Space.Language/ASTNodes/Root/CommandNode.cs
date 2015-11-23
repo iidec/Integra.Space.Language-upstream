@@ -44,7 +44,10 @@ namespace Integra.Space.Language.ASTNodes.Root
             PlanNode result = (PlanNode)this.value.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            return result;
+            System.Collections.Generic.List<PlanNode> resultList = new System.Collections.Generic.List<PlanNode>();
+            resultList.Add(result);
+
+            return resultList;
         }
     }
 }

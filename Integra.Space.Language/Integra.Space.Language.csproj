@@ -82,20 +82,6 @@
     <Compile Include="ASTNodes\Base\AstNodeBase.cs" />
     <Compile Include="ASTNodes\Cast\ExplicitCast.cs" />
     <Compile Include="ASTNodes\Cast\TypeNode.cs" />
-    <Compile Include="ASTNodes\Commands\Create\CreateRole.cs" />
-    <Compile Include="ASTNodes\Commands\Create\CreateUser.cs" />
-    <Compile Include="ASTNodes\Commands\Drop\DropUserDefinedObjectNode.cs" />
-    <Compile Include="ASTNodes\Commands\Private\EngineActionsNode.cs" />
-    <Compile Include="ASTNodes\Commands\Create\AddSourceNode.cs" />
-    <Compile Include="ASTNodes\Commands\Create\CreateStreamNode.cs" />
-    <Compile Include="ASTNodes\Commands\General\ParameterNode.cs" />
-    <Compile Include="ASTNodes\Commands\General\UserDefinedObjectsNode.cs" />
-    <Compile Include="ASTNodes\Commands\General\ConstantStringValueNode.cs" />
-    <Compile Include="ASTNodes\Commands\Publish\PublishNode.cs" />
-    <Compile Include="ASTNodes\Commands\Receive\ReceiveNode.cs" />
-    <Compile Include="ASTNodes\Commands\StartStop\ObjectToStartOrStopNode.cs" />
-    <Compile Include="ASTNodes\Commands\StartStop\StartStopNode.cs" />
-    <Compile Include="ASTNodes\Commands\Trace\SetTraceNode.cs" />
     <Compile Include="ASTNodes\Constants\BooleanNode.cs" />
     <Compile Include="ASTNodes\Constants\ConstantValueNode.cs" />
     <Compile Include="ASTNodes\Constants\ConstantValueWithoutAliasNode.cs" />
@@ -107,8 +93,6 @@
     <Compile Include="ASTNodes\Constants\NullValueNode.cs" />
     <Compile Include="ASTNodes\Constants\NumberNode.cs" />
     <Compile Include="ASTNodes\Constants\StringNode.cs" />
-    <Compile Include="ASTNodes\Lists\CommandListNode.cs" />
-    <Compile Include="ASTNodes\Lists\ParameterListNode.cs" />
     <Compile Include="ASTNodes\Lists\PlanNodeListNode.cs" />
     <Compile Include="ASTNodes\Objects\Event\EventNode.cs" />
     <Compile Include="ASTNodes\Objects\Event\EventPropertiesNode.cs" />
@@ -120,25 +104,17 @@
     <Compile Include="ASTNodes\Operations\ComparativeExpressionNode.cs" />
     <Compile Include="ASTNodes\Operations\LogicExpressionNode.cs" />
     <Compile Include="ASTNodes\Operations\UnaryArithmeticExpressionNode.cs" />
-    <Compile Include="ASTNodes\Permissions\PermissionsBodyNode.cs" />
-    <Compile Include="ASTNodes\Permissions\PermissionsNode.cs" />
-    <Compile Include="ASTNodes\Permissions\SecureObjectsNode.cs" />
-    <Compile Include="ASTNodes\Permissions\SecureObjectsTypeNode.cs" />
     <Compile Include="ASTNodes\QuerySections\ApplyWindowNode.cs" />
     <Compile Include="ASTNodes\QuerySections\FromNode.cs" />
     <Compile Include="ASTNodes\QuerySections\OrderByNode.cs" />
     <Compile Include="ASTNodes\QuerySections\GroupByNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\JoinNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\OnConditionNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\GroupKeyNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\GroupKeyValueNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\ProjectionFunctionNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\ProjectionValueNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\SelectNode.cs" />
     <Compile Include="ASTNodes\QuerySections\WhereNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\WithNode.cs" />
     <Compile Include="ASTNodes\Root\CommandNode.cs" />
-    <Compile Include="ASTNodes\SystemViews\SystemViewNode.cs" />
     <Compile Include="ASTNodes\UserQuery\UserQueryNode.cs" />
     <Compile Include="Errors\ErrorNode.cs" />
     <Compile Include="Errors\Errors.cs" />
@@ -152,21 +128,15 @@
     <Compile Include="Grammars\GroupByLanguageRuntime.cs" />
     <Compile Include="Grammars\ProjectionLanguageRuntime.cs" />
     <Compile Include="Parsers\ExpressionParser.cs" />
-    <Compile Include="General\ObjectUtils\JsonObjectUtils.cs" />
-    <Compile Include="General\ObjectUtils\XmlObjectUtils.cs" />
     <Compile Include="General\Validations\CastValidation.cs" />
     <Compile Include="General\Validations\TypeValidation.cs" />
     <Compile Include="Grammars\EQLGrammar.cs" />
     <Compile Include="Grammars\EQLLanguageRuntime.cs" />
     <Compile Include="Grammars\ExpressionGrammar.cs" />
     <Compile Include="Grammars\ExpressionLanguageRuntime.cs" />
-    <Compile Include="Grammars\PrivateGrammar.cs" />
-    <Compile Include="Grammars\PrivateLanguageRuntime.cs" />
-    <Compile Include="Parsers\ProjectionParser.cs" />
     <Compile Include="Parsers\EQLPublicParser.cs" />
     <Compile Include="ExecutionPlan\PlanNode.cs" />
     <Compile Include="ExecutionPlan\PlanNodeTypeEnum.cs" />
-    <Compile Include="Parsers\EQLPrivateParser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\SR.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -196,27 +166,13 @@
     <None Include="Diagrams\Constants.dgml">
       <SubType>Designer</SubType>
     </None>
-    <None Include="Diagrams\CreateAlterAdapter.dgml" />
-    <None Include="Diagrams\CreateAlterAssembly.dgml" />
-    <None Include="Diagrams\CreateAlterSource.dgml" />
-    <None Include="Diagrams\CreateAlterStream1.dgml" />
-    <None Include="Diagrams\CreateAlterStream2.dgml" />
-    <None Include="Diagrams\CreateAlterTrigger1.dgml" />
-    <None Include="Diagrams\CreateAlterTrigger2.dgml" />
-    <None Include="Diagrams\CreateRoleAndUser.dgml" />
     <None Include="Diagrams\DateFunctions.dgml" />
-    <None Include="Diagrams\Drop.dgml" />
     <None Include="Diagrams\LogicExpressions.dgml">
       <SubType>Designer</SubType>
     </None>
     <None Include="Diagrams\Object.dgml" />
-    <None Include="Diagrams\Permisos.dgml" />
-    <None Include="Diagrams\Send.dgml" />
-    <None Include="Diagrams\Set.dgml" />
-    <None Include="Diagrams\StartStop.dgml" />
     <None Include="Diagrams\UnaryArithmeticExpression.dgml" />
     <None Include="Diagrams\QuerySections.dgml" />
-    <None Include="Diagrams\VistasDelSistema.dgml" />
     <None Include="packages.config" />
     <None Include="Resources\SR.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
