@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using Integra.Space.Language.Runtime;
+using System.Threading;
+using System.Globalization;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
@@ -29,6 +31,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         [TestMethod]
         public void MonthFunction()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("es-GT");
             ExpressionParser parser = new ExpressionParser("month('02/01/2014 10:11:12 am')");
             PlanNode plan = parser.Parse();
 
@@ -44,6 +47,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         [TestMethod]
         public void DayFunction1()
         {
+            Thread.CurrentThread.CurrentCulture = new CultureInfo("es-GT");
             ExpressionParser parser = new ExpressionParser("day('02/01/2014 10:11:12 am')");
             PlanNode plan = parser.Parse();
 
