@@ -47,24 +47,32 @@ namespace Integra.Space.Language.Runtime
 
                 if (valIz == null && valDer == null)
                 {
-                    resultIz += 0;
-                    resultDer += 0;
                     continue;
                 }
 
                 if (valIz == null && valDer != null)
                 {
-                    resultIzAux += posicion * -1;
+                    resultComparer = -1;
+                    resultIzAux = this.CalcLeftResult(resultComparer, posicion);
+                    resultIz += resultIzAux;
+                    resultDer += this.CalcRightResult(resultComparer, resultIzAux);
+
+                    /*resultIzAux += posicion * -1;
                     resultIz = resultIzAux;
-                    resultDer += resultIzAux + -1;
+                    resultDer += resultIzAux + -1;*/
                     continue;
                 }
 
                 if (valIz != null && valDer == null)
                 {
-                    resultIz += posicion * 1;
+                    resultComparer = 1;
+                    resultIzAux = this.CalcLeftResult(resultComparer, posicion);
+                    resultIz += resultIzAux;
+                    resultDer += this.CalcRightResult(resultComparer, resultIzAux);
+
+                    /*resultIz += posicion * 1;
                     resultIz = resultIzAux;
-                    resultDer += resultIzAux + -1;
+                    resultDer += resultIzAux + -1;*/
                     continue;
                 }
 
@@ -77,204 +85,127 @@ namespace Integra.Space.Language.Runtime
                     if (propIz.PropertyType.Equals(typeof(string)))
                     {
                         resultComparer = string.Compare(valIz.ToString(), valDer.ToString());
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(byte)))
                     {
                         resultComparer = ((byte)valIz).CompareTo((byte)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(sbyte)))
                     {
                         resultComparer = ((sbyte)valIz).CompareTo((sbyte)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(short)))
                     {
                         resultComparer = ((short)valIz).CompareTo((short)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(ushort)))
                     {
                         resultComparer = ((ushort)valIz).CompareTo((ushort)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(int)))
                     {
                         resultComparer = ((int)valIz).CompareTo((int)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(uint)))
                     {
                         resultComparer = ((uint)valIz).CompareTo((uint)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(long)))
                     {
                         resultComparer = ((long)valIz).CompareTo((long)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(ulong)))
                     {
                         resultComparer = ((ulong)valIz).CompareTo((ulong)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(float)))
                     {
                         resultComparer = ((float)valIz).CompareTo((float)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(double)))
                     {
                         resultComparer = ((double)valIz).CompareTo((double)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(decimal)))
                     {
                         resultComparer = ((decimal)valIz).CompareTo((decimal)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(char)))
                     {
                         resultComparer = ((char)valIz).CompareTo((char)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(byte?)))
                     {
                         resultComparer = ((byte?)valIz).Value.CompareTo(((byte?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(sbyte?)))
                     {
                         resultComparer = ((sbyte?)valIz).Value.CompareTo(((sbyte?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(short?)))
                     {
                         resultComparer = ((short?)valIz).Value.CompareTo(((short?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(ushort?)))
                     {
                         resultComparer = ((ushort?)valIz).Value.CompareTo(((ushort?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(int?)))
                     {
                         resultComparer = ((int?)valIz).Value.CompareTo(((int?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(uint?)))
                     {
                         resultComparer = ((uint?)valIz).Value.CompareTo(((uint?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(long?)))
                     {
                         resultComparer = ((long?)valIz).Value.CompareTo(((long?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(ulong?)))
                     {
                         resultComparer = ((ulong?)valIz).Value.CompareTo(((ulong?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(float?)))
                     {
                         resultComparer = ((float?)valIz).Value.CompareTo(((float?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(double?)))
                     {
                         resultComparer = ((double?)valIz).Value.CompareTo(((double?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(decimal?)))
                     {
                         resultComparer = ((decimal?)valIz).Value.CompareTo(((decimal?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(char?)))
                     {
                         resultComparer = ((char?)valIz).Value.CompareTo(((char?)valDer).Value);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(DateTime)))
                     {
                         resultComparer = DateTime.Compare((DateTime)valIz, (DateTime)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(TimeSpan)))
                     {
                         resultComparer = TimeSpan.Compare((TimeSpan)valIz, (TimeSpan)valDer);
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else if (propIz.PropertyType.Equals(typeof(object)))
                     {
                         resultComparer = string.Compare(valIz.ToString(), valDer.ToString());
-                        resultIzAux = this.CalcLeftResult(resultComparer, posicion);
-                        resultIz += resultIzAux;
-                        resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                     }
                     else
                     {
                         throw new ArgumentException("Invalid 'order by' argument.", propIz.Name);
                     }
+
+                    // se actualizan los valores
+                    resultIzAux = this.CalcLeftResult(resultComparer, posicion);
+                    resultIz += resultIzAux;
+                    resultDer += this.CalcRightResult(resultComparer, resultIzAux);
                 }
+
+                posicion--;
             }
 
             if (resultIz == resultDer)
