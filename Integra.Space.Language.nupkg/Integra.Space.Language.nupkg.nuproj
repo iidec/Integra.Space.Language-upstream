@@ -38,4 +38,10 @@
     <Content Include="Readme.txt" />
   </ItemGroup>
   <Import Project="$(NuProjPath)\NuProj.targets" />
+  <!--
+  Esta tarea copia la salida de la creación del paquete nuget hacia la fuente de paquetes local.
+  -->
+  <Target Name="UserAfterBuild" AfterTargets="Build">
+	<Exec Command="copy $(TargetDir)\*.* c:\" />
+  </Target>
 </Project>
