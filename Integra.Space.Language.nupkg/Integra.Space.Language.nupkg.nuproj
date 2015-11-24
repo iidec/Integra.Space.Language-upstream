@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>82880d58-3b02-40aa-a4ce-92799c9a617e</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
+  </PropertyGroup>
+  <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
+  <PropertyGroup Label="Configuration">
+    <Id>Integra.Space.Language.nupkg</Id>
+    <Version>1.0.0</Version>
+    <Title>Integra.Space.Language.nupkg</Title>
+    <Authors>Mariano</Authors>
+    <Owners>Mariano</Owners>
+    <Summary>Integra.Space.Language.nupkg</Summary>
+    <Description>Integra.Space.Language.nupkg</Description>
+    <ReleaseNotes>
+    </ReleaseNotes>
+    <ProjectUrl>
+    </ProjectUrl>
+    <LicenseUrl>
+    </LicenseUrl>
+    <Copyright>Copyright © Mariano</Copyright>
+    <Tags>Integra.Space.Language.nupkg</Tags>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="Readme.txt" />
+  </ItemGroup>
+  <Import Project="$(NuProjPath)\NuProj.targets" />
+  <!--
+  Esta tarea copia la salida de la creación del paquete nuget hacia la fuente de paquetes local.
+  -->
+  <Target Name="UserAfterBuild" AfterTargets="Build">
+	<Exec Command="copy $(TargetDir)\*.* c:\" />
+  </Target>
+</Project>
