@@ -397,7 +397,7 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.ObjectWithPrefix:
                     return this.GetEventWithPrefixValue(actualNode, leftNode, rightNode);
                 default:
-                    throw new CompilationException("Error en el arbol de ejecución, el tipo de nodo no existe.");
+                    throw new CompilationException("Invalid execution tree, the node type does not exist.");
             }
 
             return expResult;
@@ -451,7 +451,14 @@ namespace Integra.Space.Language.Runtime
         /// <returns>The scope variable.</returns>
         private Expression CreateFromForLambda(PlanNode actualNode, Expression leftNode)
         {
-            return this.scopeParam.Peek();
+            try
+            {
+                return this.scopeParam.Peek();
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new CompilationException("The stack of variables is empty.", e);
+            }
         }
 
         /// <summary>
@@ -490,32 +497,33 @@ namespace Integra.Space.Language.Runtime
         {
             if (!incomingObservable.Type.Equals(typeof(string)))
             {
-                throw new CompilationException("Value type of function 'left' must be string.");
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Value type of function 'left' must be string.", actualNode.NodeText));
             }
 
             ParameterExpression param = Expression.Variable(typeof(string), "resultFunctionLeft");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
-            MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "Substring" && m.GetParameters().Length == 2).Single();
             Expression numberExp = this.GenerateExpressionTree((PlanNode)actualNode.Properties["Number"]);
 
             try
             {
+                MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "Substring" && m.GetParameters().Length == 2).Single();
+
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
                               Expression.TryCatch(
                                   Expression.Block(
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'left' function"))),
                                       Expression.Assign(param, Expression.Call(incomingObservable, method, Expression.Constant(0), numberExp)),
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'left' function"))),
                                       Expression.Empty()
                                       ),
                                   Expression.Catch(
                                       paramException,
                                        Expression.Block(
                                           Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function"), typeof(string)), paramException))
+                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'left' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
                               ),
@@ -526,7 +534,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'left' function.", actualNode.NodeText), e);
             }
         }
 
@@ -540,34 +548,34 @@ namespace Integra.Space.Language.Runtime
         {
             if (!incomingObservable.Type.Equals(typeof(string)))
             {
-                throw new CompilationException("Value type of function 'left' must be string.");
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Value type of function 'right' must be string.", actualNode.NodeText));
             }
 
             ParameterExpression param = Expression.Variable(typeof(string), "resultFunctionLeft");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-            MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "Substring" && m.GetParameters().Length == 1).Single();
 
             Expression numberExp = this.GenerateExpressionTree((PlanNode)actualNode.Properties["Number"]);
             Expression substringExp = Expression.Subtract(Expression.Property(incomingObservable, "Length"), numberExp);
 
             try
             {
+                MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "Substring" && m.GetParameters().Length == 1).Single();
+
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
                               Expression.TryCatch(
                                   Expression.Block(
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'right' function"))),
                                       Expression.Assign(param, Expression.Call(incomingObservable, method, substringExp)),
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'right' function"))),
                                       Expression.Empty()
                                       ),
                                   Expression.Catch(
                                       paramException,
                                        Expression.Block(
                                           Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function"), typeof(string)), paramException))
+                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'right' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
                               ),
@@ -578,7 +586,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'right' function.", actualNode.NodeText), e);
             }
         }
 
@@ -592,31 +600,31 @@ namespace Integra.Space.Language.Runtime
         {
             if (!incomingObservable.Type.Equals(typeof(string)))
             {
-                throw new CompilationException("Value type of function 'left' must be string.");
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Value type of function 'upper' must be string.", actualNode.NodeText));
             }
 
             ParameterExpression param = Expression.Variable(typeof(string), "resultFunctionLeft");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
-            MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "ToUpper" && m.GetParameters().Length == 0).Single();
-
             try
             {
+                MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "ToUpper" && m.GetParameters().Length == 0).Single();
+
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
                               Expression.TryCatch(
                                   Expression.Block(
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'upper' function"))),
                                       Expression.Assign(param, Expression.Call(incomingObservable, method)),
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'upper' function"))),
                                       Expression.Empty()
                                       ),
                                   Expression.Catch(
                                       paramException,
                                        Expression.Block(
                                           Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function"), typeof(string)), paramException))
+                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'upper' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
                               ),
@@ -627,7 +635,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'upper' function.", actualNode.NodeText), e);
             }
         }
 
@@ -641,31 +649,31 @@ namespace Integra.Space.Language.Runtime
         {
             if (!incomingObservable.Type.Equals(typeof(string)))
             {
-                throw new CompilationException("Value type of function 'left' must be string.");
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Value type of function 'lower' must be string.", actualNode.NodeText));
             }
 
             ParameterExpression param = Expression.Variable(typeof(string), "resultFunctionLeft");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
-            MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "ToLower" && m.GetParameters().Length == 0).Single();
-
             try
             {
+                MethodInfo method = typeof(string).GetMethods().Where(m => m.Name == "ToLower" && m.GetParameters().Length == 0).Single();
+
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
                               Expression.TryCatch(
                                   Expression.Block(
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'lower' function"))),
                                       Expression.Assign(param, Expression.Call(incomingObservable, method)),
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
+                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'lower' function"))),
                                       Expression.Empty()
                                       ),
                                   Expression.Catch(
                                       paramException,
                                        Expression.Block(
                                           Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function"), typeof(string)), paramException))
+                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'lower' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
                               ),
@@ -676,7 +684,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'lower' function.", actualNode.NodeText), e);
             }
         }
 
@@ -689,6 +697,9 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Enumerable count expression.</returns>
         private Expression CreateEnumerableCount<I>(PlanNode actualNode, Expression incomingObservable)
         {
+            ParameterExpression param = Expression.Variable(typeof(int), "resultExtensionWithoutParametersObservable");
+            ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
             try
             {
                 if (!incomingObservable.Type.Namespace.Contains("System.Collections") && !incomingObservable.Type.Name.Equals("IGroupedObservable`2") && !incomingObservable.Type.Name.Equals("IGrouping`2"))
@@ -699,7 +710,7 @@ namespace Integra.Space.Language.Runtime
                     }
                     else
                     {
-                        throw new CompilationException("Función de agregación sin 'apply window of'");
+                        throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Aggregation function without 'apply window of'.", actualNode.NodeText));
                     }
                 }
 
@@ -712,9 +723,6 @@ namespace Integra.Space.Language.Runtime
                 {
                     methodCount = typeof(System.Linq.Enumerable).GetMethods().Where(m => m.Name == "Count" && m.GetParameters().Length == 1).Single().MakeGenericMethod(incomingObservable.Type.GenericTypeArguments[0]);
                 }
-
-                ParameterExpression param = Expression.Variable(typeof(int), "resultExtensionWithoutParametersObservable");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression tryCatchExpr =
                     Expression.Block(
@@ -730,7 +738,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -741,7 +749,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'count' function.", actualNode.NodeText), e);
             }
         }
 
@@ -757,6 +765,9 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
+                ParameterExpression param = Expression.Variable(selector.Type, "resultExtensionWithoutParametersObservable");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
                 if (!incomingObservable.Type.Namespace.Contains("System.Collections") && !incomingObservable.Type.Name.Equals("IGroupedObservable`2") && !incomingObservable.Type.Name.Equals("IGrouping`2"))
                 {
                     if (this.scopeParam.Where(x => x.Type.Namespace.Contains("System.Collections") || incomingObservable.Type.Name.Equals("IGroupedObservable`2") || incomingObservable.Type.Name.Equals("IGrouping`2")).Count() > 0)
@@ -765,7 +776,7 @@ namespace Integra.Space.Language.Runtime
                     }
                     else
                     {
-                        throw new CompilationException("Función de agregación sin 'apply window of'");
+                        throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Aggregation function without 'apply window of'.", actualNode.NodeText));
                     }
                 }
 
@@ -786,9 +797,6 @@ namespace Integra.Space.Language.Runtime
 
                 Expression selectorLambda = Expression.Lambda(delegateType, selector, new ParameterExpression[] { this.scopeParam.Pop() });
 
-                ParameterExpression param = Expression.Variable(selector.Type, "resultExtensionWithoutParametersObservable");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
                 Expression tryCatchExpr =
                     Expression.Block(
                         new[] { param },
@@ -803,7 +811,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'sum' function"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'sum' function", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -814,7 +822,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'sum' function.", actualNode.NodeText), e);
             }
         }
 
@@ -828,6 +836,9 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Observable buffer expression.</returns>
         private Expression CreateObservableBuffer<I>(PlanNode actualNode, Expression incomingObservable, Expression bufferTimeOrSize)
         {
+            ParameterExpression result = Expression.Variable(typeof(IObservable<IList<I>>), "resultGroupByObservable");
+            ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
             try
             {
                 ConstructionValidator.Validate(actualNode.NodeType, null, incomingObservable, bufferTimeOrSize);
@@ -836,9 +847,6 @@ namespace Integra.Space.Language.Runtime
                 {
                     this.bufferScheduler = Expression.Constant(new System.Reactive.Concurrency.NewThreadScheduler());
                 }
-
-                ParameterExpression result = Expression.Variable(typeof(IObservable<IList<I>>), "resultGroupByObservable");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 MethodInfo methodGroupBy = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
                 {
@@ -857,7 +865,7 @@ namespace Integra.Space.Language.Runtime
                 })
                 .Single().MakeGenericMethod(typeof(I));
 
-                Expression assign = Expression.Throw(Expression.New(typeof(Exception).GetConstructor(new Type[] { typeof(string), typeof(RuntimeException) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Invalid buffer"), typeof(string)), paramException));
+                Expression assign = Expression.Throw(Expression.New(typeof(Exception).GetConstructor(new Type[] { typeof(string), typeof(RuntimeException) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Invalid 'apply window of'.", actualNode.NodeText), typeof(string)), paramException));
                 if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
                 {
                     assign = Expression.Assign(result, Expression.Call(methodGroupBy, incomingObservable, bufferTimeOrSize, this.bufferScheduler));
@@ -872,16 +880,16 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'apply window of' function."))),
                                     assign,
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'apply window of' function."))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable apply window"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'apply window of' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -892,7 +900,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'apply window of' function.", actualNode.NodeText), e);
             }
         }
 
@@ -921,16 +929,16 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable 'top' function"))),
                                     Expression.Assign(result, Expression.Call(methodGroupBy, incomingObservable, takeSize)),
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable 'top' function"))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable apply window"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'top' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -941,7 +949,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'top' function.", actualNode.NodeText), e);
             }
         }
 
@@ -970,16 +978,16 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable 'top' function."))),
                                     Expression.Assign(result, Expression.Call(methodGroupBy, incomingObservable, takeSize)),
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the expression observable buffer"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable 'top' function."))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable apply window"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'top' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -990,7 +998,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'top' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1034,7 +1042,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable buffer with time and size"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable buffer with time and size", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1045,7 +1053,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'buffer with time and size' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1087,7 +1095,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with observable where"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'where' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1098,7 +1106,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'where' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1134,7 +1142,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with select for observable group by"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'select' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1145,7 +1153,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'select' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1181,7 +1189,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with select for enumerable group by"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'select' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1192,7 +1200,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'select' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1230,7 +1238,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                          Expression.Block(
                                             Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with select for observable buffer"), typeof(string)), paramException))
+                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'select' function.", actualNode.NodeText), typeof(string)), paramException))
                                         )
                                     )
                                 ),
@@ -1256,16 +1264,16 @@ namespace Integra.Space.Language.Runtime
                             new[] { result },
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable buffer"))),
+                                        Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable buffer or event source"))),
                                         Expression.Assign(result, Expression.Call(methodSelectMany, incomingObservable, selectorLambda)),
-                                        Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select observable buffer"))),
+                                        Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select observable buffer or event source"))),
                                         Expression.Empty()
                                         ),
                                     Expression.Catch(
                                         paramException,
                                          Expression.Block(
                                             Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant("Error en la ejecución", typeof(string)), paramException))
+                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'select' function.", actualNode.NodeText), typeof(string)), paramException))
                                         )
                                     )
                                 ),
@@ -1277,7 +1285,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'select' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1313,7 +1321,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the select for enumerable"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'select' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1324,7 +1332,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'select' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1505,7 +1513,7 @@ namespace Integra.Space.Language.Runtime
                                      paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the observable group by"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'group by' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1516,7 +1524,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'group by' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1554,7 +1562,7 @@ namespace Integra.Space.Language.Runtime
                                      paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the enumerable group by"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'group by' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1565,7 +1573,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'group by' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1584,7 +1592,6 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 string functionName = string.Empty;
-                Expression comparer = null;
 
                 if (actualNode.NodeType.Equals(PlanNodeTypeEnum.EnumerableOrderBy))
                 {
@@ -1606,16 +1613,16 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable order by"))),
                                     Expression.Assign(result, Expression.Call(methodGroupBy, incomingObservable, keySelector, Expression.New(typeof(OrderByKeyComparer<>).MakeGenericType(((LambdaExpression)keySelector).ReturnType)))),
-                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable order by"))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
                                      paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the enumerable group by"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'order by' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1626,7 +1633,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'order by' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1665,7 +1672,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the observable merge"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'merge' function.", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -1676,7 +1683,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'merge' function.", actualNode.NodeText), e);
             }
         }
 
@@ -1787,7 +1794,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                        Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener el valor del campo del mensaje, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the value of object"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the value of the object property " + actualNode.NodeText + ".", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -1799,7 +1806,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener el valor del mensaje", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the value of the object property " + actualNode.NodeText + ".", actualNode.NodeText), e);
             }
         }
 
@@ -1833,7 +1840,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la propiedad 'Message' del evento, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the message of the event"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the message of the event.", actualNode.NodeText), typeof(string)), paramException))
                                         )
                                     )
                                 )
@@ -1845,7 +1852,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener el mensaje del evento", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the Message of the event.", actualNode.NodeText), e);
             }
         }
 
@@ -1884,7 +1891,7 @@ namespace Integra.Space.Language.Runtime
                                 paramException,
                                 Expression.Block(
                                     Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la subsección de la subsección del mensaje, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                    Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the subfield " + actualNode.NodeText), typeof(string)), paramException))
+                                    Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the subfield " + actualNode.NodeText, actualNode.NodeText), typeof(string)), paramException))
                                 )
                             )
                         )
@@ -1893,7 +1900,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener la subsección de la subsección del mensaje", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the event sub-field " + actualNode.NodeText + ".", actualNode.NodeText), e);
             }
 
             return methodCall;
@@ -1933,7 +1940,7 @@ namespace Integra.Space.Language.Runtime
                                 paramException,
                                 Expression.Block(
                                     Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la subsección de la sección del mensaje, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                    Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the field " + actualNode.NodeText), typeof(string)), paramException))
+                                    Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the field " + actualNode.NodeText, actualNode.NodeText), typeof(string)), paramException))
                                 )
                             )
                         )
@@ -1944,7 +1951,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener la subsección de la sección del mensaje", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the event field " + actualNode.NodeText + ".", actualNode.NodeText), e);
             }
         }
 
@@ -1982,7 +1989,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la sección del objeto, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the part " + actualNode.NodeText), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error getting the part " + actualNode.NodeText, actualNode.NodeText), typeof(string)), paramException))
                                             )
                                 )
                             )
@@ -1993,7 +2000,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener la sección del mensaje", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the event part " + actualNode.NodeText + ".", actualNode.NodeText), e);
             }
         }
 
@@ -2058,7 +2065,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                         Expression.Block(
                                             Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue castear (unbox) el valor u objeto, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the unbox operation"), typeof(string)), paramException))
+                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the unbox operation", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                 )
                         )
@@ -2087,7 +2094,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                             Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue castear (convert) el valor u objeto, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the convert operation"), typeof(string)), paramException))
+                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the convert operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2097,8 +2104,7 @@ namespace Integra.Space.Language.Runtime
                 }
                 catch (Exception ex)
                 {
-                    resultExp = Expression.Constant(null);
-                    throw new CompilationException("Error al castear.", e);
+                    throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Invalid cast.", actualNode.NodeText), ex);
                 }
             }
 
@@ -2142,7 +2148,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación like '%...%', error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with two wildcards"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with two wildcards", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                     )
                                 )
@@ -2171,7 +2177,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación like '%..., error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with left wildcard"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with left wildcard", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                     )
                                 )
@@ -2200,7 +2206,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación like '...%, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with right wildcard"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation with right wildcard", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                     )
                                 )
@@ -2229,7 +2235,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación like sin comodines, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation without wildcards"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the like operation without wildcards", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                     )
                                 )
@@ -2242,7 +2248,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion 'like'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'like' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2275,7 +2281,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible negar la expresión de comparación, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the 'not' operation"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the 'not' operation", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                 )
                             ),
@@ -2288,7 +2294,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue compilar la expresion 'not'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'not' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2323,7 +2329,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación mayor o igual que '>=', error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the greater than or equal operation '>='"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the greater than or equal operation '>='", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2335,7 +2341,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '>='", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with greater than or equal '>=' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2370,7 +2376,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación mayor que '>', error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the greater than operation '>'"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the greater than operation '>'", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2382,7 +2388,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '>'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with greater than '>' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2417,7 +2423,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación menor o igual que '<=', error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the less than or equal operation '<='"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the less than or equal operation '<='", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2429,7 +2435,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '<='", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with less than or equal '<=' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2464,7 +2470,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible realizar la operación menor que '<', error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the less operation '<'"), typeof(string)), paramException))
+                                                Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the less operation '<'", actualNode.NodeText), typeof(string)), paramException))
                                             )
                                     )
                                 )
@@ -2476,7 +2482,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '<'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with less than '<' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2508,7 +2514,7 @@ namespace Integra.Space.Language.Runtime
                                 paramException,
                                 Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion de desigualdad en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the not equal operation '!='"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the not equal operation '!='", actualNode.NodeText), typeof(string)), paramException))
                                     )
                             )
                         ),
@@ -2519,7 +2525,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '!='", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with not equal '!=' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2551,7 +2557,7 @@ namespace Integra.Space.Language.Runtime
                                 paramException,
                                 Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion de igualdad en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the equal operation '=='"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the equal operation '=='", actualNode.NodeText), typeof(string)), paramException))
                                     )
                             )
                         ),
@@ -2562,7 +2568,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible compilar la expresion '=='", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with equal '==' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2601,7 +2607,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                          Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion aritmetica de resta '-' en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                         Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the substract operation '-' for timespan"), typeof(string)), paramException))
+                                         Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the substract operation '-' for timespan", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                     )
                                 )
@@ -2613,7 +2619,7 @@ namespace Integra.Space.Language.Runtime
                 }
                 catch (Exception e)
                 {
-                    return Expression.Constant(null);
+                    throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with substract '-' operation for timespan.", actualNode.NodeText), e);
                 }
             }
             else
@@ -2638,7 +2644,7 @@ namespace Integra.Space.Language.Runtime
                                         paramException,
                                         Expression.Block(
                                         Expression.Constant("Error con la expresion aritmetica de resta '-' en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the substract operation '-'"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the substract operation '-'", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                     )
                                 )
@@ -2650,7 +2656,7 @@ namespace Integra.Space.Language.Runtime
                 }
                 catch (Exception e)
                 {
-                    throw new CompilationException("Error al compilar la expresiones aritmetica de resta", e);
+                    throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with substract '-' operation.", actualNode.NodeText), e);
                 }
             }
         }
@@ -2695,7 +2701,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                             Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion aritmetica unaria de negacion '-' en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the negate operation '-'"), typeof(string)), paramException))
+                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the negate operation '-'", actualNode.NodeText), typeof(string)), paramException))
                                         )
                                 )
                             )
@@ -2707,7 +2713,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la expresion unaria de negacion", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with negate '-' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2741,7 +2747,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                      Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion booleana 'and' en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the and operation 'and'"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the and operation 'and'", actualNode.NodeText), typeof(string)), paramException))
                                 )
                                 )
                             ),
@@ -2754,7 +2760,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la expresion logica 'and'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'and' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2788,7 +2794,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error con la expresion booleana 'or' en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the or operation 'or'"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the or operation 'or'", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             ),
@@ -2801,7 +2807,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la expresion logica 'or'", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with 'or' operation.", actualNode.NodeText), e);
             }
         }
 
@@ -2842,7 +2848,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error al compilar la funcion '" + propiedad + "', no es posible obtener el valor solicitado. Error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get property of a date type operation"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get property of a date type operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2853,7 +2859,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la funcion '" + propiedad + "' para el valor especificado, por lo tanto no es posible obtener el valor solicitado. Error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText, e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with datetime or timespan '" + propiedad + "' function.", actualNode.NodeText), e);
             }
         }
 
@@ -2903,7 +2909,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la propiedad " + propiedad + ", error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get property operation"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get property operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2914,7 +2920,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la propiedad", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the property '" + propiedad + "'.", actualNode.NodeText), e);
             }
         }
 
@@ -2927,7 +2933,7 @@ namespace Integra.Space.Language.Runtime
         {
             if (this.groupExpression == null)
             {
-                throw new CompilationException("Error al llamar a 'Key', no existe group by en la consulta.");
+                throw new CompilationException("Cannot call 'key' variable without a group by expression.");
             }
 
             Type tipo = this.groupExpression.Type;
@@ -2955,7 +2961,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la propiedad " + propiedad + ", error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key operation"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -2966,7 +2972,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la propiedad '" + propiedad + "' del grupo", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the '" + propiedad + "' of 'group by'.", actualNode.NodeText), e);
             }
         }
 
@@ -3003,7 +3009,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                     Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener la propiedad " + propiedad + ", error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key property operation"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key property operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -3014,7 +3020,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar la propiedad", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get '" + propiedad + "' of 'group by'.", actualNode.NodeText), e);
             }
         }
 
@@ -3049,7 +3055,7 @@ namespace Integra.Space.Language.Runtime
                                     paramException,
                                        Expression.Block(
                                         Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue posible obtener el valor del campo del mensaje, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key property value operation"), typeof(string)), paramException))
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error with the get group key property value operation", actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
                             )
@@ -3061,7 +3067,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                throw new CompilationException("Error al compilar, no fue posible obtener el valor del mensaje", e);
+                throw new CompilationException(string.Format("Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Cannot get the value of one of the groups specified in 'group by' sentence.", actualNode.NodeText), e);
             }
         }
 
