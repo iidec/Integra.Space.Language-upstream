@@ -16,6 +16,15 @@
   <PropertyGroup>
     <NuProjPath Condition=" '$(NuProjPath)' == '' ">$(MSBuildExtensionsPath)\NuProj\</NuProjPath>
   </PropertyGroup>
+	<PropertyGroup>
+		<MyNuProjPath>$(MyCheckinRoot)packages\NuProj.0.9.2\tools\</MyNuProjPath>
+		<NuProjTargetsPath>$(MyNuProjPath)NuProj.targets</NuProjTargetsPath>
+		<!--
+    <NuProjTasksPath>$(MyNuProjPath)NuProj.Tasks.dll</NuProjTasksPath>
+    <NuGetToolPath>$(MyNuProjPath)</NuGetToolPath>
+    <NuGetToolExe>NuGet.exe</NuGetToolExe>
+    -->
+	</PropertyGroup>
   <Import Project="$(NuProjPath)\NuProj.props" Condition="Exists('$(NuProjPath)\NuProj.props')" />
   <PropertyGroup Label="Configuration">
     <Id>Integra.Space.Language.nupkg</Id>
@@ -40,8 +49,9 @@
   <Import Project="$(NuProjPath)\NuProj.targets" />
   <!--
   Esta tarea copia la salida de la creación del paquete nuget hacia la fuente de paquetes local.
-  -->
+  
   <Target Name="UserAfterBuild" AfterTargets="Build">
 	<Exec Command="copy $(TargetDir)\*.* c:\" />
   </Target>
+  -->
 </Project>
