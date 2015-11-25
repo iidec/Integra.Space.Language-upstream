@@ -77,7 +77,7 @@ namespace Integra.Space.LanguageUnitTests
                     new MessageField(37, "RetrievalReferenceNumber") { Value = "412815212868" },
                     new MessageField(41, "CardAcceptorTerminalIdentification") { Value = "2906    " },
                     new MessageField(42, "CardAcceptorIdentificationCode") { Value = "Shell El Rodeo " },
-                    new MessageField(43, "CardAcceptorNameLocation") { Value = "Shell El Rodeo2GUATEMALA    GT" },
+                    new MessageField(43, "CardAcceptorNameLocation") { Value = "Shell El Rodeo2HONDURAS     HN" },
                     new MessageField(49, "TransactionCurrencyCode") { Value = "320" },
                     new MessageField(102, "AccountIdentification1") { Value = "00001613000000000001" },
                     new MessageField(103, "Campo103")

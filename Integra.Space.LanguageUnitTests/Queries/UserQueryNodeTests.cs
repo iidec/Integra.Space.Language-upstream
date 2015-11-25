@@ -924,7 +924,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2GUATEMALA    GT", Sumatoria = 2m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2HONDURAS     HN", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -1116,7 +1116,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2GUATEMALA    GT", Sumatoria = 2m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2HONDURAS     HN", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -1586,7 +1586,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2GUATEMALA    GT", Sumatoria = 2m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2HONDURAS     HN", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -1778,7 +1778,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2GUATEMALA    GT", Sumatoria = 2m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo2HONDURAS     HN", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -2732,6 +2732,174 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             Assert.AreEqual<string>(command, plan.First().NodeText);
+        }
+
+        [TestMethod]
+        public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByAsc()
+        {
+            EQLPublicParser parser = new EQLPublicParser(
+                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.Body.#43 != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
+                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "pais",
+                                                                                            "count()")
+                                                                                            );
+            List<PlanNode> plan = parser.Parse();
+
+            ObservableConstructor te = new ObservableConstructor();
+            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+
+            TestScheduler scheduler = new TestScheduler();
+
+            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
+
+            ITestableObserver<object> results = scheduler.Start(
+                () => result(input.AsQbservable())
+                .Select(x =>
+                    (object)(new
+                    {
+                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
+                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
+                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
+                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                    })
+                ),
+                created: 10,
+                subscribed: 50,
+                disposed: 400);
+
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { pais1 = "GT", conteo1 = 3, pais2 = "HN", conteo2 = 5 }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
+                });
+
+            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
+                    new Subscription(50, 200)
+                });
+        }
+
+        [TestMethod]
+        public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderBy()
+        {
+            EQLPublicParser parser = new EQLPublicParser(
+                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.Body.#43 != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
+                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "pais",
+                                                                                            "count()")
+                                                                                            );
+            List<PlanNode> plan = parser.Parse();
+
+            ObservableConstructor te = new ObservableConstructor();
+            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+
+            TestScheduler scheduler = new TestScheduler();
+
+            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
+
+            ITestableObserver<object> results = scheduler.Start(
+                () => result(input.AsQbservable())
+                .Select(x =>
+                    (object)(new
+                    {
+                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
+                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
+                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
+                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                    })
+                ),
+                created: 10,
+                subscribed: 50,
+                disposed: 400);
+
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { pais1 = "GT", conteo1 = 3, pais2 = "HN", conteo2 = 5 }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
+                });
+
+            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
+                    new Subscription(50, 200)
+                });
+        }
+
+        [TestMethod]
+        public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDesc()
+        {
+            EQLPublicParser parser = new EQLPublicParser(
+                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.Body.#43 != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
+                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "pais",
+                                                                                            "count()")
+                                                                                            );
+            List<PlanNode> plan = parser.Parse();
+
+            ObservableConstructor te = new ObservableConstructor();
+            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+
+            TestScheduler scheduler = new TestScheduler();
+
+            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
+
+            ITestableObserver<object> results = scheduler.Start(
+                () => result(input.AsQbservable())
+                .Select(x =>
+                    (object)(new
+                    {
+                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
+                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
+                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
+                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                    })
+                ),
+                created: 10,
+                subscribed: 50,
+                disposed: 400);
+
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { pais1 = "HN", conteo1 = 5, pais2 = "GT", conteo2 = 3 }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
+                });
+
+            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
+                    new Subscription(50, 200)
+                });
         }
     }
 }
