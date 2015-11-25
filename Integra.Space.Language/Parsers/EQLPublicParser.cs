@@ -56,6 +56,10 @@ namespace Integra.Space.Language
                     nodes = (List<PlanNode>)app.Evaluate(parseTree);
                 }
             }
+            catch (SyntaxException e)
+            {
+                throw e;
+            }
             catch (System.Exception e)
             {
                 throw new ParseException(Resources.SR.InterpretationException, e);

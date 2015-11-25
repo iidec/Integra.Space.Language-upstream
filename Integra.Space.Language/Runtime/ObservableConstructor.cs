@@ -512,6 +512,9 @@ namespace Integra.Space.Language.Runtime
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
+                          Expression.IfThenElse(
+                            Expression.Equal(incomingObservable, Expression.Constant(null)),
+                            Expression.Assign(param, Expression.Default(typeof(string))),
                               Expression.TryCatch(
                                   Expression.Block(
                                       Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'left' function"))),
@@ -526,6 +529,7 @@ namespace Integra.Space.Language.Runtime
                                           Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'left' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
+                              )
                               ),
                           param
                           );
@@ -564,6 +568,9 @@ namespace Integra.Space.Language.Runtime
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
+                          Expression.IfThenElse(
+                            Expression.Equal(incomingObservable, Expression.Constant(null)),
+                            Expression.Assign(param, Expression.Default(typeof(string))),
                               Expression.TryCatch(
                                   Expression.Block(
                                       Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'right' function"))),
@@ -578,6 +585,7 @@ namespace Integra.Space.Language.Runtime
                                           Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'right' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
+                              )
                               ),
                           param
                           );
@@ -613,6 +621,9 @@ namespace Integra.Space.Language.Runtime
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
+                          Expression.IfThenElse(
+                            Expression.Equal(incomingObservable, Expression.Constant(null)),
+                            Expression.Assign(param, Expression.Default(typeof(string))),
                               Expression.TryCatch(
                                   Expression.Block(
                                       Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'upper' function"))),
@@ -627,6 +638,7 @@ namespace Integra.Space.Language.Runtime
                                           Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'upper' function", actualNode.NodeText), typeof(string)), paramException))
                                       )
                                   )
+                              )
                               ),
                           param
                           );
@@ -662,21 +674,25 @@ namespace Integra.Space.Language.Runtime
                 Expression tryCatchExpr =
                       Expression.Block(
                           new[] { param },
-                              Expression.TryCatch(
-                                  Expression.Block(
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'lower' function"))),
-                                      Expression.Assign(param, Expression.Call(incomingObservable, method)),
-                                      Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'lower' function"))),
-                                      Expression.Empty()
-                                      ),
-                                  Expression.Catch(
-                                      paramException,
-                                       Expression.Block(
-                                          Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
-                                          Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'lower' function", actualNode.NodeText), typeof(string)), paramException))
-                                      )
-                                  )
-                              ),
+                          Expression.IfThenElse(
+                            Expression.Equal(incomingObservable, Expression.Constant(null)),
+                            Expression.Assign(param, Expression.Default(typeof(string))),
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'lower' function"))),
+                                    Expression.Assign(param, Expression.Call(incomingObservable, method)),
+                                    Expression.IfThen(Expression.Constant(this.printLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'lower' function"))),
+                                    Expression.Empty()
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                    Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(string.Format("RuntimeException: Line: {0}, Column: {1}, Near to: {3}, Description: {2}.", actualNode.Line, actualNode.Column, "Error in 'lower' function", actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            )
+                            ),
                           param
                           );
 
