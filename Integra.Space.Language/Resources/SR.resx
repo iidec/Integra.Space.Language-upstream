@@ -147,6 +147,9 @@
   <data name="BodyRole" xml:space="preserve">
     <value>Body</value>
   </data>
+  <data name="CompilationError" xml:space="preserve">
+    <value>CompilationException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}</value>
+  </data>
   <data name="DataTypeProperty" xml:space="preserve">
     <value>DataType</value>
   </data>
@@ -242,6 +245,9 @@
   </data>
   <data name="RoleObject" xml:space="preserve">
     <value>role</value>
+  </data>
+  <data name="RuntimeError" xml:space="preserve">
+    <value>RuntimeException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}</value>
   </data>
   <data name="SecureObjectNameRole" xml:space="preserve">
     <value>SecureObjectName</value>

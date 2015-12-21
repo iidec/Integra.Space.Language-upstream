@@ -92,30 +92,16 @@ namespace Integra.Space.Language.Analysis
 
             if (node.Children != null)
             {
-                if (node.Children.Count >= 1)
+                foreach(PlanNode child in node.Children)
                 {
                     int numLeft = ++this.nodeCount;
-                    PlanNode left = node.Children[0];
-                    
+
                     if (second)
                     {
-                        b.AppendFormat("{0}:f0 -> {1}:f0 {2}", node.NodeType.ToString() + "_" + numRoot, left.NodeType.ToString() + "_" + numLeft, Environment.NewLine);
+                        b.AppendFormat("{0}:f0 -> {1}:f0 {2}", node.NodeType.ToString() + "_" + numRoot, child.NodeType.ToString() + "_" + numLeft, Environment.NewLine);
                     }
 
-                    b.Append(ToDot(left, second));
-                }
-
-                if (node.Children.Count >= 2)
-                {
-                    int numRight = ++this.nodeCount;
-                    PlanNode right = node.Children[1];
-                                        
-                    if (second)
-                    {
-                        b.AppendFormat("{0}:f0 -> {1}:f0 {2}", node.NodeType.ToString() + "_" + numRoot, right.NodeType.ToString() + "_" + numRight, Environment.NewLine);
-                    }
-
-                    b.Append(ToDot(right, second));
+                    b.Append(ToDot(child, second));
                 }
             }
 

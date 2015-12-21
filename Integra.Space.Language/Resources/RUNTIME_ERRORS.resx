@@ -1,0 +1,302 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="RE1" xml:space="preserve">
+    <value>"Error in 'left' function"</value>
+    <comment>Método CreateStringLeftFunction</comment>
+  </data>
+  <data name="RE10" xml:space="preserve">
+    <value>"Error in 'right' function"</value>
+    <comment>CreateStringRightFunction</comment>
+  </data>
+  <data name="RE11" xml:space="preserve">
+    <value>"Error in 'upper' function"</value>
+    <comment>CreateStringUpperFunction</comment>
+  </data>
+  <data name="RE12" xml:space="preserve">
+    <value>"Error in 'lower' function"</value>
+    <comment>CreateStringLowerFunction</comment>
+  </data>
+  <data name="RE13" xml:space="preserve">
+    <value>"Error in 'count' function"</value>
+    <comment>CreateEnumerableCount</comment>
+  </data>
+  <data name="RE14" xml:space="preserve">
+    <value>"Error in 'sum' function"</value>
+    <comment>CreateEnumerableSum</comment>
+  </data>
+  <data name="RE15" xml:space="preserve">
+    <value>"Error with 'apply window of' function."</value>
+    <comment>CreateObservableBuffer</comment>
+  </data>
+  <data name="RE16" xml:space="preserve">
+    <value>"Error with 'top' function."</value>
+    <comment>CreateObservableTake</comment>
+  </data>
+  <data name="RE17" xml:space="preserve">
+    <value>"Error with 'top' function."</value>
+    <comment>CreateEnumerableTake</comment>
+  </data>
+  <data name="RE18" xml:space="preserve">
+    <value>"Error with observable buffer with time and size"</value>
+    <comment>CreateObservableBufferTimeAndSize</comment>
+  </data>
+  <data name="RE19" xml:space="preserve">
+    <value>"Error with 'where' function."</value>
+    <comment>CreateObservableWhere</comment>
+  </data>
+  <data name="RE2" xml:space="preserve">
+    <value>"Error with 'select' function."</value>
+    <comment>CreateSelectForObservableGroupBy</comment>
+  </data>
+  <data name="RE20" xml:space="preserve">
+    <value>"Error with 'select' function."</value>
+    <comment>CreateSelectForEnumerableGroupBy</comment>
+  </data>
+  <data name="RE21" xml:space="preserve">
+    <value>"Error with 'select' function."</value>
+    <comment> CreateSelectForObservableBufferOrSource creando un lambda en la proyección</comment>
+  </data>
+  <data name="RE22" xml:space="preserve">
+    <value>"Error with 'select' function."</value>
+    <comment>CreateSelectForObservableBufferOrSource con una expresion en la proyección </comment>
+  </data>
+  <data name="RE23" xml:space="preserve">
+    <value>"Error with 'select' function."</value>
+    <comment>CreateSelectForEnumerable</comment>
+  </data>
+  <data name="RE24" xml:space="preserve">
+    <value>"Error with 'group by' function."</value>
+    <comment>CreateObservableGroupBy</comment>
+  </data>
+  <data name="RE25" xml:space="preserve">
+    <value>"Error with 'group by' function."</value>
+    <comment>CreateEnumerableGroupBy</comment>
+  </data>
+  <data name="RE26" xml:space="preserve">
+    <value>"Error with 'order by' function."</value>
+    <comment>CreateEnumerableOrderBy</comment>
+  </data>
+  <data name="RE27" xml:space="preserve">
+    <value>"Error with 'merge' function."</value>
+    <comment>CreateObservableMerge</comment>
+  </data>
+  <data name="RE28" xml:space="preserve">
+    <value>"Cannot get the value of the object property {0}.</value>
+  </data>
+  <data name="RE29" xml:space="preserve">
+    <value>"Error with the message of the event."</value>
+  </data>
+  <data name="RE3" xml:space="preserve">
+    <value>"Error getting the subfield {0}.</value>
+  </data>
+  <data name="RE30" xml:space="preserve">
+    <value>"Error getting the field {0}.</value>
+  </data>
+  <data name="RE31" xml:space="preserve">
+    <value>"Error getting the part {0}.</value>
+  </data>
+  <data name="RE32" xml:space="preserve">
+    <value>"Error with the unbox operation"</value>
+  </data>
+  <data name="RE33" xml:space="preserve">
+    <value>"Error with the convert operation"</value>
+  </data>
+  <data name="RE34" xml:space="preserve">
+    <value>"Error with the like operation with two wildcards"</value>
+  </data>
+  <data name="RE35" xml:space="preserve">
+    <value>"Error with the like operation with left wildcard"</value>
+  </data>
+  <data name="RE36" xml:space="preserve">
+    <value>"Error with the like operation with right wildcard"</value>
+  </data>
+  <data name="RE37" xml:space="preserve">
+    <value>"Error with the like operation without wildcards"</value>
+  </data>
+  <data name="RE38" xml:space="preserve">
+    <value>"Error with the 'not' operation"</value>
+  </data>
+  <data name="RE39" xml:space="preserve">
+    <value>"Error with the greater than or equal operation '&gt;='"</value>
+  </data>
+  <data name="RE4" xml:space="preserve">
+    <value>"Error with the greater than operation '&gt;'"</value>
+  </data>
+  <data name="RE40" xml:space="preserve">
+    <value>"Error with the less than or equal operation '&lt;='"</value>
+  </data>
+  <data name="RE41" xml:space="preserve">
+    <value>"Error with the less operation '&lt;'"</value>
+  </data>
+  <data name="RE42" xml:space="preserve">
+    <value>"Error with the not equal operation '!='"</value>
+  </data>
+  <data name="RE43" xml:space="preserve">
+    <value>"Error with the equal operation '=='"</value>
+  </data>
+  <data name="RE44" xml:space="preserve">
+    <value>"Error with the substract operation '-' for timespan"</value>
+  </data>
+  <data name="RE45" xml:space="preserve">
+    <value>"Error with the substract operation '-'"</value>
+  </data>
+  <data name="RE46" xml:space="preserve">
+    <value>"Error with the negate operation '-'"</value>
+  </data>
+  <data name="RE47" xml:space="preserve">
+    <value>"Error with the and operation 'and'"</value>
+  </data>
+  <data name="RE48" xml:space="preserve">
+    <value>"Error with the or operation 'or'"</value>
+  </data>
+  <data name="RE49" xml:space="preserve">
+    <value>"Error with the get property of a date type operation"</value>
+  </data>
+  <data name="RE5" xml:space="preserve">
+    <value>"Error with the get property operation"</value>
+  </data>
+  <data name="RE50" xml:space="preserve">
+    <value>"Error with the get group key operation"</value>
+  </data>
+  <data name="RE51" xml:space="preserve">
+    <value>"Error with the get group key property operation"</value>
+  </data>
+  <data name="RE52" xml:space="preserve">
+    <value>"Error with the get group key property value operation"</value>
+  </data>
+  <data name="RE53" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RE54" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RE6" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RE7" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RE8" xml:space="preserve">
+    <value />
+  </data>
+  <data name="RE9" xml:space="preserve">
+    <value />
+  </data>
+</root>

@@ -151,6 +151,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CompilationException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}.
+        /// </summary>
+        internal static string CompilationError {
+            get {
+                return ResourceManager.GetString("CompilationError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to DataType.
         /// </summary>
         internal static string DataTypeProperty {
@@ -435,6 +444,15 @@ namespace Integra.Space.Language {
         internal static string RoleObject {
             get {
                 return ResourceManager.GetString("RoleObject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RuntimeException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}.
+        /// </summary>
+        internal static string RuntimeError {
+            get {
+                return ResourceManager.GetString("RuntimeError", resourceCulture);
             }
         }
         

@@ -104,6 +104,21 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	CompilationException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}
+		/// </summary>
+		public static string CompilationError(object arg0, object arg1, object arg3, object arg2)
+		{
+			return string.Format(global::Integra.Space.Language.SR.CompilationError, new object[]
+			{
+				arg0,
+				arg1,
+				arg3,
+				arg2,
+			});
+		}
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	DataType
 		/// </summary>
 		public static string DataTypeProperty { get { return global::Integra.Space.Language.SR.DataTypeProperty; } }
@@ -319,6 +334,21 @@ namespace Integra.Space.Language.Resources
 		///	role
 		/// </summary>
 		public static string RoleObject { get { return global::Integra.Space.Language.SR.RoleObject; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RuntimeException: Line: {0}, Column: {1}, Instruction: {3}, Error: {2}
+		/// </summary>
+		public static string RuntimeError(object arg0, object arg1, object arg3, object arg2)
+		{
+			return string.Format(global::Integra.Space.Language.SR.RuntimeError, new object[]
+			{
+				arg0,
+				arg1,
+				arg3,
+				arg2,
+			});
+		}
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

@@ -42,6 +42,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Irony")]
 [assembly: InternalsVisibleTo("Irony.Interpreter")]
 [assembly: InternalsVisibleTo("Integra.Space.LanguageUnitTests")]
+[assembly: InternalsVisibleTo("Integra.Space.Language.Analysis")]
 [assembly: InternalsVisibleTo("Integra.Space.Services")]
 [assembly: InternalsVisibleTo("ET_Test")]
 [assembly: InternalsVisibleTo("ConsoleApplication1")]
