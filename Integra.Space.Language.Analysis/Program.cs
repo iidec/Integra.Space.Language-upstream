@@ -39,7 +39,7 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating graph...");
 
-                    string fileName = DateTime.Now.ToString("yyyy_mm_dd hh_mm_ss");
+                    string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
                     TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
                     tgg.GenerateGraph(plan.First());
 
