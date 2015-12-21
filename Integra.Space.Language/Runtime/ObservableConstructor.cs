@@ -485,6 +485,10 @@ namespace Integra.Space.Language.Runtime
                     this.groupExpression = this.scopeParam.Peek();
                 }
             }
+            else
+            {
+                this.scopeParam.Push(Expression.Parameter(incomingObservable.Type));
+            }
         }
 
         /// <summary>
