@@ -56,14 +56,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EventAdapter.cs" />
-    <Compile Include="EventAgent.cs" />
-    <Compile Include="EventObject.cs" />
-    <Compile Include="EventPropertiesEnum.cs" />
-    <Compile Include="EventResult.cs" />
+    <Compile Include="Event\EventAdapter.cs" />
+    <Compile Include="Event\EventAgent.cs" />
+    <Compile Include="Event\EventObject.cs" />
+    <Compile Include="Enum\EventPropertiesEnum.cs" />
+    <Compile Include="Event\EventResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SpaceExceptionTypeEnum.cs" />
-    <Compile Include="SpaceResultTypeEnum.cs" />
+    <Compile Include="Query\QueryResult.cs" />
+    <Compile Include="Query\Serialization\IQueryResultSerializable.cs" />
+    <Compile Include="Query\Serialization\IQueryResultWriter.cs" />
+    <Compile Include="Enum\SpaceExceptionTypeEnum.cs" />
+    <Compile Include="Enum\SpaceResultTypeEnum.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

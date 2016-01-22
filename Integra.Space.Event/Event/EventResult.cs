@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="EventResult.cs" company="Ingetra.Vision.Event">
-//     Copyright (c) Ingetra.Vision.Event. All rights reserved.
+// <copyright file="EventResult.cs" company="Ingetra.Space.Event">
+//     Copyright (c) Ingetra.Space.Event. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space.Event
