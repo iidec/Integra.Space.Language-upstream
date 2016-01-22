@@ -10,6 +10,7 @@ using Integra.Space.Language.Runtime;
 using System.Collections.Generic;
 using System.Dynamic;
 using Integra.Space.Language.Exceptions;
+using System.Reactive.Subjects;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
@@ -115,7 +116,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1139,14 +1140,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
+            
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                // new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1170,7 +1171,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
                     new Subscription(50, 200)
-                });
+                });                
         }
 
         [TestMethod]
@@ -1513,7 +1514,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1849,7 +1850,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1945,7 +1946,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2534,7 +2535,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 );
                 List<PlanNode> plan = parser.Parse();
 
-                ObservableConstructor te = new ObservableConstructor();
+                ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
                 Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
                 Assert.Inconclusive();

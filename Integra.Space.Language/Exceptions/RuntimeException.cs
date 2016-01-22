@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="RuntimeException.cs" company="Ingetra.Vision.Language">
-//     Copyright (c) Ingetra.Vision.Language. All rights reserved.
+// <copyright file="RuntimeException.cs" company="Ingetra.Space.Language">
+//     Copyright (c) Ingetra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.Exceptions

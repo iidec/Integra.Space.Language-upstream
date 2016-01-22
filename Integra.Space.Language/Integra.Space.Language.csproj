@@ -167,8 +167,10 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
+    <Compile Include="Runtime\CompileContext.cs" />
     <Compile Include="Runtime\ConstructionValidator.cs" />
     <Compile Include="Runtime\GroupByKeyComparer.cs" />
+    <Compile Include="Scheduler\IQuerySchedulerFactory.cs" />
     <Compile Include="Runtime\LanguageTypeBuilder.cs">
       <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
     </Compile>

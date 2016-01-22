@@ -48,6 +48,18 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Analysis\TreeGraphGenerator.cs" />
+    <Compile Include="CodeDomExpressionVisitor.cs" />
+    <Compile Include="Metadata\MetadataEnums\AgregationFunctionsEnum.cs" />
+    <Compile Include="Metadata\MetadataGenerator.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLAgregationFunction.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLGroupByColumnMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLGroupByMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLOrderByColumnMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLOrderByMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLQueryMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLSelectColumnMetadata.cs" />
+    <Compile Include="Metadata\MetadataNodes\EQLSelectMetadata.cs" />
+    <Compile Include="NodesFinder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

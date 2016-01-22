@@ -217,29 +217,29 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true == true select true as resultado");
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, Scheduler = new TestSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            ITestableObservable<EventObject> input = scheduler.CreateColdObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                new Recorded<Notification<EventObject>>(2000, Notification.CreateOnCompleted<EventObject>())
                 );
 
             ITestableObserver<bool> results = scheduler.Start(
                 () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
                 created: 10,
                 subscribed: 50,
-                disposed: 400);
-
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+                disposed: 4000);
+            
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded <Notification<bool>>[] {
+                    new Recorded<Notification<bool>>(150, Notification.CreateOnNext(true)),
+                    new Recorded<Notification<bool>>(2050, Notification.CreateOnCompleted<bool>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
+                    new Subscription(50, 2050)
                 });
         }
 
@@ -249,7 +249,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '01/01/2014' == '01/01/2014' select true as resultado");
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -633,7 +633,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where null == null select true as resultado");
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -665,7 +665,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.#103.[\"Campo que no existe\"] == null select true as resultado");
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();

@@ -587,6 +587,11 @@ namespace Integra.Space.Language
         /// Enumerable take type
         /// </summary>
         ObservableTake = 515,
+
+        /// <summary>
+        /// Observable select for event lock type
+        /// </summary>
+        ObservableWhereForEventLock = 516,
                         
         /// <summary>
         /// Enumerable count type
@@ -637,6 +642,11 @@ namespace Integra.Space.Language
         /// Enumerable take type
         /// </summary>
         EnumerableTake = 622,
+
+        /// <summary>
+        /// Enumerable to list type
+        /// </summary>
+        EnumerableToList = 623,
 
         /// <summary>
         /// New Scope type
