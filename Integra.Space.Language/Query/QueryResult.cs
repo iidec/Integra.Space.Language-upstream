@@ -3,9 +3,9 @@
 //     Copyright (c) Ingetra.Space.Event. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Query
+namespace Integra.Space
 {
-    using Integra.Space.Event;
+    using System;
 
     /// <summary>
     /// Query result class

@@ -3,7 +3,7 @@
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.Scheduler
+namespace Integra.Space
 {
     using System.Reactive.Concurrency;
 

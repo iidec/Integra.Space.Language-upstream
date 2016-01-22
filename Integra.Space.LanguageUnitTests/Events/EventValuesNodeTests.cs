@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using Integra.Space.Language.Runtime;
-using Integra.Space.Event;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using Microsoft.Reactive.Testing;

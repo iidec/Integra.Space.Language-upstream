@@ -5,8 +5,6 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.Runtime
 {
-    using Integra.Space.Language.Scheduler;
-
     /// <summary>
     /// Space compile context
     /// </summary>

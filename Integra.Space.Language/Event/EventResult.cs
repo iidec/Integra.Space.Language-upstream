@@ -3,7 +3,7 @@
 //     Copyright (c) Ingetra.Space.Event. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Event
+namespace Integra.Space
 {
     using System;
 
@@ -24,8 +24,8 @@ namespace Integra.Space.Event
         public EventResult(DateTime eventDateTime)
         {
             this.eventDateTime = eventDateTime;
-        }   
-        
+        }
+
         /// <summary>
         /// Gets the date and time the event was processed.
         /// </summary>
@@ -35,6 +35,6 @@ namespace Integra.Space.Event
             {
                 return this.eventDateTime;
             }
-        }  
+        }
     }
 }

@@ -3,14 +3,11 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using System.Reactive.Linq;
-using Integra.Space.Event;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
 using Integra.Space.Language.Runtime;
 using System.Collections.Generic;
-using System.Dynamic;
 using Integra.Space.Language.Exceptions;
-using System.Reactive.Subjects;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {

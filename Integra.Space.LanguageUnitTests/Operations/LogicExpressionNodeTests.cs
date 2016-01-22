@@ -5,7 +5,6 @@ using Integra.Space.Language;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
-using Integra.Space.Event;
 using Integra.Space.Language.Runtime;
 using System.Collections.Generic;
 

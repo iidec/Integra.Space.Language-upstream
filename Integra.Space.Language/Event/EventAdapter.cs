@@ -3,7 +3,7 @@
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Event
+namespace Integra.Space
 {
     using System;
 

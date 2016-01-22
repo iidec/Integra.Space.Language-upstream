@@ -3,7 +3,7 @@
 //     Copyright (c) Ingetra.Space.Event. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Query.Serialization
+namespace Integra.Space
 {
     /// <summary>
     /// Query Result Serializable.

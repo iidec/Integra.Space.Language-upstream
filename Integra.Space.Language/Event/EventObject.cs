@@ -3,7 +3,7 @@
 //     Copyright (c) Ingetra.Vision.EventObject. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Event
+namespace Integra.Space
 {
     using System;
     using System.Collections.Generic;

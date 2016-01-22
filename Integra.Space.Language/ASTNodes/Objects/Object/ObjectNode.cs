@@ -7,7 +7,6 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
 {
     using System.Collections.Generic;
     using System.Linq;
-    using Integra.Space.Event;
     using Integra.Space.Language.ASTNodes.Base;
     using Integra.Space.Language.Resources;
     using Irony.Ast;

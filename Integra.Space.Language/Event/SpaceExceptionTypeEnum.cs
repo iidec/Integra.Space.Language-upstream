@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Integra.Space.Event
+namespace Integra.Space
 {
     /// <summary>
     /// Space exception type enumerable

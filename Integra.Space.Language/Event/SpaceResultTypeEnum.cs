@@ -3,7 +3,7 @@
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Event
+namespace Integra.Space
 {
     /// <summary>
     /// Space result enumerable

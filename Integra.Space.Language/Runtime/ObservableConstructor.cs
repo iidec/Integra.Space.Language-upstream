@@ -11,12 +11,9 @@ namespace Integra.Space.Language.Runtime
     using System.Linq;
     using System.Linq.Expressions;
     using System.Reactive.Linq;
-    using System.Reactive.Subjects;
     using System.Reflection;
     using Exceptions;
-    using Integra.Space.Event;
     using Messaging;
-    using Scheduler;
 
     /// <summary>
     /// Observable constructor class

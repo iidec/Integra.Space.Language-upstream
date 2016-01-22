@@ -9,7 +9,6 @@ using Microsoft.Reactive.Testing;
 using System.Reactive;
 using System.Reactive.Linq;
 using Integra.Space.Language.Runtime;
-using Integra.Space.Event;
 
 namespace Integra.Space.LanguageUnitTests.Operations
 {
