@@ -121,10 +121,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Integra.Space.Event\Integra.Space.Event.csproj">
-      <Project>{38abf8b4-fc77-4ffc-96a2-1ee03bd22056}</Project>
-      <Name>Integra.Space.Event</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Integra.Space.Language\Integra.Space.Language.csproj">
       <Project>{6d4d259b-281f-454f-9b47-4ce2d108ba6a}</Project>
       <Name>Integra.Space.Language</Name>
