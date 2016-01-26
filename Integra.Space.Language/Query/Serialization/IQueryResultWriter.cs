@@ -13,6 +13,26 @@ namespace Integra.Space
     public interface IQueryResultWriter
     {
         /// <summary>
+        /// Doc goes here
+        /// </summary>
+        void WriteStartQueryResult();
+
+        /// <summary>
+        /// Doc goes here
+        /// </summary>
+        void WriteEndQueryResult();
+
+        /// <summary>
+        /// Doc goes here
+        /// </summary>
+        void WriteStartQueryResultRow();
+
+        /// <summary>
+        /// Doc goes here
+        /// </summary>
+        void WriteEndQueryResultRow();
+
+        /// <summary>
         /// Serialize a byte[] value.
         /// </summary>
         /// <param name="value">Value to serialize.</param>

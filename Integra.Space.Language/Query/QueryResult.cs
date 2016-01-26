@@ -11,13 +11,13 @@ namespace Integra.Space
     /// Query result class
     /// </summary>
     /// <typeparam name="T">Event result type</typeparam>
-    public class QueryResult<T> where T : EventResult
+    public class QueryResult<T> : IQueryResultSerializable where T : EventResult
     {
         /// <summary>
         /// Query identifier
         /// </summary>
         private string queryId;
-
+        
         /// <summary>
         /// Query result, contains a set of <see cref="EventResult"/> objects
         /// </summary>
@@ -54,6 +54,15 @@ namespace Integra.Space
             {
                 return this.result;
             }
+        }
+
+        /// <summary>
+        /// Serialize the query identifier/name
+        /// </summary>
+        /// <param name="writer">Query Result Writer</param>
+        public virtual void Serialize(IQueryResultWriter writer)
+        {
+            writer.WriteValue(string.Format("{{ \"id\": \"{0}\"}}", this.queryId));
         }
     }
 }
