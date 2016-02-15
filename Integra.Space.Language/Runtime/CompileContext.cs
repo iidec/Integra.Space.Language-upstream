@@ -14,7 +14,7 @@ namespace Integra.Space.Language.Runtime
         /// Query name
         /// </summary>
         private string queryName;
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether the print log is activated
         /// </summary>
@@ -44,6 +44,6 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Gets or sets the space scheduler
         /// </summary>
-        public IQuerySchedulerFactory Scheduler { get; set; }        
+        public IQuerySchedulerFactory Scheduler { get; set; }
     }
 }

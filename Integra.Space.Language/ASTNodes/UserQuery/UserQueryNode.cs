@@ -244,7 +244,31 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             this.EndEvaluate(thread);
 
-            return this.result;
+            /* ******************************************************************************************************************************************************** */
+            PlanNode scopeFinalResult = new PlanNode();
+            scopeFinalResult.NodeType = PlanNodeTypeEnum.NewScope;
+            scopeFinalResult.Children = new List<PlanNode>();
+
+            scopeFinalResult.Children.Add(this.result);
+
+            PlanNode fromForLambda = new PlanNode();
+            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+
+            PlanNode lambdaForResult = new PlanNode();
+            lambdaForResult.NodeType = PlanNodeTypeEnum.SelectForResultProjection;
+            lambdaForResult.Children = new List<PlanNode>();
+
+            lambdaForResult.Children.Add(fromForLambda);
+
+            PlanNode finalResult = new PlanNode();
+            finalResult.NodeType = PlanNodeTypeEnum.SelectForResult;
+            finalResult.NodeText = this.result.NodeText;
+            finalResult.Children = new List<PlanNode>();
+
+            finalResult.Children.Add(scopeFinalResult);
+            finalResult.Children.Add(lambdaForResult);
+
+            return finalResult;
         }
 
         /// <summary>

@@ -115,6 +115,10 @@
     <Compile Include="TestObjects.cs" />
     <Compile Include="Events\EventValuesNodeTests.cs" />
     <Compile Include="TestSchedulerFactory.cs" />
+    <Compile Include="TypeBuilder\EventResultABC.cs" />
+    <Compile Include="TypeBuilder\QueryResultABC.cs" />
+    <Compile Include="TypeBuilder\QueryResultWriter.cs" />
+    <Compile Include="TypeBuilder\UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

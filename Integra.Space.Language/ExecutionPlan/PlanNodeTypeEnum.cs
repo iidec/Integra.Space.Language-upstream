@@ -657,5 +657,15 @@ namespace Integra.Space.Language
         /// Projection of constants type, projection for group by, this does not create a lambda expression
         /// </summary>
         ProjectionOfConstants = 701,
+
+        /// <summary>
+        /// Select for the query result
+        /// </summary>
+        SelectForResult = 702,
+
+        /// <summary>
+        /// Projection for the query result select
+        /// </summary>
+        SelectForResultProjection = 703
     }
 }

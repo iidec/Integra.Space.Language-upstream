@@ -17,7 +17,12 @@ namespace Integra.Space
         /// Query identifier
         /// </summary>
         private string queryId;
-        
+
+        /// <summary>
+        /// Date and time the events were processed.
+        /// </summary>
+        private DateTime queryDateTime;
+
         /// <summary>
         /// Query result, contains a set of <see cref="EventResult"/> objects
         /// </summary>
@@ -27,11 +32,24 @@ namespace Integra.Space
         /// Initializes a new instance of the <see cref="QueryResult{T}"/> class.
         /// </summary>
         /// <param name="queryId">Query identifier</param>
+        /// <param name="queryDateTime">Date and time the event were processed.</param>
         /// <param name="result">Array of event results.</param>
-        public QueryResult(string queryId, T[] result)
+        public QueryResult(string queryId, DateTime queryDateTime, T[] result)
         {
             this.queryId = queryId;
+            this.queryDateTime = queryDateTime;
             this.result = result;
+        }
+
+        /// <summary>
+        /// Gets the format version of the query result.
+        /// </summary>
+        public byte FormatVersion
+        {
+            get
+            {
+                return 1;
+            }
         }
 
         /// <summary>
@@ -42,6 +60,17 @@ namespace Integra.Space
             get
             {
                 return this.queryId;
+            }
+        }
+
+        /// <summary>
+        /// Gets the date and time the event were processed.
+        /// </summary>
+        public DateTime QueryDatetime
+        {
+            get
+            {
+                return this.queryDateTime;
             }
         }
 
@@ -57,12 +86,23 @@ namespace Integra.Space
         }
 
         /// <summary>
-        /// Serialize the query identifier/name
+        /// Serialize the query identifier/name.
         /// </summary>
         /// <param name="writer">Query Result Writer</param>
         public virtual void Serialize(IQueryResultWriter writer)
         {
-            writer.WriteValue(string.Format("{{ \"id\": \"{0}\"}}", this.queryId));
+            writer.WriteStartQueryResult();
+            writer.WriteValue(this.FormatVersion);
+            writer.WriteValue(this.queryId);
+            writer.WriteValue(this.queryDateTime);
+            foreach (T r in this.result)
+            {
+                writer.WriteStartQueryResultRow();
+                r.Serialize(writer);
+                writer.WriteEndQueryResultRow();
+            }
+
+            writer.WriteEndQueryResult();
         }
     }
 }

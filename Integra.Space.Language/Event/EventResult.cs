@@ -10,31 +10,18 @@ namespace Integra.Space
     /// <summary>
     /// Event result class
     /// </summary>
-    public class EventResult
+    public class EventResult : IEventResultSerializable
     {
-        /// <summary>
-        /// Date and time the event was processed.
-        /// </summary>
-        private DateTime eventDateTime;
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EventResult"/> class.
         /// </summary>
-        /// <param name="eventDateTime">Date and time the event was processed.</param>
-        public EventResult(DateTime eventDateTime)
+        public EventResult()
         {
-            this.eventDateTime = eventDateTime;
         }
 
-        /// <summary>
-        /// Gets the date and time the event was processed.
-        /// </summary>
-        public DateTime EventDatetime
+        /// <inheritdoc />
+        public virtual void Serialize(IQueryResultWriter writer)
         {
-            get
-            {
-                return this.eventDateTime;
-            }
         }
     }
 }

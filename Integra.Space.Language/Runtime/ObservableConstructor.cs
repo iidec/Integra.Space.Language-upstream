@@ -37,7 +37,7 @@ namespace Integra.Space.Language.Runtime
         /// Group expression
         /// </summary>
         private Expression groupExpression;
-        
+
         /// <summary>
         /// Object prefix
         /// </summary>
@@ -90,8 +90,8 @@ namespace Integra.Space.Language.Runtime
             var delegateType = typeof(Func<,>).MakeGenericType(inputType, outputType);
             Delegate result = Expression.Lambda(delegateType, this.GenerateExpressionTree(plan), this.parameterList.ToArray()).Compile();
 
-            this.scopeParam = new Stack<ParameterExpression>();
-            this.parameterList = new List<ParameterExpression>();
+            this.scopeParam.Clear();
+            this.parameterList.Clear();
             this.projectionWithDispose = false;
 
             Console.WriteLine("La función fue compilada exitosamente.");
@@ -109,8 +109,8 @@ namespace Integra.Space.Language.Runtime
         {
             Func<In, Out> funcResult = this.CreateLambda<In, Out>(plan).Compile();
 
-            this.scopeParam = new Stack<ParameterExpression>();
-            this.parameterList = new List<ParameterExpression>();
+            this.scopeParam.Clear();
+            this.parameterList.Clear();
             this.projectionWithDispose = false;
 
             Console.WriteLine("La función fue compilada exitosamente.");
@@ -127,8 +127,8 @@ namespace Integra.Space.Language.Runtime
         {
             Func<Out> funcResult = this.CreateLambda<Out>(plan).Compile();
 
-            this.scopeParam = new Stack<ParameterExpression>();
-            this.parameterList = new List<ParameterExpression>();
+            this.scopeParam.Clear();
+            this.parameterList.Clear();
             this.projectionWithDispose = false;
 
             Console.WriteLine("La función fue compilada exitosamente.");
@@ -144,9 +144,9 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public Expression<Func<In, Out>> CreateLambda<In, Out>(PlanNode plan)
         {
-            Expression rootExpression = this.GenerateExpressionTree(plan);
-            Expression<Func<In, Out>> result = Expression.Lambda<Func<In, Out>>(rootExpression, this.parameterList.ToArray());
-            return result;
+            Expression rootExpression = this.GenerateExpressionTree(plan);            
+            Expression<Func<In, Out>> result2 = Expression.Lambda<Func<In, Out>>(rootExpression, this.parameterList.ToArray());
+            return result2;
         }
 
         /// <summary>
@@ -159,7 +159,7 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public Expression<Func<In, IScheduler, Out>> CreateLambda<In, IScheduler, Out>(PlanNode plan)
         {
-            Expression rootExpression = this.GenerateExpressionTree(plan);            
+            Expression rootExpression = this.GenerateExpressionTree(plan);
             Expression<Func<In, IScheduler, Out>> result = Expression.Lambda<Func<In, IScheduler, Out>>(rootExpression, this.parameterList.ToArray());
 
             return result;
@@ -397,6 +397,12 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.GroupKeyValue:
                     expResult = this.GenerateGroupPropertyValue(actualNode, leftNode);
                     break;
+                case PlanNodeTypeEnum.SelectForResult:
+                    expResult = this.CreateSelectForResult(actualNode, leftNode, rightNode);
+                    break;
+                case PlanNodeTypeEnum.SelectForResultProjection:
+                    expResult = this.CreateProjectionForResult(actualNode);
+                    break;
                 /********************************************************************************************************************************************************************************************************************/
                 case PlanNodeTypeEnum.Cast:
                     return this.GenerateCast(actualNode, leftNode);
@@ -455,6 +461,109 @@ namespace Integra.Space.Language.Runtime
             }
 
             return expResult;
+        }
+
+        /// <summary>
+        /// Create the select that transforms the IEnumerable{EventResult} in a QueryResult{EventResult} object
+        /// </summary>
+        /// <param name="actualNode">Actual plan node</param>
+        /// <returns>Expression result</returns>
+        private Expression CreateProjectionForResult(PlanNode actualNode)
+        {
+            Expression incomingObservable = this.scopeParam.Peek();
+
+            List<Expression> expressionList = new List<Expression>();
+
+            // se agrega el print log que indica el inicio de la proyección
+            expressionList.Add(Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the result projection"))));
+
+            Type resultType = ResultTypeBuilder.CreateResultType(this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
+
+            MethodInfo toArray = typeof(System.Linq.Enumerable).GetMethods().Where(m =>
+            {
+                return m.Name == "ToArray" && m.GetParameters().Length == 1;
+            })
+            .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
+
+            Expression arrayDeResultados = Expression.Call(toArray, incomingObservable);
+
+            // inicializo el tipo creado, si es para un select hereda de EventResult e inicializo los parametros de su constructor
+            ParameterExpression y = Expression.Variable(resultType);
+            expressionList.Add(
+                Expression.Assign(
+                        y,
+                        Expression.New(
+                            resultType.GetConstructors()[0],
+                            Expression.Constant(this.context.QueryName),
+                            Expression.Property(null, typeof(DateTime).GetProperty("Now")),
+                            arrayDeResultados
+                        )
+                    )
+            );
+
+            // se agrega el print log que indica la finalización de la proyección
+            expressionList.Add(Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the result projection"))));
+
+            // se agrega el objeto de la proyección resultante
+            expressionList.Add(y);
+
+            // se crea el bloque que establece los valores a retornar en el proyección
+            Expression expProjectionObject = Expression.Block(
+                                                        new[] { y },
+                                                        expressionList
+                                                );
+
+            // creo la funcion Func<EventObject, "tipo creado en tiempo de ejecución"> del cual se creará el lambda
+            var delegateType = typeof(Func<,>).MakeGenericType(this.scopeParam.Peek().Type, resultType);
+
+            // creo el lambda que será retornado como hijo derecho del nodo padre, por ejemplo un nodo select
+            return Expression.Lambda(delegateType, expProjectionObject, new ParameterExpression[] { this.scopeParam.Peek() });
+        }
+
+        /// <summary>
+        /// Create the select that transforms the IEnumerable{EventResult} in a QueryResult{EventResult} object
+        /// </summary>
+        /// <param name="actualNode">Actual plan node</param>
+        /// <param name="incomingObservable">Incoming observable</param>
+        /// <param name="expSelect">Lambda of the select expression.</param>
+        /// <returns>Expression result</returns>
+        private Expression CreateSelectForResult(PlanNode actualNode, Expression incomingObservable, Expression expSelect)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(((LambdaExpression)expSelect).ReturnType), "FinalResultObservable");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                MethodInfo methodSelectMany = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                                .Where(m => { return m.Name == "Select" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Func`2[TSource,TResult]"); })
+                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expSelect).ReturnType);
+
+                Expression tryCatchExpr =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.Assign(result, Expression.Call(methodSelectMany, incomingObservable, expSelect)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );
+
+                return tryCatchExpr;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE20, actualNode.NodeText), e);
+            }
         }
 
         /// <summary>
@@ -1178,7 +1287,7 @@ namespace Integra.Space.Language.Runtime
                         new[] { conditionResult },
                         Expression.Assign(conditionResult, filter),
                         Expression.TryCatch(
-                                    Expression.IfThen(                                            
+                                    Expression.IfThen(
                                         Expression.Equal(conditionResult, Expression.Constant(false)),
                                         Expression.Block(
                                             Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start call event unlock method."))),
@@ -1510,7 +1619,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="incomingObservable">Incoming observable expression.</param>
         /// <returns>Select for buffer expression.</returns>
         private Expression CreateWhereForEventLock(PlanNode actualNode, Expression incomingObservable)
-        {            
+        {
             ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(typeof(EventObject)), "WhereForEventLock");
             ParameterExpression lambdaResult = Expression.Variable(typeof(bool), "LambdaWhereEventLock");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
@@ -1543,7 +1652,7 @@ namespace Integra.Space.Language.Runtime
 
                 Type delegateType = typeof(Func<,>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0], selectBlock.Type);
                 LambdaExpression lambdaSelect = Expression.Lambda(delegateType, selectBlock, new ParameterExpression[] { this.scopeParam.Peek() });
-                
+
                 MethodInfo methodWhere = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
                 {
                     return m.Name == "Where" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Func`2[TSource,System.Boolean]");
@@ -1594,7 +1703,7 @@ namespace Integra.Space.Language.Runtime
             expressionList.Add(Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the projection"))));
 
             Dictionary<string, Tuple<ConstantExpression, Expression>> keyValueList = new Dictionary<string, Tuple<ConstantExpression, Expression>>();
-            List<dynamic> listOfFields = new List<dynamic>();
+            List<FieldNode> listOfFields = new List<FieldNode>();
 
             // obtengo la llave y el valor de cada columna, en forma de expresiones
             foreach (var plan in plans.Children)
@@ -1612,13 +1721,9 @@ namespace Integra.Space.Language.Runtime
             }
 
             // por cada tupla llave/valor creo un objeto con las propiedades: nombre (nombre de la propiedad), tipo (tipo de dato de la propiedad)
-            dynamic newField = new System.Dynamic.ExpandoObject();
             foreach (KeyValuePair<string, Tuple<ConstantExpression, Expression>> c in keyValueList)
             {
-                newField = new System.Dynamic.ExpandoObject();
-                newField.FieldName = c.Value.Item1.Value;
-                newField.FieldType = c.Value.Item2.Type;
-                listOfFields.Add(newField);
+                listOfFields.Add(new FieldNode(c.Value.Item1.Value.ToString(), c.Value.Item2.Type));
             }
 
             // creo el tipo a retornar para la proyección, si es una proyección para el select el tipo debe heredar de EventResult
@@ -1640,8 +1745,7 @@ namespace Integra.Space.Language.Runtime
                     Expression.Assign(
                         y,
                         Expression.New(
-                            myType.GetConstructor(typeof(EventResult).GetProperties().Select(x => x.PropertyType).ToArray()),
-                            Expression.Property(null, typeof(DateTime).GetProperty("Now"))
+                            myType.GetConstructor(new Type[] { })
                         )
                     )
                 );
@@ -1666,7 +1770,7 @@ namespace Integra.Space.Language.Runtime
             {
                 if (((bool)plans.Properties["DisposeEvents"]).Equals(true))
                 {
-                    expressionList.Add(this.DisposeEvents(plans));                    
+                    expressionList.Add(this.DisposeEvents(plans));
                     this.projectionWithDispose = true;
                 }
             }
@@ -1706,7 +1810,7 @@ namespace Integra.Space.Language.Runtime
             expressionList.Add(Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the constants projection"))));
 
             Dictionary<string, Tuple<ConstantExpression, Expression>> keyValueList = new Dictionary<string, Tuple<ConstantExpression, Expression>>();
-            List<dynamic> listOfFields = new List<dynamic>();
+            List<FieldNode> listOfFields = new List<FieldNode>();
 
             // obtengo la llave y el valor de cada columna, en forma de expresiones
             foreach (var plan in plans.Children)
@@ -1723,15 +1827,10 @@ namespace Integra.Space.Language.Runtime
                 }
             }
 
-            dynamic newField = new System.Dynamic.ExpandoObject();
-
             // por cada tupla llave/valor creo un objeto con las propiedades: nombre (nombre de la propiedad), tipo (tipo de dato de la propiedad)
             foreach (KeyValuePair<string, Tuple<ConstantExpression, Expression>> c in keyValueList)
             {
-                newField = new System.Dynamic.ExpandoObject();
-                newField.FieldName = c.Value.Item1.Value;
-                newField.FieldType = c.Value.Item2.Type;
-                listOfFields.Add(newField);
+                listOfFields.Add(new FieldNode(c.Value.Item1.Value.ToString(), c.Value.Item2.Type));
             }
 
             Type myType = LanguageTypeBuilder.CompileResultType(listOfFields);
@@ -1855,7 +1954,7 @@ namespace Integra.Space.Language.Runtime
                     // este pop es del CreateNewScope al inicio de este bloque
                     ParameterExpression evento = this.scopeParam.Pop();
                     ParameterExpression paramException = Expression.Variable(typeof(Exception));
-                    
+
                     Expression dispose =
                         Expression.Block(
                                     Expression.IfThen(

@@ -26,7 +26,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -40,7 +40,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        CampoNulo = x.First().GetType().GetProperty("CampoNulo").GetValue(x.First())
+                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
                     })
                 ),
                 created: 10,
@@ -68,7 +68,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -82,7 +82,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        CampoNulo = x.First().GetType().GetProperty("CampoNulo").GetValue(x.First())
+                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
                     })
                 ),
                 created: 10,
@@ -114,7 +114,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -129,8 +129,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -160,7 +160,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -175,7 +175,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -205,7 +205,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -220,8 +220,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString(),
-                        Resultado2 = x.ElementAt(1).GetType().GetProperty("Resultado").GetValue(x.ElementAt(1)).ToString()
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()
                     })
                 ),
                 created: 10,
@@ -252,7 +252,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -267,10 +267,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.ElementAt(0).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(0)).ToString(),
-                        Resultado2 = int.Parse(x.ElementAt(0).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(0)).ToString()),
-                        Resultado3 = x.ElementAt(1).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(1)).ToString(),
-                        Resultado4 = int.Parse(x.ElementAt(1).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado3 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        Resultado4 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -300,7 +300,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -315,7 +315,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -345,7 +345,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -360,7 +360,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -392,7 +392,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -407,8 +407,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -438,7 +438,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -461,7 +461,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -491,7 +491,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -506,7 +506,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -536,7 +536,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -551,7 +551,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -581,7 +581,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -596,7 +596,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -626,7 +626,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -641,7 +641,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -671,7 +671,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -686,7 +686,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -716,7 +716,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -731,7 +731,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -761,7 +761,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -776,7 +776,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -806,7 +806,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -821,7 +821,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -851,7 +851,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -866,7 +866,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -898,7 +898,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -913,8 +913,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -946,7 +946,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -961,8 +961,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -994,7 +994,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1009,8 +1009,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1042,7 +1042,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1057,8 +1057,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1090,7 +1090,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1105,8 +1105,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1138,7 +1138,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
             
             TestScheduler scheduler = new TestScheduler();
 
@@ -1153,8 +1153,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1186,7 +1186,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1201,8 +1201,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1234,7 +1234,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1249,8 +1249,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1282,7 +1282,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1297,8 +1297,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1328,7 +1328,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1343,8 +1343,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1374,7 +1374,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1389,8 +1389,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1420,7 +1420,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1435,8 +1435,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1466,7 +1466,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1481,8 +1481,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1512,7 +1512,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1527,8 +1527,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1560,7 +1560,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1575,8 +1575,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1608,7 +1608,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1623,8 +1623,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1656,7 +1656,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1671,8 +1671,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1704,7 +1704,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1719,8 +1719,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1752,7 +1752,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1767,8 +1767,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1800,7 +1800,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1815,8 +1815,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1848,7 +1848,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1863,8 +1863,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1896,7 +1896,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1911,8 +1911,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1944,7 +1944,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -1959,7 +1959,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1988,7 +1988,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2003,8 +2003,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString(),
-                        Resultado2 = x.ElementAt(1).GetType().GetProperty("Resultado").GetValue(x.ElementAt(1)).ToString()
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()
                     })
                 ),
                 created: 10,
@@ -2035,7 +2035,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2050,10 +2050,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.ElementAt(0).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(0)).ToString(),
-                        Resultado2 = int.Parse(x.ElementAt(0).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(0)).ToString()),
-                        Resultado3 = x.ElementAt(1).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(1)).ToString(),
-                        Resultado4 = int.Parse(x.ElementAt(1).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado3 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        Resultado4 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -2085,7 +2085,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2100,8 +2100,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2134,7 +2134,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2149,9 +2149,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2184,7 +2184,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2199,9 +2199,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2232,7 +2232,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2247,8 +2247,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2279,7 +2279,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2294,8 +2294,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.ElementAt(0).GetType().GetProperty("Llave").GetValue(x.ElementAt(0)).ToString(),
-                        Sumatoria = decimal.Parse(x.ElementAt(0).GetType().GetProperty("Sumatoria").GetValue(x.ElementAt(0)).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2326,7 +2326,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2341,7 +2341,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.ElementAt(0).GetType().GetProperty("Llave").GetValue(x.ElementAt(0)).ToString()
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()
                     })
                 ),
                 created: 10,
@@ -2373,7 +2373,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2388,9 +2388,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2422,7 +2422,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2437,9 +2437,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2470,7 +2470,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 List<PlanNode> plan = parser.Parse();
 
                 ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
                 Assert.Inconclusive();
             }
@@ -2502,7 +2502,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 List<PlanNode> plan = parser.Parse();
 
                 ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
                 Assert.Inconclusive();
             }
@@ -2533,7 +2533,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 List<PlanNode> plan = parser.Parse();
 
                 ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
                 Assert.Inconclusive();
             }
@@ -2564,7 +2564,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 List<PlanNode> plan = parser.Parse();
 
                 ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
                 Assert.Inconclusive();
             }
@@ -2598,7 +2598,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2611,7 +2611,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 () => result(input.AsQbservable())
                 .Select(x =>
                 {
-                    return x.First();
+                    return ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
                 }
                 ),
                 created: 10,
@@ -2649,7 +2649,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 List<PlanNode> plan = parser.Parse();
 
                 ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
                 Assert.Inconclusive();
             }
@@ -2747,7 +2747,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2768,10 +2768,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2803,7 +2803,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2824,10 +2824,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2859,7 +2859,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2880,10 +2880,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2915,7 +2915,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2941,7 +2941,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -2973,7 +2973,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -2999,7 +2999,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -3031,7 +3031,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -3057,7 +3057,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -3089,7 +3089,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
 
@@ -3115,7 +3115,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
