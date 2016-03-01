@@ -17,7 +17,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void UnaryNegativeInteger()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select -1 as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -49,7 +49,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void UnaryNegativeDouble()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select -10.21 as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -81,7 +81,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void UnaryNegativeDecimal()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select -1m as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());

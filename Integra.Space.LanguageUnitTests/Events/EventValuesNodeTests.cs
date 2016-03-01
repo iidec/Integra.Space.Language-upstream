@@ -21,7 +21,7 @@ namespace Integra.Space.LanguageUnitTests.Events
             eventList.Add(TestObjects.EventObjectTest1);
 
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.agent.Name as nombre");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
             
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -53,7 +53,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         public void EventPropertyAdapterNameValue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Adapter.Name as nombre");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -85,7 +85,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         public void EventPropertyAgentMachineNameValue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Agent.MachineName as machineName");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -119,7 +119,7 @@ namespace Integra.Space.LanguageUnitTests.Events
             eventList.Add(TestObjects.EventObjectTest1);
 
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Agent.timestamp as ts");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -135,7 +135,7 @@ namespace Integra.Space.LanguageUnitTests.Events
             eventList.Add(TestObjects.EventObjectTest1);
 
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.adapter.Timestamp as ts");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());

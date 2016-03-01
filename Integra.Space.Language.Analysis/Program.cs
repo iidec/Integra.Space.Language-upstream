@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Integra.Space.Language.Analysis.Metadata.MetadataNodes;
+using Irony.Parsing;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,55 +15,110 @@ namespace Integra.Space.Language.Analysis
         static void Main(string[] args)
         {
             string finish = "";
-            while (!finish.ToLower().Equals("stop"))
-            {
-                try
-                {
 
-                    Console.WriteLine("Creating graph directory...");
-                    CreateDirectory();
-                    Console.WriteLine("Write a EQL command or press enter for a test");
+            Console.WriteLine("[1] for graph, [2] for generate metadata");
+            string option = Console.ReadLine();
+            option = "2";
+
+            if (option.Equals("1"))
+            {
+                while (!finish.ToLower().Equals("stop"))
+                {
+                    try
+                    {
+                        Console.WriteLine("Creating graph directory...");
+                        CreateDirectory();
+                        Console.WriteLine("Write a EQL command or press enter");
+                        Console.WriteLine();
+                        string eql = Console.ReadLine();
+                        Console.WriteLine("Creating execution plan...");
+
+                        if (string.IsNullOrWhiteSpace(eql))
+                        {
+                            eql = string.Format("from {0} where {1} select {2} as CampoNulo",
+                                                                                "SpaceObservable1",
+                                                                                "@event.Message.#0.MessageType == \"0100\"",
+                                                                                "@event.Message.#0.[\"Campo que no existe\"]");
+                        }
+
+                        EQLPublicParser parser = new EQLPublicParser(eql);
+                        List<PlanNode> plan = parser.Evaluate();
+
+                        Console.WriteLine("Plan generated.");
+                        Console.WriteLine("Creating graph...");
+
+                        string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
+                        TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
+                        tgg.GenerateGraph(plan.First());
+
+                        Console.WriteLine("Graph created.");
+                        Console.WriteLine("Opening graph...");
+                        tgg.ShowGraph();
+                        Console.WriteLine("Graph opened.");
+                        Console.WriteLine("Write 'stop' to finish or enter to continue...");
+                        finish = Console.ReadLine();
+                        Console.WriteLine();
+                    }
+                    catch (Exception e)
+                    {
+                        // Get stack trace for the exception with source file information
+                        StackTrace st = new StackTrace(e, true);
+                        // Get the top stack frame
+                        StackFrame frame = st.GetFrame(0);
+                        // Get the line number from the stack frame
+                        int line = frame.GetFileLineNumber();
+                        int column = frame.GetFileColumnNumber();
+
+                        Console.WriteLine("Cannot create the graph. Error: Line: {0}, Column: {1}, Message {2}", line, column, e.Message);
+                        Console.WriteLine("Write 'stop' to finish or enter to continue...");
+                        finish = Console.ReadLine();
+                        Console.WriteLine();
+                    }
+                }
+            }
+            else if (option.Equals("2"))
+            {
+                while (!finish.ToLower().Equals("stop"))
+                {
+                    Console.WriteLine("Write a EQL command or press enter");
                     Console.WriteLine();
                     string eql = Console.ReadLine();
                     Console.WriteLine("Creating execution plan...");
 
                     if (string.IsNullOrWhiteSpace(eql))
                     {
-                        eql = string.Format("from {0} where {1} select {2} as CampoNulo",
-                                                                            "SpaceObservable1",
-                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                            "@event.Message.#0.[\"Campo que no existe\"]");
+                        
+                        /*eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                                                                                            "SpaceObservable1",
+                                                                                            "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                        
+                        */
+                        eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                "ON t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
+                                "TIMEOUT '00:00:01' " +
+                                "EVENTLIFETIME '00:00:10' " +
+                                "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "SELECT t1.@event.Message.#1.#43 as c1 ";
+                        
                     }
 
                     EQLPublicParser parser = new EQLPublicParser(eql);
-                    List<PlanNode> plan = parser.Parse();
+                    ParseTree parseTree = parser.Parse();
 
                     Console.WriteLine("Plan generated.");
-                    Console.WriteLine("Creating graph...");
+                    Console.WriteLine("Creating metadata...");
 
-                    string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
-                    TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
-                    tgg.GenerateGraph(plan.First());
+                    MetadataGenerator mg = new MetadataGenerator();
+                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parseTree.Root);
+                    SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
-                    Console.WriteLine("Graph created.");
-                    Console.WriteLine("Opening graph...");
-                    tgg.ShowGraph();
-                    Console.WriteLine("Graph opened.");
-                    Console.WriteLine("Write 'stop' to finish or enter to continue...");
-                    finish = Console.ReadLine();
-                    Console.WriteLine();
-                }
-                catch (Exception e)
-                {
-                    // Get stack trace for the exception with source file information
-                    StackTrace st = new StackTrace(e, true);
-                    // Get the top stack frame
-                    StackFrame frame = st.GetFrame(0);
-                    // Get the line number from the stack frame
-                    int line = frame.GetFileLineNumber();
-                    int column = frame.GetFileColumnNumber();
+                    Console.WriteLine("Metadata created.");
 
-                    Console.WriteLine("Cannot create the graph. Error: Line: {0}, Column: {1}, Message {2}", line, column, e.Message);
                     Console.WriteLine("Write 'stop' to finish or enter to continue...");
                     finish = Console.ReadLine();
                     Console.WriteLine();

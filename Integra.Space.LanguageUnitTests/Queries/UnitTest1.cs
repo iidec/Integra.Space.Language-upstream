@@ -19,7 +19,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             EQLPublicParser parser = new EQLPublicParser(
                 "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo"
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -65,7 +65,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             EQLPublicParser parser = new EQLPublicParser(
                 "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo"
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -111,7 +111,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             EQLPublicParser parser = new EQLPublicParser(
                 "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma"
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -157,7 +157,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             EQLPublicParser parser = new EQLPublicParser(
                 "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma"
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -207,7 +207,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -247,7 +247,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSelect()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Message.Body.#43 as campo1");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());

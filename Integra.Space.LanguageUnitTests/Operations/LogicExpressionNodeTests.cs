@@ -17,7 +17,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void EventosIgualdadAndEventosIgualdad()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] and @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -49,7 +49,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void EventosIgualdadAndEventosIgualdadFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (@event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -80,7 +80,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void EventosIgualdadOrEventosIgualdad()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -112,7 +112,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void EventosIgualdadOrEventosIgualdadFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (@event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -143,7 +143,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void TrueAndTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true and true select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -175,7 +175,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void FalseAndFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where false and false select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -206,7 +206,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void TrueAndFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true and false select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -237,7 +237,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void FalseAndTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where false and true select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -268,7 +268,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void TrueOrTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true or true select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -300,7 +300,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void TrueOrFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true or false select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -332,7 +332,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void FalseOrTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where false or true select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -364,7 +364,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void FalseOrFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where false or false select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -395,7 +395,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotFalseOrFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(false or false) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -427,7 +427,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotTrueOrTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(true or true) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -458,7 +458,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotFalseAndFalse()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(false and false) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -490,7 +490,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotTrueAndTrue()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(true and true) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -521,7 +521,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotTrueOrFalseAndTrue1()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (true) or false and true select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -552,7 +552,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void NotTrueOrFalseAndTrue2()
         {
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (true or false and true) select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());

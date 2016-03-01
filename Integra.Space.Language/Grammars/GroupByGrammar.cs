@@ -6,10 +6,10 @@
 namespace Integra.Space.Language.Grammars
 {
     using System.Linq;
-    using ASTNodes.Objects.Object;
-    using Integra.Space.Language.ASTNodes.Constants;
-    using Integra.Space.Language.ASTNodes.Lists;
-    using Integra.Space.Language.ASTNodes.QuerySections;
+    using ASTNodes.Constants;
+    using ASTNodes.Identifier;
+    using ASTNodes.Lists;
+    using ASTNodes.QuerySections;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -66,6 +66,7 @@ namespace Integra.Space.Language.Grammars
 
             // terminals
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
+            terminalId.Name = "identifier";
             terminalId.AstConfig.NodeType = null;
             terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
             
@@ -76,7 +77,7 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_LIST_OF_VALUES = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
             nt_LIST_OF_VALUES.AstConfig.NodeType = null;
             nt_LIST_OF_VALUES.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
-            this.groupList = new NonTerminal("SELECT", typeof(GroupByNode));
+            this.groupList = new NonTerminal("GROUP_BY", typeof(GroupByNode));
             this.groupList.AstConfig.NodeType = null;
             this.groupList.AstConfig.DefaultNodeCreator = () => new GroupByNode();
 
@@ -88,7 +89,7 @@ namespace Integra.Space.Language.Grammars
                                     | nt_VALUES_WITH_ALIAS;
             /* **************************** */
             /* VALORES CON ALIAS */
-            nt_VALUES_WITH_ALIAS.Rule = this.valueGrammar.ProjectionValue + terminalAs + terminalId;
+            nt_VALUES_WITH_ALIAS.Rule = this.valueGrammar.Values + terminalAs + terminalId;
 
             this.Root = this.groupList;
 

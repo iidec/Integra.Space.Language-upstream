@@ -12,7 +12,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantIntegerValue()
         {
             ExpressionParser parser = new ExpressionParser("10");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);

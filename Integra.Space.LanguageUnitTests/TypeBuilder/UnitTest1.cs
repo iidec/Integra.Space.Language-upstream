@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Reactive;
 using Microsoft.Reactive.Testing;
+using System.Reactive.Concurrency;
 
 namespace Integra.Space.LanguageUnitTests.TypeBuilder
 {

@@ -55,6 +55,29 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 this.result = groupKeyAux;
             }
+            else if (groupKeyAux.NodeType.Equals(PlanNodeTypeEnum.Identifier))
+            {
+                PlanNode key = new PlanNode();
+                key.NodeType = PlanNodeTypeEnum.GroupKey;
+                key.Column = ChildrenNodes[0].Token.Location.Column;
+                key.Line = ChildrenNodes[0].Token.Location.Line;
+                key.NodeText = ChildrenNodes[0].Token.Text;
+                key.Properties.Add("Value", "Key");
+
+                PlanNode property = new PlanNode();
+                property.NodeType = PlanNodeTypeEnum.GroupKeyProperty;
+                property.Properties.Add("Value", groupKeyAux.Properties["Value"]);
+                property.Children = new List<PlanNode>();
+                property.Children.Add(key);
+
+                this.result = new PlanNode();
+                this.result.NodeType = PlanNodeTypeEnum.GroupKeyValue;
+                this.result.Column = groupKeyAux.Column;
+                this.result.Line = groupKeyAux.Line;
+                this.result.NodeText = groupKeyAux.NodeText;
+                this.result.Children = new List<PlanNode>();
+                this.result.Children.Add(property);
+            }
             else
             {
                 this.result = new PlanNode();

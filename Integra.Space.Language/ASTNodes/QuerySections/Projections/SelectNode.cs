@@ -26,12 +26,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <summary>
         /// reserved word "top"
         /// </summary>
-        private string top;
-
-        /// <summary>
-        /// top value, is a number value
-        /// </summary>
-        private AstNodeBase topValue;
+        private AstNodeBase top;
 
         /// <summary>
         /// list of values for the projection
@@ -62,20 +57,20 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
                 this.result.NodeText = this.select;
             }
-            else if (childrenCount == 4)
+            else if (childrenCount == 3)
             {
                 this.select = (string)ChildrenNodes[0].Token.Value;
-                this.top = (string)ChildrenNodes[1].Token.Value;
-                this.topValue = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[2]) as AstNodeBase;
-                this.listOfValues = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[3]) as AstNodeBase;
+                this.top = AddChild(NodeUseType.Parameter, "topNode", ChildrenNodes[1]) as AstNodeBase;
+                this.listOfValues = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[2]) as AstNodeBase;
 
-                this.result.NodeText = string.Format("{0} {1} {2}", this.select, this.top, this.topValue);
+                this.result.NodeText = this.select;
             }
 
             this.result.Column = ChildrenNodes[0].Token.Location.Column;
             this.result.Line = ChildrenNodes[0].Token.Location.Line;
             this.result.NodeType = PlanNodeTypeEnum.Projection;
             this.result.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableSelect);
+            this.result.Properties.Add("OverrideGetHashCodeMethod", false);
         }
 
         /// <summary>
@@ -89,9 +84,9 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.BeginEvaluate(thread);
 
             int childrenCount = ChildrenNodes.Count;
-            if (childrenCount == 4)
+            if (childrenCount == 3)
             {
-                PlanNode topValueAux = (PlanNode)this.topValue.Evaluate(thread);
+                PlanNode topAux = (PlanNode)this.top.Evaluate(thread);
 
                 PlanNode planTop = new PlanNode();
                 planTop.NodeType = PlanNodeTypeEnum.EnumerableTake;
@@ -101,7 +96,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 newScope.NodeType = PlanNodeTypeEnum.NewScope;
 
                 planTop.Children.Add(newScope);
-                planTop.Children.Add(topValueAux);
+                planTop.Children.Add(topAux);
 
                 this.result.Properties.Add(PlanNodeTypeEnum.EnumerableTake.ToString(), planTop);
             }

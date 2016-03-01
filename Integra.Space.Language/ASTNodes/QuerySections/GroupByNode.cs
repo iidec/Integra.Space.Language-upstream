@@ -71,6 +71,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             planProjection.Line = ChildrenNodes[0].Token.Location.Line;
             planProjection.NodeType = PlanNodeTypeEnum.Projection;
             planProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.EnumerableGroupBy);
+            planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
             planProjection.Children = new List<PlanNode>();
 
             Dictionary<PlanNode, PlanNode> projection = new Dictionary<PlanNode, PlanNode>();

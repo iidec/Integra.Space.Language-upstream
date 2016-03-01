@@ -12,7 +12,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantBooleanTrue()
         {
             ExpressionParser parser = new ExpressionParser("true");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<bool> result = te.Compile<bool>(plan);
@@ -24,7 +24,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantBooleanFalse()
         {
             ExpressionParser parser = new ExpressionParser("false");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<bool> result = te.Compile<bool>(plan);

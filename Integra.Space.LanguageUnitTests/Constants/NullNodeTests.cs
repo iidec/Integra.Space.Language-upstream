@@ -12,7 +12,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantNull()
         {
             ExpressionParser parser = new ExpressionParser("null");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<object> result = te.Compile<object>(plan);

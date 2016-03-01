@@ -23,7 +23,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                 "@event.Message.#0.[\"Campo que no existe\"]")
                                                                 );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -65,7 +65,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SpaceObservable1",
                                                                 "@event.Message.#0.[\"Campo que no existe\"]")
                                                                 );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -111,7 +111,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo1",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -157,7 +157,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -202,7 +202,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "@event.Message.#0.MessageType")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -249,7 +249,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.MessageType",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -297,7 +297,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "max((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -342,7 +342,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "min((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -380,7 +380,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         /**************************************************************************************************************************************************************/
 
         [TestMethod]
-        public void ConsultaSoloApplyWindowDosEventosOrderBy()
+        public void ConsultaSoloApplyWindowDosEventosOrderByDesc()
         {
             EQLPublicParser parser = new EQLPublicParser(
                 string.Format("from {0} apply window of {2} select {3} as monto order by desc monto",
@@ -389,7 +389,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -435,7 +435,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -488,7 +488,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -533,7 +533,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -578,7 +578,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -623,7 +623,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -668,7 +668,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -713,7 +713,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -758,7 +758,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -766,8 +766,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -803,7 +803,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -848,7 +848,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -895,7 +895,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -943,7 +943,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -991,7 +991,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1039,7 +1039,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1087,7 +1087,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1135,7 +1135,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1143,8 +1143,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                // new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1183,7 +1183,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1191,8 +1191,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1231,7 +1231,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1279,7 +1279,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1325,7 +1325,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1371,7 +1371,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1379,8 +1379,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1417,7 +1417,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1463,7 +1463,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1509,7 +1509,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1517,8 +1517,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1557,7 +1557,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1605,7 +1605,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1653,7 +1653,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1701,7 +1701,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1749,7 +1749,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1797,7 +1797,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1805,8 +1805,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1845,7 +1845,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1853,8 +1853,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             TestScheduler scheduler = new TestScheduler();
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1893,7 +1893,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1902,7 +1902,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
@@ -1920,7 +1920,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo1GUATEMALA    GT", Sumatoria = 1m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo1GUATEMALA    GT", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -1941,7 +1941,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -1985,7 +1985,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "@event.Message.#0.MessageType")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2032,7 +2032,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.MessageType",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2082,7 +2082,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2131,7 +2131,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo2",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2181,7 +2181,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo2",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2229,7 +2229,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo1",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2276,7 +2276,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2323,7 +2323,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2370,7 +2370,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo2",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2419,7 +2419,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo2",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2467,7 +2467,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SpaceObservable1",
                                                                 "key")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                List<PlanNode> plan = parser.Evaluate();
 
                 ObservableConstructor te = new ObservableConstructor();
                 Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2499,7 +2499,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                 "key")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                List<PlanNode> plan = parser.Evaluate();
 
                 ObservableConstructor te = new ObservableConstructor();
                 Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2530,7 +2530,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SpaceObservable1",
                                                                 "count()")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                List<PlanNode> plan = parser.Evaluate();
 
                 ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
                 Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2561,7 +2561,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SpaceObservable1",
                                                                 "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                List<PlanNode> plan = parser.Evaluate();
 
                 ObservableConstructor te = new ObservableConstructor();
                 Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2646,7 +2646,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                                 "key.grupo1",
                                                                                                 "sum(@event.Message.#1.CardAcceptorNameLocation)")
                                                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                List<PlanNode> plan = parser.Evaluate();
 
                 ObservableConstructor te = new ObservableConstructor();
                 Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2679,7 +2679,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
             EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             Assert.AreEqual<string>(command, plan.First().NodeText);
         }
@@ -2696,7 +2696,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
             EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             Assert.AreEqual<string>(command, plan.First().NodeText);
         }
@@ -2712,7 +2712,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
             EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             Assert.AreEqual<string>(command, plan.First().NodeText);
         }
@@ -2727,7 +2727,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
             EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             Assert.AreEqual<string>(command, plan.First().NodeText);
         }
@@ -2744,7 +2744,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "pais",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2800,7 +2800,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "pais",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2856,7 +2856,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "pais",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2912,7 +2912,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "comercio",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -2970,7 +2970,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "comercio",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -3028,7 +3028,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "comercio",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
@@ -3086,7 +3086,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "comercio",
                                                                                             "count()")
                                                                                             );
-            List<PlanNode> plan = parser.Parse();
+            List<PlanNode> plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());

@@ -17,7 +17,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void YearFunction()
         {
             ExpressionParser parser = new ExpressionParser("year('02/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -33,7 +33,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("es-GT");
             ExpressionParser parser = new ExpressionParser("month('02/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -49,7 +49,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("es-GT");
             ExpressionParser parser = new ExpressionParser("day('02/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -64,7 +64,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void DayFunction2()
         {
             ExpressionParser parser = new ExpressionParser("day('1.02:00:30')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -79,7 +79,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void HourFunction1()
         {
             ExpressionParser parser = new ExpressionParser("hour('01/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -94,7 +94,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void HourFunction2()
         {
             ExpressionParser parser = new ExpressionParser("hour('10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -109,7 +109,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void HourFunction3()
         {
             ExpressionParser parser = new ExpressionParser("hour('1.02:00:30')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -124,7 +124,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void MinuteFunction1()
         {
             ExpressionParser parser = new ExpressionParser("minute('01/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -139,7 +139,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void MinuteFunction2()
         {
             ExpressionParser parser = new ExpressionParser("minute('1.02:10:30')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -154,7 +154,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void SecondFunction1()
         {
             ExpressionParser parser = new ExpressionParser("second('01/01/2014 10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -169,7 +169,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void SecondFunction2()
         {
             ExpressionParser parser = new ExpressionParser("second('10:11:12 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -184,7 +184,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void SecondFunction3()
         {
             ExpressionParser parser = new ExpressionParser("second('1.02:10:30')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -199,7 +199,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void MillisecondFunction1()
         {
             ExpressionParser parser = new ExpressionParser("millisecond('01/01/2014 10:11:12.1 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -214,7 +214,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void MillisecondFunction2()
         {
             ExpressionParser parser = new ExpressionParser("millisecond('10:11:12.1 am')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);
@@ -229,7 +229,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void MillisecondFunction3()
         {
             ExpressionParser parser = new ExpressionParser("millisecond('1.02:10:30.6')");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<int> result = te.Compile<int>(plan);

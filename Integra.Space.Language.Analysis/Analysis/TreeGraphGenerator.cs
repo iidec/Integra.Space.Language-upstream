@@ -25,6 +25,7 @@ namespace Integra.Space.Language.Analysis
 
         public void GenerateGraph(PlanNode executionPlan)
         {
+            this.nodeCount = 0;
             var getStartProcessQuery = new GetStartProcessQuery();
             var getProcessStartInfoQuery = new GetProcessStartInfoQuery();
             var registerLayoutPluginCommand = new RegisterLayoutPluginCommand(getProcessStartInfoQuery, getStartProcessQuery);

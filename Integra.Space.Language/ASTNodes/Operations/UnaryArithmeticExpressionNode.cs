@@ -7,7 +7,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
 {
     using System.Collections.Generic;
     using Integra.Space.Language.ASTNodes.Base;
-    
+
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
@@ -41,12 +41,21 @@ namespace Integra.Space.Language.ASTNodes.Operations
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.operationNode = (string)ChildrenNodes[0].Token.Value;
-            this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
 
             this.result = new PlanNode();
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            int childrenCount = ChildrenNodes.Count;
+            if (childrenCount == 1)
+            {
+                this.rightNode = AddChild(NodeUseType.Parameter, "value", ChildrenNodes[0]) as AstNodeBase;
+            }
+            else if (childrenCount == 2)
+            {
+                this.operationNode = (string)ChildrenNodes[0].Token.Value;
+                this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
+
+                this.result.Column = ChildrenNodes[0].Token.Location.Column;
+                this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            }
         }
 
         /// <summary>
@@ -61,7 +70,14 @@ namespace Integra.Space.Language.ASTNodes.Operations
             PlanNode r = (PlanNode)this.rightNode.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            // se especifica los hijos y el tipo de nodo result si la operacion es de negacion aritmetica
+            int childrenCount = ChildrenNodes.Count;
+            if (childrenCount == 1)
+            {
+                this.result.Column = r.Column;
+                this.result.Line = r.Line;
+            }
+
+            // se especifican los hijos y el tipo de nodo result si la operacion es de negacion aritmetica
             if (this.operationNode == "-")
             {
                 // se iguala result al nodo hijo para mantener sus propiedades
@@ -73,16 +89,16 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 // se especifica la nueva informacion para result
                 this.result.NodeType = PlanNodeTypeEnum.Negate;
                 this.result.Children = new List<PlanNode>();
-                this.result.Children.Add(r);                
+                this.result.Children.Add(r);
             }
-            else if (this.operationNode == "+")
+            else
             {
                 this.result = r;
             }
 
             // se especifica el texto del nodo resultante
             this.result.NodeText = this.operationNode + r.NodeText;
-            
+
             return this.result;
         }
     }

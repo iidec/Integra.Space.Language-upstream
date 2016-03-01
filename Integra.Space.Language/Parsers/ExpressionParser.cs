@@ -32,28 +32,15 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands
         /// </summary>
         /// <returns>Execution plan</returns>
-        public PlanNode Parse()
+        public PlanNode Evaluate()
         {
             PlanNode nodes = null;
 
             try
             {
-                ExpressionGrammar grammar = new ExpressionGrammar();
-                LanguageData language = new LanguageData(grammar);
-                Parser parser = new Parser(language);
-                ParseTree parseTree = parser.Parse(this.commandText);
-                if (parseTree.HasErrors())
-                {
-                    foreach (var parserMessage in parseTree.ParserMessages)
-                    {
-                        throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
-                    }
-                }
-                else
-                {
-                    Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new Integra.Space.Language.Grammars.ExpressionLanguageRuntime());
-                    nodes = (PlanNode)app.Evaluate(parseTree);
-                }
+                ParseTree parseTree = this.Parse();
+                Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new Integra.Space.Language.Grammars.ExpressionLanguageRuntime());
+                nodes = (PlanNode)app.Evaluate(parseTree);
             }
             catch (SyntaxException e)
             {
@@ -65,6 +52,27 @@ namespace Integra.Space.Language
             }
 
             return nodes;
+        }
+
+        /// <summary>
+        /// Implements the logic to parse commands
+        /// </summary>
+        /// <returns>Execution plan</returns>
+        public ParseTree Parse()
+        {
+            ExpressionGrammar grammar = new ExpressionGrammar();
+            LanguageData language = new LanguageData(grammar);
+            Parser parser = new Parser(language);
+            ParseTree parseTree = parser.Parse(this.commandText);
+            if (parseTree.HasErrors())
+            {
+                foreach (var parserMessage in parseTree.ParserMessages)
+                {
+                    throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                }
+            }
+
+            return parseTree;
         }
     }
 }

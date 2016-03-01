@@ -16,7 +16,7 @@ namespace Integra.Space.Language.ASTNodes.Lists
     /// <summary>
     /// ListOfValuesWithAliasNode class
     /// </summary>
-    internal sealed class PlanNodeListNode : AstNodeBase
+    internal class PlanNodeListNode : AstNodeBase
     {
         /// <summary>
         /// parent node of the list
@@ -48,7 +48,7 @@ namespace Integra.Space.Language.ASTNodes.Lists
                 this.parentNode = AddChild(NodeUseType.Parameter, "ParentNode", ChildrenNodes[0]) as AstNodeBase;
                 this.valueNode = AddChild(NodeUseType.Parameter, "ValueNode", ChildrenNodes[2]) as AstNodeBase;
             }
-            else
+            else if (childrenCount == 1)
             {
                 this.parentNode = AddChild(NodeUseType.Parameter, "ParentNode", ChildrenNodes[0]) as AstNodeBase;
             }
@@ -74,7 +74,7 @@ namespace Integra.Space.Language.ASTNodes.Lists
                 PlanNode aux = (PlanNode)this.valueNode.Evaluate(thread);
                 this.result.Add(aux.Children.ElementAt<PlanNode>(1), aux.Children.ElementAt<PlanNode>(0));
             }
-            else
+            else if (childrenCount == 1)
             {
                 Binding b2 = thread.Bind("ObjectList", BindingRequestFlags.Read);
                 this.result = (Dictionary<PlanNode, PlanNode>)b2.GetValueRef(thread);

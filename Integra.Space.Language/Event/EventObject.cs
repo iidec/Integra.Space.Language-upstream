@@ -45,6 +45,11 @@ namespace Integra.Space
         private int refcount = 0;
 
         /// <summary>
+        /// Indicates whether the event matched with another event
+        /// </summary>
+        private bool matched;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="EventObject"/> class.
         /// </summary>
         /// <param name="queries">Queries assigned to the source of events.</param>
@@ -52,8 +57,9 @@ namespace Integra.Space
         {
             this.queries = queries;
             this.refcount = queries.Count();
+            this.matched = false;
         }
-        
+
         /// <summary>
         /// Gets or sets the agent
         /// </summary>
@@ -112,6 +118,22 @@ namespace Integra.Space
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the event matched with another event
+        /// </summary>
+        public bool Matched
+        {
+            get
+            {
+                return this.matched;
+            }
+
+            set
+            {
+                this.matched = value;
+            }
+        }
+        
         /// <summary>
         /// Increment the reference counter
         /// </summary>

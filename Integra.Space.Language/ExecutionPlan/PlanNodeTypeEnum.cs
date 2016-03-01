@@ -3,7 +3,6 @@
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-
 namespace Integra.Space.Language
 {
     using System;
@@ -204,44 +203,54 @@ namespace Integra.Space.Language
         TupleProjection = 109,
 
         /// <summary>
-        /// Select type
-        /// </summary>
-        Select = 110,
-
-        /// <summary>
-        /// From type
-        /// </summary>
-        From = 111,
-
-        /// <summary>
-        /// Where type
-        /// </summary>
-        Where = 112,
-
-        /// <summary>
         /// On type
         /// </summary>
         On = 113,
 
         /// <summary>
-        /// Join type
+        /// Left join type
         /// </summary>
-        Join = 114,
+        LeftJoin = 114,
+
+        /// <summary>
+        /// Right join type
+        /// </summary>
+        RightJoin = 115,
+
+        /// <summary>
+        /// Cross join type
+        /// </summary>
+        CrossJoin = 116,
+
+        /// <summary>
+        /// Inner join type
+        /// </summary>
+        InnerJoin = 117,
 
         /// <summary>
         /// With type
         /// </summary>
-        With = 115,
+        With = 118,
+
+        /// <summary>
+        /// Timeout type
+        /// </summary>
+        Timeout = 119,
         
+        /// <summary>
+        /// Event life time type
+        /// </summary>
+        EventLifeTime = 120,
+
         /// <summary>
         /// ValueWithAlias type
         /// </summary>
-        ValueWithAlias = 120,
+        ValueWithAlias = 140,
 
         /// <summary>
         /// ValueWithoutAlias type
         /// </summary>
-        ValueWithoutAlias = 121,
+        ValueWithoutAlias = 141,
 
         /// <summary>
         /// If type
@@ -592,7 +601,37 @@ namespace Integra.Space.Language
         /// Observable select for event lock type
         /// </summary>
         ObservableWhereForEventLock = 516,
-                        
+
+        /// <summary>
+        /// Observable create type
+        /// </summary>
+        ObservableCreate = 517,
+
+        /// <summary>
+        /// Observable timeout type
+        /// </summary>
+        ObservableTimeout = 518,
+
+        /// <summary>
+        /// Observable catch type
+        /// </summary>
+        ObservableCatch = 519,
+
+        /// <summary>
+        /// Observable never type
+        /// </summary>
+        ObservableNever = 520,
+
+        /// <summary>
+        /// Observable empty type
+        /// </summary>
+        ObservableEmpty = 521,
+
+        /// <summary>
+        /// Observable join type
+        /// </summary>
+        ObservableJoin = 522,
+
         /// <summary>
         /// Enumerable count type
         /// </summary>
@@ -649,10 +688,25 @@ namespace Integra.Space.Language
         EnumerableToList = 623,
 
         /// <summary>
+        /// Enumerable where type
+        /// </summary>
+        EnumerableWhere = 624,
+
+        /// <summary>
+        /// Enumerable join type
+        /// </summary>
+        EnumerableJoin = 625,
+
+        /// <summary>
+        /// Enumerable to array type
+        /// </summary>
+        EnumerableToArray = 626,
+
+        /// <summary>
         /// New Scope type
         /// </summary>
         NewScope = 700,
-
+        
         /// <summary>
         /// Projection of constants type, projection for group by, this does not create a lambda expression
         /// </summary>
@@ -666,6 +720,36 @@ namespace Integra.Space.Language
         /// <summary>
         /// Projection for the query result select
         /// </summary>
-        SelectForResultProjection = 703
+        SelectForResultProjection = 703,
+
+        /// <summary>
+        /// Join left duration type
+        /// </summary>
+        JoinLeftDuration = 704,
+
+        /// <summary>
+        /// Join right duration type
+        /// </summary>
+        JoinRightDuration = 705,
+
+        /// <summary>
+        /// Join result selector
+        /// </summary>
+        JoinResultSelector = 706,
+
+        /// <summary>
+        /// Join projection type
+        /// </summary>
+        JoinProjection = 707,
+
+        /// <summary>
+        /// Key selector projection
+        /// </summary>
+        KeySelectorProjection = 708,
+
+        /// <summary>
+        /// Subscription type
+        /// </summary>
+        Subscription = 709
     }
 }

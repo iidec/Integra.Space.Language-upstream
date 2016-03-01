@@ -280,8 +280,20 @@
   <data name="CE58" xml:space="preserve">
     <value>CE58: Error with where for event lock method.</value>
   </data>
+  <data name="CE59" xml:space="preserve">
+    <value>CE59: Error with 'where' function.</value>
+  </data>
   <data name="CE6" xml:space="preserve">
     <value>CE6: Error in 'right' function.</value>
+  </data>
+  <data name="CE61" xml:space="preserve">
+    <value>CE61: Error with the join projection.</value>
+  </data>
+  <data name="CE62" xml:space="preserve">
+    <value>CE62: Error in enumerable ToArray function</value>
+  </data>
+  <data name="CE63" xml:space="preserve">
+    <value>CE63: Error with the enumerable join.</value>
   </data>
   <data name="CE7" xml:space="preserve">
     <value>CE7: Value type of function 'upper' must be string.</value>

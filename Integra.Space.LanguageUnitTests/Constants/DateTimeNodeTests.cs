@@ -12,7 +12,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantDateTimeValue()
         {
             ExpressionParser parser = new ExpressionParser("'01/01/2014'");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<DateTime> result = te.Compile<DateTime>(plan);
@@ -27,7 +27,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantTimeSpanValue()
         {
             ExpressionParser parser = new ExpressionParser("'00:00:00:01'");
-            PlanNode plan = parser.Parse();
+            PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor();
             Func<TimeSpan> result = te.Compile<TimeSpan>(plan);

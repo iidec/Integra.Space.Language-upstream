@@ -547,11 +547,47 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CE59: Error with &apos;where&apos; function..
+        /// </summary>
+        internal static string CE59 {
+            get {
+                return ResourceManager.GetString("CE59", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CE6: Error in &apos;right&apos; function..
         /// </summary>
         internal static string CE6 {
             get {
                 return ResourceManager.GetString("CE6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE61: Error with the join projection..
+        /// </summary>
+        internal static string CE61 {
+            get {
+                return ResourceManager.GetString("CE61", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE62: Error in enumerable ToArray function.
+        /// </summary>
+        internal static string CE62 {
+            get {
+                return ResourceManager.GetString("CE62", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE63: Error with the enumerable join..
+        /// </summary>
+        internal static string CE63 {
+            get {
+                return ResourceManager.GetString("CE63", resourceCulture);
             }
         }
         

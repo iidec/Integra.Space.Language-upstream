@@ -116,135 +116,75 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         {
             this.BeginEvaluate(thread);
 
+            PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
             this.result.Children = new System.Collections.Generic.List<PlanNode>();
             int childrenCount = ChildrenNodes.Count;
 
-            if (childrenCount == 2)
+            if (childrenCount == 3)
             {
-                PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
-                PlanNode projectionAux = (PlanNode)this.select.Evaluate(thread);
-
-                this.result = this.CreateFromSelect(fromAux, projectionAux);
-                this.result.Column = fromAux.Column;
-                this.result.Line = fromAux.Line;
-                this.result.NodeText = string.Format("{0} {1}", fromAux.NodeText, projectionAux.NodeText);
-            }
-            else if (childrenCount == 3)
-            {
-                PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
                 PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
                 PlanNode projectionAux = (PlanNode)this.select.Evaluate(thread);
 
-                if (secondArgument.NodeType.IsWhere())
+                // two and three arguments
+                if (secondArgument == null)
                 {
-                    this.result = this.CreateFromWhereSelect(fromAux, secondArgument, projectionAux);
+                    this.AuxTwoParts(fromAux, projectionAux);
                 }
-                else if (secondArgument.NodeType.IsBuffer())
+                else
                 {
-                    if (this.CheckProjectionIfAllAreFunctions(projectionAux))
-                    {
-                        this.result = this.CreateFromApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, projectionAux);
-                    }
-                    else
-                    {
-                        this.result = this.CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjection(fromAux, secondArgument, projectionAux);
-                    }
+                    this.AuxThreeParts(fromAux, secondArgument, projectionAux);
                 }
-
-                this.result.Column = fromAux.Column;
-                this.result.Line = fromAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2}", fromAux.NodeText, secondArgument.NodeText, projectionAux.NodeText);
-            }
-            else if (childrenCount == 4)
-            {
-                PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
-                PlanNode secondArgument = (PlanNode)this.applyWindow.Evaluate(thread);
-                PlanNode thirdArgument = (PlanNode)this.groupBy.Evaluate(thread);
-                PlanNode fourthArgument = (PlanNode)this.select.Evaluate(thread);
-
-                if ((secondArgument.NodeType.IsBuffer() || thirdArgument.NodeType.IsProjectionOfSelect()) && fourthArgument.NodeType.IsOrderBy())
-                {
-                    if (this.CheckProjectionIfAllAreFunctions(thirdArgument))
-                    {
-                        // no es necesario hacer el order by teniendo unicamente funciones de agregación en la proyección
-                        this.result = this.CreateFromApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument);
-                    }
-                    else
-                    {
-                        this.result = this.CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjectionOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument);
-                    }
-                }
-                else if (secondArgument.NodeType.IsBuffer() && thirdArgument.NodeType.IsGroupBy() && fourthArgument.NodeType.IsProjectionOfSelect())
-                {
-                    this.result = this.CreateFromApplyWindowGroupBySelect(fromAux, secondArgument, thirdArgument, fourthArgument);
-                }
-                else if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsProjectionOfSelect())
-                {
-                    if (this.CheckProjectionIfAllAreFunctions(fourthArgument))
-                    {
-                        this.result = this.CreateFromWhereApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
-                    }
-                    else
-                    {
-                        this.result = this.CreateFromWhereApplyWindowSelectWithoutOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
-                    }
-                }
-
-                this.result.Column = fromAux.Column;
-                this.result.Line = fromAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText);
-            }
-            else if (childrenCount == 5)
-            {
-                PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
-                PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
-                PlanNode thirdArgument = (PlanNode)this.applyWindow.Evaluate(thread);
-                PlanNode fourthArgument = (PlanNode)this.groupBy.Evaluate(thread);
-                PlanNode fifthArgument = (PlanNode)this.select.Evaluate(thread);
-
-                if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsGroupBy() && fifthArgument.NodeType.IsProjectionOfSelect())
-                {
-                    this.result = this.CreateFromWhereApplyWindowGroupBySelect(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
-                }
-                else if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsProjectionOfSelect() && fifthArgument.NodeType.IsOrderBy())
-                {
-                    if (this.CheckProjectionIfAllAreFunctions(fourthArgument))
-                    {
-                        this.result = this.CreateFromWhereApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
-                    }
-                    else
-                    {
-                        this.result = this.CreateFromWhereApplyWindowSelectWithoutOnlyFunctionsInProjectionOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
-                    }
-                }
-                else if (secondArgument.NodeType.IsBuffer() && thirdArgument.NodeType.IsGroupBy() && fourthArgument.NodeType.IsProjectionOfSelect() && fifthArgument.NodeType.IsOrderBy())
-                {
-                    this.result = this.CreateFromApplyWindowGroupBySelectOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
-                }
-
-                this.result.Column = fromAux.Column;
-                this.result.Line = fromAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText, fifthArgument.NodeText);
             }
             else if (childrenCount == 6)
             {
-                PlanNode fromAux = (PlanNode)this.from.Evaluate(thread);
                 PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
                 PlanNode thirdArgument = (PlanNode)this.applyWindow.Evaluate(thread);
                 PlanNode fourthArgument = (PlanNode)this.groupBy.Evaluate(thread);
                 PlanNode fifthArgument = (PlanNode)this.select.Evaluate(thread);
                 PlanNode sixthArgument = (PlanNode)this.sixth.Evaluate(thread);
 
-                this.result = this.CreateFromWhereApplyWindowGroupBySelectOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
-
-                this.result.Column = fromAux.Column;
-                this.result.Line = fromAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText, fifthArgument.NodeText, sixthArgument.NodeText);
+                // six, five, four, and three arguments
+                if (secondArgument != null && fourthArgument != null && sixthArgument != null)
+                {
+                    this.AuxSixParts(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
+                }
+                else if (secondArgument == null && fourthArgument != null && sixthArgument != null)
+                {
+                    this.AuxFiveParts(fromAux, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
+                }
+                else if (secondArgument != null && fourthArgument == null && sixthArgument != null)
+                {
+                    this.AuxFiveParts(fromAux, secondArgument, thirdArgument, fifthArgument, sixthArgument);
+                }
+                else if (secondArgument != null && fourthArgument != null && sixthArgument == null)
+                {
+                    this.AuxFiveParts(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
+                }
+                else if (secondArgument == null && fourthArgument == null && sixthArgument != null)
+                {
+                    this.AuxFourParts(fromAux, thirdArgument, fifthArgument, sixthArgument);
+                }
+                else if (secondArgument != null && fourthArgument == null && sixthArgument == null)
+                {
+                    this.AuxFourParts(fromAux, secondArgument, thirdArgument, fifthArgument);
+                }
+                else if (secondArgument == null && fourthArgument != null && sixthArgument == null)
+                {
+                    this.AuxFourParts(fromAux, thirdArgument, fourthArgument, fifthArgument);
+                }
+                else if (secondArgument == null && fourthArgument == null && sixthArgument == null)
+                {
+                    this.AuxThreeParts(fromAux, thirdArgument, fifthArgument);
+                }
             }
 
             this.EndEvaluate(thread);
 
+            this.result.Column = fromAux.Column;
+            this.result.Line = fromAux.Line;
             /* ******************************************************************************************************************************************************** */
+
+            // nodos para crear el objeto QueryResult resultante
             PlanNode scopeFinalResult = new PlanNode();
             scopeFinalResult.NodeType = PlanNodeTypeEnum.NewScope;
             scopeFinalResult.Children = new List<PlanNode>();
@@ -262,13 +202,32 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             PlanNode finalResult = new PlanNode();
             finalResult.NodeType = PlanNodeTypeEnum.SelectForResult;
-            finalResult.NodeText = this.result.NodeText;
             finalResult.Children = new List<PlanNode>();
 
             finalResult.Children.Add(scopeFinalResult);
             finalResult.Children.Add(lambdaForResult);
 
-            return finalResult;
+            // nodo para crear el subscribe
+            PlanNode scopeSubscribe = new PlanNode();
+            scopeSubscribe.NodeType = PlanNodeTypeEnum.NewScope;
+            scopeSubscribe.Children = new List<PlanNode>();
+            scopeSubscribe.Children.Add(finalResult);
+
+            PlanNode subscriptionNode = new PlanNode();
+            subscriptionNode.NodeType = PlanNodeTypeEnum.Subscription;
+            subscriptionNode.Children = new List<PlanNode>();
+            subscriptionNode.Children.Add(scopeSubscribe);
+
+            PlanNode observableCreateNode = new PlanNode();
+            observableCreateNode.NodeType = PlanNodeTypeEnum.ObservableCreate;
+            observableCreateNode.NodeText = this.result.NodeText;
+            observableCreateNode.Children = new List<PlanNode>();
+            observableCreateNode.Children.Add(subscriptionNode);
+
+            // agrega algunas cosas a la compilación           
+            this.ImproveTree(observableCreateNode);
+
+            return observableCreateNode;
         }
 
         /// <summary>
@@ -305,6 +264,137 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             return false;
         }
+
+        #region auxiliar
+
+        /// <summary>
+        /// Helper method for query with two parts
+        /// </summary>
+        /// <param name="fromAux">Query source</param>
+        /// <param name="projectionAux">Projection to return</param>
+        private void AuxTwoParts(PlanNode fromAux, PlanNode projectionAux)
+        {
+            this.result = this.CreateFromSelect(fromAux, projectionAux);
+            this.result.NodeText = string.Format("{0} {1}", fromAux.NodeText, projectionAux.NodeText);
+        }
+
+        /// <summary>
+        /// Helper method for query with three parts
+        /// </summary>
+        /// <param name="fromAux">Query source</param>
+        /// <param name="secondArgument">Second argument</param>
+        /// <param name="projectionAux">Projection to return</param>
+        private void AuxThreeParts(PlanNode fromAux, PlanNode secondArgument, PlanNode projectionAux)
+        {
+            if (secondArgument.NodeType.IsWhere())
+            {
+                this.result = this.CreateFromWhereSelect(fromAux, secondArgument, projectionAux);
+            }
+            else if (secondArgument.NodeType.IsBuffer())
+            {
+                if (this.CheckProjectionIfAllAreFunctions(projectionAux))
+                {
+                    this.result = this.CreateFromApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, projectionAux);
+                }
+                else
+                {
+                    this.result = this.CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjection(fromAux, secondArgument, projectionAux);
+                }
+            }
+
+            this.result.NodeText = string.Format("{0} {1} {2}", fromAux.NodeText, secondArgument.NodeText, projectionAux.NodeText);
+        }
+
+        /// <summary>
+        /// Helper method for query with four parts
+        /// </summary>
+        /// <param name="fromAux">Query source</param>
+        /// <param name="secondArgument">Second argument</param>
+        /// <param name="thirdArgument">Third argument</param>
+        /// <param name="fourthArgument">Fourth argument</param>
+        private void AuxFourParts(PlanNode fromAux, PlanNode secondArgument, PlanNode thirdArgument, PlanNode fourthArgument)
+        {
+            if ((secondArgument.NodeType.IsBuffer() || thirdArgument.NodeType.IsProjectionOfSelect()) && fourthArgument.NodeType.IsOrderBy())
+            {
+                if (this.CheckProjectionIfAllAreFunctions(thirdArgument))
+                {
+                    // no es necesario hacer el order by teniendo unicamente funciones de agregación en la proyección
+                    this.result = this.CreateFromApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument);
+                }
+                else
+                {
+                    this.result = this.CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjectionOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument);
+                }
+            }
+            else if (secondArgument.NodeType.IsBuffer() && thirdArgument.NodeType.IsGroupBy() && fourthArgument.NodeType.IsProjectionOfSelect())
+            {
+                this.result = this.CreateFromApplyWindowGroupBySelect(fromAux, secondArgument, thirdArgument, fourthArgument);
+            }
+            else if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsProjectionOfSelect())
+            {
+                if (this.CheckProjectionIfAllAreFunctions(fourthArgument))
+                {
+                    this.result = this.CreateFromWhereApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
+                }
+                else
+                {
+                    this.result = this.CreateFromWhereApplyWindowSelectWithoutOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
+                }
+            }
+
+            this.result.NodeText = string.Format("{0} {1} {2} {3}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText);
+        }
+
+        /// <summary>
+        /// Helper method for query with five parts
+        /// </summary>
+        /// <param name="fromAux">Query source</param>
+        /// <param name="secondArgument">Second argument</param>
+        /// <param name="thirdArgument">Third argument</param>
+        /// <param name="fourthArgument">Fourth argument</param>
+        /// <param name="fifthArgument">fifth argument</param>
+        private void AuxFiveParts(PlanNode fromAux, PlanNode secondArgument, PlanNode thirdArgument, PlanNode fourthArgument, PlanNode fifthArgument)
+        {
+            if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsGroupBy() && fifthArgument.NodeType.IsProjectionOfSelect())
+            {
+                this.result = this.CreateFromWhereApplyWindowGroupBySelect(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
+            }
+            else if (secondArgument.NodeType.IsWhere() && thirdArgument.NodeType.IsBuffer() && fourthArgument.NodeType.IsProjectionOfSelect() && fifthArgument.NodeType.IsOrderBy())
+            {
+                if (this.CheckProjectionIfAllAreFunctions(fourthArgument))
+                {
+                    this.result = this.CreateFromWhereApplyWindowSelectWithOnlyFunctionsInProjection(fromAux, secondArgument, thirdArgument, fourthArgument);
+                }
+                else
+                {
+                    this.result = this.CreateFromWhereApplyWindowSelectWithoutOnlyFunctionsInProjectionOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
+                }
+            }
+            else if (secondArgument.NodeType.IsBuffer() && thirdArgument.NodeType.IsGroupBy() && fourthArgument.NodeType.IsProjectionOfSelect() && fifthArgument.NodeType.IsOrderBy())
+            {
+                this.result = this.CreateFromApplyWindowGroupBySelectOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
+            }
+
+            this.result.NodeText = string.Format("{0} {1} {2} {3} {4}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText, fifthArgument.NodeText);
+        }
+
+        /// <summary>
+        /// Helper method for query with five parts
+        /// </summary>
+        /// <param name="fromAux">Query source</param>
+        /// <param name="secondArgument">Second argument</param>
+        /// <param name="thirdArgument">Third argument</param>
+        /// <param name="fourthArgument">Fourth argument</param>
+        /// <param name="fifthArgument">fifth argument</param>
+        /// <param name="sixthArgument">sixth argument</param>
+        private void AuxSixParts(PlanNode fromAux, PlanNode secondArgument, PlanNode thirdArgument, PlanNode fourthArgument, PlanNode fifthArgument, PlanNode sixthArgument)
+        {
+            this.result = this.CreateFromWhereApplyWindowGroupBySelectOrderBy(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
+
+            this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5}", fromAux.NodeText, secondArgument.NodeText, thirdArgument.NodeText, fourthArgument.NodeText, fifthArgument.NodeText, sixthArgument.NodeText);
+        }
+
+        #endregion auxiliar
 
         #region CompletarArbolesDeEjecucion
 
@@ -610,7 +700,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
             projectionAux.Properties.Add("DisposeEvents", false);
-            selectForEnumerable.Children.Add(projectionAux);            
+            selectForEnumerable.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForEnumerable);
@@ -1035,7 +1125,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
             projectionAux.Properties.Add("DisposeEvents", false);
-            selectForEnumerable.Children.Add(projectionAux);            
+            selectForEnumerable.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForEnumerable);
@@ -1056,7 +1146,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             {
                 selectForBuffer.Children.Add(toList);
             }
-            
+
             /* ******************************************************************************************************************************************************** */
 
             return selectForBuffer;
@@ -1165,7 +1255,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             {
                 selectForBuffer.Children.Add(toList);
             }
-            
+
             /* ******************************************************************************************************************************************************** */
 
             return selectForBuffer;
@@ -1283,5 +1373,70 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         }
 
         #endregion
+
+        #region treeImprovement
+
+        /// <summary>
+        /// Do things to the syntax tree
+        /// </summary>
+        /// <param name="root">Root node of the tree</param>
+        private void ImproveTree(PlanNode root)
+        {
+            NodesFinder nf = new NodesFinder();
+
+            IEnumerable<string> sources = nf.FindNode(root, PlanNodeTypeEnum.ObservableFrom).Select(x => x.Children.First().Properties["Value"].ToString());
+            List<PlanNode> sourceRefNodes = nf.FindNode(root, PlanNodeTypeEnum.Event);
+            IEnumerable<string> sourceRefs = null;
+
+            // obtengo referencias vacias, es decir, llamadas a eventos sin referenciar a la fuente. Ej: @event.Mes...
+            IEnumerable<PlanNode> emptyRefNodes = sourceRefNodes.Where(x => x.Children[0].Properties["Value"].ToString().Equals(string.Empty));
+
+            if (sources.Count() == 1)
+            {
+                // obtengo la fuente
+                string source = sources.First();
+
+                foreach (PlanNode emptyRef in emptyRefNodes)
+                {
+                    // transormo las referencias vacias al nombre de la fuente
+                    emptyRef.Children[0].Properties["Value"] = source;
+                }
+
+                // si hace referencia a una fuente diferente a la del from lanzo una excepcion
+                sourceRefs = sourceRefNodes.Select(x => x.Children[0].Properties["Value"].ToString());
+                if (!sourceRefs.All(x => x == source))
+                {
+                    throw new Exceptions.CompilationException(string.Format("Invalid source {0}.", source));
+                }
+            }
+            else
+            {
+                // si existe alguna referencia vacia, lanzo una excepción
+                if (emptyRefNodes.Count() > 0)
+                {
+                    string place = emptyRefNodes.Select(x => string.Format("line: {0} and column: {1}", x.Line, x.Column)).First();
+                    throw new Exceptions.CompilationException(string.Format("You need to specify the source for the event at {0}.", place));
+                }
+
+                // verifico que solo se hagan referencia a las fuentes especificadas en el join y with
+                sourceRefs = sourceRefNodes.Select(x => x.Children[0].Properties["Value"].ToString());
+                foreach (string source in sources)
+                {
+                    if (!sourceRefs.Contains(source))
+                    {
+                        throw new Exceptions.CompilationException(string.Format("Invalid source {0}.", source));
+                    }
+                }
+            }
+
+            /*IEnumerable<PlanNode> createScopeNodes = nf.FindNode(root, PlanNodeTypeEnum.NewScope).Where(x => !x.Properties.ContainsKey("Sources"));
+
+            foreach (PlanNode node in createScopeNodes)
+            {
+                node.Properties.Add("Sources", sources);
+            }*/
+        }
+
+        #endregion treeImprovement
     }
 }

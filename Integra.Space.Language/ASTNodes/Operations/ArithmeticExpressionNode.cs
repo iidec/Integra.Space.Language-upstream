@@ -9,7 +9,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
     using System.Collections.Generic;
     using Integra.Space.Language.ASTNodes.Base;
     using Integra.Space.Language.Errors;
-    
+
     using Integra.Space.Language.General.Validations;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -253,7 +253,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// <returns>true if is numeric type</returns>
         public bool IsNumericType(Type type)
         {
-            if (type == null) 
+            if (type == null)
             {
                 return false;
             }
@@ -303,6 +303,15 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrenForResult(l, r, thread);
                 this.ValidateTypesForOperation(l, r, this.operationNode, thread);
+
+                if (bool.Parse(l.Properties["IsConstant"].ToString()) == true && bool.Parse(r.Properties["IsConstant"].ToString()) == true)
+                {
+                    this.result.Properties.Add("IsConstant", true);
+                }
+                else
+                {
+                    this.result.Properties.Add("IsConstant", false);
+                }
             }
             else
             {

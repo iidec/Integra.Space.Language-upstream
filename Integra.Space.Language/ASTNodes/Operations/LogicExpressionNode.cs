@@ -360,6 +360,14 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrensForResult(l, r, thread);
                 this.ValidateTypesForOperation(l, r, this.operationNode, thread);
+                if (bool.Parse(r.Properties["IsConstant"].ToString()) == true || bool.Parse(l.Properties["IsConstant"].ToString()) == true)
+                {
+                    this.result.Properties.Add("IsConstant", true);
+                }
+                else
+                {
+                    this.result.Properties.Add("IsConstant", false);
+                }
             }
             else if (childrenCount == 2)
             {
@@ -371,6 +379,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrensForResult(r, thread);
                 this.ValidateTypesForOperation(r, this.operationNode, thread);
+                this.result.Properties.Add("IsConstant", bool.Parse(r.Properties["IsConstant"].ToString()));
             }
             else
             {

@@ -53,7 +53,11 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             base.Init(context, treeNode);
 
             int childrenCount = ChildrenNodes.Count;
-            if (childrenCount == 3)
+            if (childrenCount == 0)
+            {
+                return;
+            }
+            else if (childrenCount == 3)
             {
                 this.orderWord = (string)ChildrenNodes[0].Token.Value;
                 this.reservedWordBy = (string)ChildrenNodes[1].Token.Value;
@@ -80,12 +84,18 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
+            if (ChildrenNodes.Count == 0)
+            {
+                return null;
+            }
+
             this.BeginEvaluate(thread);
 
             PlanNode planProjection = new PlanNode();
             planProjection.Column = ChildrenNodes[0].Token.Location.Column;
             planProjection.Line = ChildrenNodes[0].Token.Location.Line;
             planProjection.NodeType = PlanNodeTypeEnum.Projection;
+            planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
             planProjection.Children = new List<PlanNode>();
 
             if (this.reservedWordDirection == null)
