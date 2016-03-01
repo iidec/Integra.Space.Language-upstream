@@ -155,6 +155,9 @@
     <Compile Include="Grammars\ProjectionGrammar.cs" />
     <Compile Include="Grammars\GroupByLanguageRuntime.cs" />
     <Compile Include="Grammars\ProjectionLanguageRuntime.cs" />
+    <Compile Include="Metadata\MetadataGenerator.cs" />
+    <Compile Include="Metadata\SpaceMetadataTreeNode.cs" />
+    <Compile Include="Metadata\SpaceMetadataTreeNodeTypeEnum.cs" />
     <Compile Include="Parsers\ExpressionParser.cs" />
     <Compile Include="General\Validations\CastValidation.cs" />
     <Compile Include="General\Validations\TypeValidation.cs" />

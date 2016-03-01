@@ -18,7 +18,7 @@ namespace Integra.Space.Language.Analysis
 
             Console.WriteLine("[1] for graph, [2] for generate metadata");
             string option = Console.ReadLine();
-            option = "2";
+            //option = "2";
 
             if (option.Equals("1"))
             {
@@ -35,10 +35,23 @@ namespace Integra.Space.Language.Analysis
 
                         if (string.IsNullOrWhiteSpace(eql))
                         {
-                            eql = string.Format("from {0} where {1} select {2} as CampoNulo",
-                                                                                "SpaceObservable1",
-                                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                                "@event.Message.#0.[\"Campo que no existe\"]");
+                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                                                                                            "SpaceObservable1",
+                                                                                            "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                        
+                        /*
+                            eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                    "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                    "ON t1.@event.Adapter.Name == t2.@event.Adapter.Name and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
+                                    "TIMEOUT '00:00:01' " +
+                                    "EVENTLIFETIME '00:00:10' " +
+                                    "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                    "SELECT t1.@event.Message.#1.#43 as c1 ";
+                            */
                         }
 
                         EQLPublicParser parser = new EQLPublicParser(eql);
@@ -99,7 +112,7 @@ namespace Integra.Space.Language.Analysis
                         */
                         eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
-                                "ON t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
+                                "ON t1.@event.Adapter.Name == t2.@event.Adapter.Name and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
                                 "TIMEOUT '00:00:01' " +
                                 "EVENTLIFETIME '00:00:10' " +
                                 "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
@@ -108,14 +121,14 @@ namespace Integra.Space.Language.Analysis
                     }
 
                     EQLPublicParser parser = new EQLPublicParser(eql);
-                    ParseTree parseTree = parser.Parse();
+                    parser.Parse();
 
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating metadata...");
 
-                    MetadataGenerator mg = new MetadataGenerator();
-                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parseTree.Root);
-                    SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
+                    Integra.Space.Language.Metadata.MetadataGenerator mg = new Integra.Space.Language.Metadata.MetadataGenerator();
+                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parser.ParseTree.Root);
+                    Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
                     Console.WriteLine("Metadata created.");
 

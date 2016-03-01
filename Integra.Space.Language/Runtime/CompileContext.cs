@@ -5,23 +5,25 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.Runtime
 {
+    using Integra.Space.Language.Metadata;
+
     /// <summary>
     /// Space compile context
     /// </summary>
     internal class CompileContext
     {
         /// <summary>
-        /// Query name
+        /// Query name.
         /// </summary>
         private string queryName;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the print log is activated
+        /// Gets or sets a value indicating whether the print log is activated.
         /// </summary>
         public bool PrintLog { get; set; }
 
         /// <summary>
-        /// Gets or sets the query name
+        /// Gets or sets the query name.
         /// </summary>
         public string QueryName
         {
@@ -45,5 +47,15 @@ namespace Integra.Space.Language.Runtime
         /// Gets or sets the space scheduler
         /// </summary>
         public IQuerySchedulerFactory Scheduler { get; set; }
+
+        /// <summary>
+        /// Gets or sets the metadata of the query.
+        /// </summary>
+        public SpaceMetadataTreeNode Metadata { get; set; }
+
+        /// <summary>
+        /// Gets or sets the execution plan.
+        /// </summary>
+        public PlanNode ExecutionPlan { get; set; }
     }
 }

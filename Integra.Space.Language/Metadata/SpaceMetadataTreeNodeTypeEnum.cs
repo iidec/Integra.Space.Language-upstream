@@ -1,14 +1,14 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="MetadataTreeNodeTypeEnum.cs" company="Integra.Space.Common">
+// <copyright file="SpaceMetadataTreeNodeTypeEnum.cs" company="Integra.Space.Common">
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.Analysis.Metadata.MetadataNodes
+namespace Integra.Space.Language.Metadata
 {
     /// <summary>
     /// Metadata tree node type
     /// </summary>
-    public enum MetadataTreeNodeTypeEnum
+    public enum SpaceMetadataTreeNodeTypeEnum
     {
         /// <summary>
         /// query node type

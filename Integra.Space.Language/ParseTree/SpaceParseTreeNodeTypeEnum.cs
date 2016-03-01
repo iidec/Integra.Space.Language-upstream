@@ -188,7 +188,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// event values type
         /// </summary>
-        EVENT_VALUES = 62,
+        EVENT_PROPERTY_VALUE = 62,
 
         /// <summary>
         /// event with source type

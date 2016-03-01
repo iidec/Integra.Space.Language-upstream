@@ -72,6 +72,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
         {
             this.BeginEvaluate(thread);
 
+            this.result.Children = new List<PlanNode>();
             int childNodesCount = ChildrenNodes.Count;
             if (childNodesCount == 3)
             {
@@ -97,7 +98,6 @@ namespace Integra.Space.Language.ASTNodes.Constants
                 this.result.Column = value.Column;
                 this.result.Line = value.Line;
                 this.result.NodeText = value.NodeText;
-                this.result.Children = new List<PlanNode>();
                 this.result.Children.Add(value);
                 this.result.Children.Add(alias);
             }

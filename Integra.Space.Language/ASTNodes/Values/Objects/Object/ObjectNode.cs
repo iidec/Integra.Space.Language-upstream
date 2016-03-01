@@ -36,6 +36,11 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
         private AstNodeBase id;
 
         /// <summary>
+        /// Message word
+        /// </summary>
+        private string message;
+
+        /// <summary>
         /// Result plan
         /// </summary>
         private PlanNode result;
@@ -52,6 +57,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
             if (childrenCount == 4)
             {
                 this.evento = AddChild(NodeUseType.Parameter, SR.EventRole, ChildrenNodes[0]) as AstNodeBase;
+                this.message = (string)ChildrenNodes[1].Token.Text;
                 this.objeto = AddChild(NodeUseType.Keyword, SR.ObjectRole, ChildrenNodes[2]) as AstNodeBase;
                 this.id = AddChild(NodeUseType.Keyword, SR.IdentifierRole, ChildrenNodes[3]) as AstNodeBase;
             }
@@ -84,7 +90,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
                 auxMessage.Column = ChildrenNodes[1].Token.Location.Column;
                 auxMessage.Properties.Add(SR.DataTypeProperty, typeof(Message));
                 auxMessage.Line = ChildrenNodes[1].Token.Location.Line;
-                auxMessage.NodeText = eventObject.NodeText + ".Message";
+                auxMessage.NodeText = string.Format("{0}.{1}", eventObject.NodeText, this.message);
                 auxMessage.NodeType = PlanNodeTypeEnum.ObjectMessage;
                 auxMessage.Children = new List<PlanNode>();
                 auxMessage.Children.Add(eventObject);

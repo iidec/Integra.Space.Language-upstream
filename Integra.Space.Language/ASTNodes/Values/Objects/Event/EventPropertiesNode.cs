@@ -45,7 +45,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             base.Init(context, treeNode);
 
             this.ev = AddChild(NodeUseType.Parameter, SR.EventRole, ChildrenNodes[0]) as AstNodeBase;
-            this.property = (string)ChildrenNodes[1].Token.Value;
+            this.property = (string)ChildrenNodes[1].Token.Text;
 
             this.result = new PlanNode();
             this.result.Column = ChildrenNodes[1].Token.Location.Column;
@@ -72,31 +72,31 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             {
                 this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Timestamp.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(DateTime));
-                this.result.NodeText = auxEvent.NodeText + "." + EventPropertiesEnum.Timestamp.ToString();
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
             }
             else if (this.property.ToLower() == SR.NameProperty)
             {
                 this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Name.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(string));
-                this.result.NodeText = auxEvent.NodeText + "." + EventPropertiesEnum.Name.ToString();
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
             }
             else if (this.property.ToLower() == SR.AdapterProperty)
             {
                 this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Adapter.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(EventAdapter));
-                this.result.NodeText = auxEvent.NodeText + "." + EventPropertiesEnum.Adapter.ToString();
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
             }
             else if (this.property.ToLower() == SR.AgentProperty)
             {
                 this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Agent.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(EventAgent));
-                this.result.NodeText = auxEvent.NodeText + "." + EventPropertiesEnum.Agent.ToString();
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
             }
             else if (this.property.ToLower() == SR.MessageProperty)
             {
                 this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Message.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(Message));
-                this.result.NodeText = auxEvent.NodeText + "." + EventPropertiesEnum.Message.ToString();
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
                 this.result.NodeType = PlanNodeTypeEnum.ObjectMessage;
             }
             else

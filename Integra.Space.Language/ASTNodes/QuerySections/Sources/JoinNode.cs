@@ -104,15 +104,16 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
             if (joinTypeAux != null)
             {
+                this.SetResultJoinType(joinTypeAux);
                 this.result.Column = joinTypeAux.Column;
                 this.result.Line = joinTypeAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6} {7} {8}", joinTypeAux.NodeText, joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
+                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6} {7}", joinTypeAux.NodeText, joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
             }
             else
             {
                 this.result.Column = joinAux.Column;
                 this.result.Line = joinAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6} {7}", joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
+                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6}", joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
             }
 
             this.result.Children = new List<PlanNode>();
@@ -131,7 +132,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// Sets the join type to the result node
         /// </summary>
         /// <param name="joinTypeNode">Join type node</param>
-        private void SetResultTime(PlanNode joinTypeNode)
+        private void SetResultJoinType(PlanNode joinTypeNode)
         {
             if (PlanNodeTypeEnum.LeftJoin.ToString().Equals(joinTypeNode.NodeText, System.StringComparison.InvariantCultureIgnoreCase))
             {

@@ -16,12 +16,17 @@ namespace Integra.Space.Language
     internal sealed class EQLPublicParser
     {
         /// <summary>
-        /// Command text
+        /// Command text.
         /// </summary>
         private string commandText;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EQLPublicParser"/> class
+        /// Parse tree.
+        /// </summary>
+        private ParseTree parseTree;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EQLPublicParser"/> class.
         /// </summary>
         /// <param name="commandText">Command text</param>
         public EQLPublicParser(string commandText)
@@ -30,18 +35,29 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
-        /// Implements the logic to parse commands
+        /// Gets the parse tree generated.
         /// </summary>
-        /// <returns>Execution plan</returns>
+        public ParseTree ParseTree
+        {
+            get
+            {
+                return this.parseTree;
+            }
+        }
+
+        /// <summary>
+        /// Implements the logic to parse commands.
+        /// </summary>
+        /// <returns>Execution plan.</returns>
         public List<PlanNode> Evaluate()
         {
             List<PlanNode> nodes = null;
 
             try
             {
-                ParseTree parseTree = this.Parse();
+                this.Parse();
                 Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new EQLLanguageRuntime());
-                nodes = (List<PlanNode>)app.Evaluate(parseTree);
+                nodes = (List<PlanNode>)app.Evaluate(this.parseTree);
             }
             catch (SyntaxException e)
             {
@@ -56,24 +72,21 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
-        /// Implements the logic to parse commands
+        /// Implements the logic to parse commands.
         /// </summary>
-        /// <returns>Execution plan</returns>
-        public ParseTree Parse()
+        public void Parse()
         {
             EQLGrammar grammar = new EQLGrammar();
             LanguageData language = new LanguageData(grammar);
             Parser parser = new Parser(language);
-            ParseTree parseTree = parser.Parse(this.commandText);
-            if (parseTree.HasErrors())
+            this.parseTree = parser.Parse(this.commandText);
+            if (this.parseTree.HasErrors())
             {
-                foreach (var parserMessage in parseTree.ParserMessages)
+                foreach (var parserMessage in this.parseTree.ParserMessages)
                 {
                     throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                 }
             }
-
-            return parseTree;
         }
     }
 }

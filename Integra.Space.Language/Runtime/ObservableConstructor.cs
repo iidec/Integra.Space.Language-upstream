@@ -112,8 +112,7 @@ namespace Integra.Space.Language.Runtime
         {
             var delegateType = typeof(Func<,>).MakeGenericType(inputType, outputType);
             Delegate result = Expression.Lambda(delegateType, this.GenerateExpressionTree(plan), this.parameterList.ToArray()).Compile();
-
-            this.scopeLevel = 0;
+            
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -134,8 +133,7 @@ namespace Integra.Space.Language.Runtime
         public Func<In, Out> Compile<In, Out>(PlanNode plan)
         {
             Func<In, Out> funcResult = this.CreateLambda<In, Out>(plan).Compile();
-
-            this.scopeLevel = 0;
+            
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -157,8 +155,7 @@ namespace Integra.Space.Language.Runtime
         public Func<In1, In2, Out> Compile<In1, In2, Out>(PlanNode plan)
         {
             Func<In1, In2, Out> funcResult = this.CreateLambda<In1, In2, Out>(plan).Compile();
-
-            this.scopeLevel = 0;
+            
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -178,8 +175,7 @@ namespace Integra.Space.Language.Runtime
         public Func<Out> Compile<Out>(PlanNode plan)
         {
             Func<Out> funcResult = this.CreateLambda<Out>(plan).Compile();
-
-            this.scopeLevel = 0;
+            
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -369,8 +365,8 @@ namespace Integra.Space.Language.Runtime
                                             .Invoke(this, new object[] { actualNode, leftNode, rightNode }) as Expression;
                     break;
                 case PlanNodeTypeEnum.ObservableWhereForEventLock:
-                    Func<PlanNode, Expression, Expression> selectForEventLockMethod = this.CreateWhereForEventLock;
-                    expResult = selectForEventLockMethod.Method
+                    Func<PlanNode, Expression, Expression> whereForEventLockMethod = this.CreateWhereForEventLock;
+                    expResult = whereForEventLockMethod.Method
                                             .Invoke(this, new object[] { actualNode, leftNode }) as Expression;
                     break;
                 case PlanNodeTypeEnum.ObservableSelectForGroupBy:
@@ -1888,7 +1884,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Where(m => { return m.Name == "Lock"; })
                                                 .Single();
 
-                Expression selectBlock =
+                Expression lockBlock =
                     Expression.Block(
                         new[] { lambdaResult },
                         Expression.TryCatch(
@@ -1907,8 +1903,8 @@ namespace Integra.Space.Language.Runtime
                         lambdaResult
                         );
 
-                Type delegateType = typeof(Func<,>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0], selectBlock.Type);
-                LambdaExpression lambdaSelect = Expression.Lambda(delegateType, selectBlock, new ParameterExpression[] { this.actualScope.GetParameterByName(LEFTSOURCE) });
+                Type delegateType = typeof(Func<,>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0], lockBlock.Type);
+                LambdaExpression lambdaSelect = Expression.Lambda(delegateType, lockBlock, new ParameterExpression[] { this.actualScope.GetParameterByName(LEFTSOURCE) });
 
                 MethodInfo methodWhere = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
                 {

@@ -11,7 +11,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Nodes finder class.
     /// </summary>
-    internal class NodesFinder
+    internal static class NodesFinder
     {
         /// <summary>
         /// Find the nodes of the specified type in the execution plan.
@@ -19,7 +19,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="plan">Execution plan.</param>
         /// <param name="target">Plan node type to search.</param>
         /// <returns>List of plan nodes</returns>
-        internal List<PlanNode> FindNode(PlanNode plan, PlanNodeTypeEnum target)
+        internal static List<PlanNode> FindNode(this PlanNode plan, PlanNodeTypeEnum target)
         {
             List<PlanNode> resultList = new List<PlanNode>();
 
@@ -41,7 +41,7 @@ namespace Integra.Space.Language.Runtime
 
                     if (p.Children != null)
                     {
-                        foreach (PlanNode planAux in this.FindNode(p, target))
+                        foreach (PlanNode planAux in FindNode(p, target))
                         {
                             resultList.Add(planAux);
                         }
@@ -58,12 +58,18 @@ namespace Integra.Space.Language.Runtime
         /// <param name="plan">Execution plan.</param>
         /// <param name="types">Plan node type to search.</param>
         /// <returns>List of plan nodes</returns>
-        internal List<SpaceParseTreeNode> FindNode(SpaceParseTreeNode plan, params SpaceParseTreeNodeTypeEnum[] types)
+        internal static List<SpaceParseTreeNode> FindNode(this SpaceParseTreeNode plan, params SpaceParseTreeNodeTypeEnum[] types)
         {
             List<SpaceParseTreeNode> resultList = new List<SpaceParseTreeNode>();
 
             if (plan == null)
             {
+                return resultList;
+            }
+
+            if (types.Contains(plan.Type))
+            {
+                resultList.Add(plan);
                 return resultList;
             }
 
@@ -73,17 +79,9 @@ namespace Integra.Space.Language.Runtime
             {
                 foreach (SpaceParseTreeNode p in children)
                 {
-                    if (types.Contains(p.Type))
+                    foreach (SpaceParseTreeNode planAux in FindNode(p, types))
                     {
-                        resultList.Add(p);
-                    }
-
-                    if (p.ChildNodes != null)
-                    {
-                        foreach (SpaceParseTreeNode planAux in this.FindNode(p, types))
-                        {
-                            resultList.Add(planAux);
-                        }
+                        resultList.Add(planAux);
                     }
                 }
             }

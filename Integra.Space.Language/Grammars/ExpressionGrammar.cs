@@ -321,7 +321,7 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_GROUP_KEY_VALUE = new NonTerminal("GROUP_KEY_VALUE", typeof(GroupKeyValueNode));
             nt_GROUP_KEY_VALUE.AstConfig.NodeType = null;
             nt_GROUP_KEY_VALUE.AstConfig.DefaultNodeCreator = () => new GroupKeyValueNode();
-            NonTerminal nt_EVENT_PROPERTIES = new NonTerminal("EVENT_VALUES", typeof(EventPropertiesNode));
+            NonTerminal nt_EVENT_PROPERTIES = new NonTerminal("EVENT_PROPERTY_VALUE", typeof(EventPropertiesNode));
             nt_EVENT_PROPERTIES.AstConfig.NodeType = null;
             nt_EVENT_PROPERTIES.AstConfig.DefaultNodeCreator = () => new EventPropertiesNode();
             NonTerminal nt_EVENT_WITH_SOURCE = new NonTerminal("EVENT_WITH_SOURCE", typeof(EventWithSource));

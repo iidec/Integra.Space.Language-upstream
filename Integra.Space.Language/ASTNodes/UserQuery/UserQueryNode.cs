@@ -754,8 +754,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindowAux.Children[1] = applyWindowAux.Children[1].Children[0].Children[1];
             applyWindowAux.Children[0] = whereAux;
             /* ******************************************************************************************************************************************************** */
-            NodesFinder nf = new NodesFinder();
-            List<PlanNode> lpn = nf.FindNode(projectionAux, PlanNodeTypeEnum.TupleProjection);
+            List<PlanNode> lpn = projectionAux.FindNode(PlanNodeTypeEnum.TupleProjection);
             foreach (PlanNode tuple in lpn)
             {
                 PlanNode tupleValue = tuple.Children[1];
@@ -859,8 +858,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindowAux.NodeType = PlanNodeTypeEnum.ObservableBuffer;
             applyWindowAux.Children[1] = applyWindowAux.Children[1].Children[0].Children[1];
             /* ******************************************************************************************************************************************************** */
-            NodesFinder nf = new NodesFinder();
-            List<PlanNode> lpn = nf.FindNode(projectionAux, PlanNodeTypeEnum.TupleProjection);
+            List<PlanNode> lpn = projectionAux.FindNode(PlanNodeTypeEnum.TupleProjection);
             foreach (PlanNode tuple in lpn)
             {
                 PlanNode tupleValue = tuple.Children[1];
@@ -1179,8 +1177,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindowAux.NodeType = PlanNodeTypeEnum.ObservableBuffer;
             applyWindowAux.Children[1] = applyWindowAux.Children[1].Children[0].Children[1];
             /* ******************************************************************************************************************************************************** */
-            NodesFinder nf = new NodesFinder();
-            List<PlanNode> lpn = nf.FindNode(projectionAux, PlanNodeTypeEnum.TupleProjection);
+            List<PlanNode> lpn = projectionAux.FindNode(PlanNodeTypeEnum.TupleProjection);
             foreach (PlanNode tuple in lpn)
             {
                 PlanNode tupleValue = tuple.Children[1];
@@ -1290,8 +1287,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindowAux.Children[1] = applyWindowAux.Children[1].Children[0].Children[1];
             applyWindowAux.Children[0] = whereAux;
             /* ******************************************************************************************************************************************************** */
-            NodesFinder nf = new NodesFinder();
-            List<PlanNode> lpn = nf.FindNode(projectionAux, PlanNodeTypeEnum.TupleProjection);
+            List<PlanNode> lpn = projectionAux.FindNode(PlanNodeTypeEnum.TupleProjection);
             foreach (PlanNode tuple in lpn)
             {
                 PlanNode tupleValue = tuple.Children[1];
@@ -1382,10 +1378,8 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         /// <param name="root">Root node of the tree</param>
         private void ImproveTree(PlanNode root)
         {
-            NodesFinder nf = new NodesFinder();
-
-            IEnumerable<string> sources = nf.FindNode(root, PlanNodeTypeEnum.ObservableFrom).Select(x => x.Children.First().Properties["Value"].ToString());
-            List<PlanNode> sourceRefNodes = nf.FindNode(root, PlanNodeTypeEnum.Event);
+            IEnumerable<string> sources = root.FindNode(PlanNodeTypeEnum.ObservableFrom).Select(x => x.Children.First().Properties["Value"].ToString());
+            List<PlanNode> sourceRefNodes = root.FindNode(PlanNodeTypeEnum.Event);
             IEnumerable<string> sourceRefs = null;
 
             // obtengo referencias vacias, es decir, llamadas a eventos sin referenciar a la fuente. Ej: @event.Mes...

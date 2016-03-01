@@ -61,12 +61,12 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
                 this.eventWord = (string)ChildrenNodes[1].Token.Value;
                 this.result.NodeText = string.Format("{0}{1}", this.symbol, this.eventWord);
             }
-            else if (count == 4)
+            else if (count == 3)
             {
-                this.sourceId = AddChild(NodeUseType.Parameter, "sourceId", ChildrenNodes[3]) as AstNodeBase;
-                this.dot = (string)ChildrenNodes[1].Token.Value;
-                this.symbol = (string)ChildrenNodes[2].Token.Value;
-                this.eventWord = (string)ChildrenNodes[3].Token.Value;
+                this.sourceId = AddChild(NodeUseType.Parameter, "sourceId", ChildrenNodes[0]) as AstNodeBase;
+                this.dot = ".";
+                this.symbol = (string)ChildrenNodes[1].Token.Value;
+                this.eventWord = (string)ChildrenNodes[2].Token.Value;
                 this.result.NodeText = string.Format("{0}{1}{2}", this.dot, this.symbol, this.eventWord);
             }
 
@@ -97,13 +97,13 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
                 sourceIdAux.Properties.Add("Value", string.Empty);
                 sourceIdAux.Properties.Add("DataType", typeof(object).ToString());
             }
-            else if (count == 4)
+            else if (count == 3)
             {
                 this.BeginEvaluate(thread);
                 sourceIdAux = (PlanNode)this.sourceId.Evaluate(thread);
                 this.EndEvaluate(thread);
 
-                this.result.NodeText += string.Format("{0}{1}", sourceIdAux.NodeText, this.result.NodeText);
+                this.result.NodeText = string.Format("{0}{1}", sourceIdAux.NodeText, this.result.NodeText);
             }
 
             this.result.Children = new System.Collections.Generic.List<PlanNode>();

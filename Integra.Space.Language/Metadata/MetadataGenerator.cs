@@ -1,19 +1,36 @@
-﻿using Integra.Space.Language.Analysis.Metadata.MetadataNodes;
-using Integra.Space.Language.Exceptions;
-using Irony.Parsing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Integra.Space.Language.Analysis
+﻿//-----------------------------------------------------------------------
+// <copyright file="MetadataGenerator.cs" company="Integra.Space.Language">
+//     Copyright (c) Integra.Space.Language. All rights reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+namespace Integra.Space.Language.Metadata
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using Integra.Space.Language.Exceptions;
+    using Integra.Space.Language.Runtime;
+    using Irony.Parsing;
+
+    /// <summary>
+    /// Query metadata generator class
+    /// </summary>
     internal class MetadataGenerator
     {
-        private SpaceMetadataTreeNode root = null;
-
+        /// <summary>
+        /// Get the metadata from the parse tree
+        /// </summary>
+        /// <param name="parseTreeNode">Parse tree root node</param>
+        /// <returns>Metadata tree structure</returns>
         public SpaceMetadataTreeNode GenerateMetadata(SpaceParseTreeNode parseTreeNode)
         {
-            root = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Query);
+            SpaceMetadataTreeNode root = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Query);
+
+            if (parseTreeNode == null)
+            {
+                return root;
+            }
+
             root.ChildNodes = new List<SpaceMetadataTreeNode>();
 
             // se obtienen las fuentes
@@ -30,13 +47,13 @@ namespace Integra.Space.Language.Analysis
                 metadataSource.Value = source.FindNode(SpaceParseTreeNodeTypeEnum.ID_OR_ID_WITH_ALIAS).SingleOrDefault().ChildNodes.Last().TokenValue;
                 metadataSources.ChildNodes.Add(metadataSource);
             }
-            
+
             // se obtienen las propiedades utilizadas de las fuentes definidas
             SpaceMetadataTreeNode objectPrpertiesUsed = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.SourcePropertiesUsed);
             objectPrpertiesUsed.ChildNodes = new List<SpaceMetadataTreeNode>();
             root.ChildNodes.Add(objectPrpertiesUsed);
 
-            this.GetObjectPropertiesUsedInTheBranch(parseTreeNode, objectPrpertiesUsed, false);
+            this.GetObjectPropertiesUsedInTheBranch(parseTreeNode, objectPrpertiesUsed, root, false);
 
             // se obtiene la ventana de la consulta
             SpaceParseTreeNode applyWindow = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.APPLY_WINDOW).SingleOrDefault();
@@ -108,67 +125,7 @@ namespace Integra.Space.Language.Analysis
                     metadataOn.ChildNodes = new List<SpaceMetadataTreeNode>();
                     metadataJoin.ChildNodes.Add(metadataOn);
 
-                    this.GetObjectPropertiesUsedInTheBranch(on, metadataOn, true);
-                    /*IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = on.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
-                        .GroupBy(x =>
-                        {
-                            if (x.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
-                            {
-                                return x.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).Single().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).First().TokenValue;
-                            }
-                            else
-                            {
-                                return x.ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).First().TokenValue;
-                            }
-                        });
-
-                    if (objects.Count() == 0)
-                    {
-                        throw new CompilationException("No events found in the on condition.");
-                    }
-                    
-                    // aqui la O grande indica que es un bloque pesado
-                    foreach (IGrouping<string, SpaceParseTreeNode> @object in objects)
-                    {
-                        SpaceMetadataTreeNode onKey = new SpaceMetadataTreeNode(MetadataTreeNodeTypeEnum.OnKey);
-                        onKey.Value = @object.Key;
-                        onKey.ChildNodes = new List<SpaceMetadataTreeNode>();
-                        metadataOn.ChildNodes.Add(onKey);
-
-                        foreach (SpaceParseTreeNode column in @object)
-                        {
-                            SpaceParseTreeNode aux = column;
-                            string columnName = string.Empty;
-                            Type columnType = typeof(object);
-
-                            if (column.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
-                            {
-                                columnType = Type.GetType(column.ChildNodes.First().TokenValue);
-                                aux = aux.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).First();
-                            }
-
-                            foreach (SpaceParseTreeNode nodesOfEventDefinition in aux.ChildNodes)
-                            {
-                                if (nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.OBJECT_ID_OR_NUMBER) || nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT))
-                                {
-                                    columnName += "_";
-                                    foreach (SpaceParseTreeNode y in nodesOfEventDefinition.ChildNodes)
-                                    {
-                                        columnName += y.TokenValue;
-                                    }
-                                }
-                                else
-                                {
-                                    columnName += string.Format("_{0}", nodesOfEventDefinition.TokenValue);
-                                }
-                            }
-
-                            SpaceMetadataTreeNode metadataColumn = new SpaceMetadataTreeNode(MetadataTreeNodeTypeEnum.Column);
-                            metadataColumn.Value = columnName;
-                            metadataColumn.ValueDataType = columnType;
-                            onKey.ChildNodes.Add(metadataColumn);
-                        }
-                    }*/
+                    this.GetObjectPropertiesUsedInTheBranch(on, metadataOn, root, true);
                 }
 
                 // se obtiene el timeout del join
@@ -196,25 +153,59 @@ namespace Integra.Space.Language.Analysis
                 }
             }
 
-            Console.ReadLine();
+            return root;
+        }
+
+        /// <summary>
+        /// Converts the irony parse tree to space parse tree.
+        /// </summary>
+        /// <param name="externalPaserTreeNode">Parse tree node to concert.</param>
+        /// <returns>Space parse tree.</returns>
+        public SpaceParseTreeNode ConvertIronyParseTree(ParseTreeNode externalPaserTreeNode)
+        {
+            if (externalPaserTreeNode == null)
+            {
+                throw new Exception("Parse tree node cannot be null.");
+            }
+
+            SpaceParseTreeNode root = this.SelectSpaceParseTreeNode(externalPaserTreeNode);
+
+            if (externalPaserTreeNode.ChildNodes != null)
+            {
+                root.ChildNodes = new List<SpaceParseTreeNode>();
+
+                foreach (ParseTreeNode node in externalPaserTreeNode.ChildNodes)
+                {
+                    root.ChildNodes.Add(this.ConvertIronyParseTree(node));
+                }
+            }
 
             return root;
         }
 
-        private void GetObjectPropertiesUsedInTheBranch(SpaceParseTreeNode branch, SpaceMetadataTreeNode parentNodeForProperties, bool byUses)
+        /// <summary>
+        /// Gets the properties used of the specified sources in the incoming brach of the parse three.
+        /// </summary>
+        /// <param name="branch">Branch of the parse tree containing the properties we want.</param>
+        /// <param name="parentNodeForProperties">Metadata node where the properties will be placed as child nodes.</param>
+        /// <param name="root">Metadata root node</param>
+        /// <param name="getByUses">Indicates whether the properties will obtained by usage or by occurrence.</param>
+        private void GetObjectPropertiesUsedInTheBranch(SpaceParseTreeNode branch, SpaceMetadataTreeNode parentNodeForProperties, SpaceMetadataTreeNode root, bool getByUses)
         {
-            IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = branch.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
+            IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = branch.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE)
                         .GroupBy(x =>
                         {
                             SpaceParseTreeNode identifier = null;
 
                             if (x.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
                             {
-                                identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).Single().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
+                                // identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).Single().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
+                                identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
                             }
                             else
                             {
-                                identifier = x.ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();                                
+                                // identifier = x.ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
+                                identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
                             }
 
                             if (identifier != null)
@@ -249,10 +240,12 @@ namespace Integra.Space.Language.Analysis
                     if (column.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
                     {
                         columnType = Type.GetType(column.ChildNodes.First().TokenValue);
-                        aux = aux.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).First();
+                        aux = aux.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE).First();
                     }
 
-                    foreach (SpaceParseTreeNode nodesOfEventDefinition in aux.ChildNodes)
+                    columnName = this.GetColumnName(aux);
+
+                    /*foreach (SpaceParseTreeNode nodesOfEventDefinition in aux.ChildNodes)
                     {
                         if (nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.OBJECT_ID_OR_NUMBER))
                         {
@@ -262,13 +255,13 @@ namespace Integra.Space.Language.Analysis
                                 columnName += y.TokenValue;
                             }
                         }
-                        else if(!nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT))
+                        else if (!nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT))
                         {
                             columnName += string.Format("_{0}", nodesOfEventDefinition.TokenValue);
                         }
-                    }
+                    }*/
 
-                    if (byUses)
+                    if (getByUses)
                     {
                         SpaceMetadataTreeNode metadataColumn = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Column);
                         metadataColumn.Value = columnName;
@@ -277,19 +270,56 @@ namespace Integra.Space.Language.Analysis
                     }
                     else
                     {
-                        if(!source.ChildNodes.Any(x => x.Value.ToString().Equals(columnName)))
+                        if (!source.ChildNodes.Any(x => x.Value.ToString().Equals(columnName)))
                         {
                             SpaceMetadataTreeNode metadataColumn = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Column);
                             metadataColumn.Value = columnName;
                             metadataColumn.ValueDataType = columnType;
                             source.ChildNodes.Add(metadataColumn);
                         }
-                    }                    
+                    }
                 }
             }
         }
-        
 
+        /// <summary>
+        /// Generates the column name of the specify event property.
+        /// </summary>
+        /// <param name="node">Event property tree.</param>
+        /// <returns>Column name.</returns>
+        private string GetColumnName(SpaceParseTreeNode node)
+        {
+            string columnName = string.Empty;
+
+            foreach (SpaceParseTreeNode nodesOfEventDefinition in node.ChildNodes)
+            {
+                if (nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.OBJECT) || nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE))
+                {
+                    columnName += this.GetColumnName(nodesOfEventDefinition);
+                }
+                else if (nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.OBJECT_ID_OR_NUMBER))
+                {
+                    columnName += "_";
+                    foreach (SpaceParseTreeNode y in nodesOfEventDefinition.ChildNodes)
+                    {
+                        columnName += y.TokenValue;
+                    }
+                }
+                else if (!nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT))
+                {
+                    columnName += string.Format("_{0}", nodesOfEventDefinition.TokenValue);
+                }
+            }
+
+            return columnName;
+        }
+
+        /// <summary>
+        /// Gets the space columns of a branch from a space parse tree nodes list.
+        /// </summary>
+        /// <param name="columnNodes">List of parse tree nodes.</param>
+        /// <param name="previousStep">Previous step in the query. group by -> select -> order by.</param>
+        /// <returns>Space parse tree node columns.</returns>
         private List<SpaceMetadataTreeNode> CreateMetadataColumnNodes(List<SpaceParseTreeNode> columnNodes, SpaceMetadataTreeNode previousStep)
         {
             List<SpaceMetadataTreeNode> metadataColumns = new List<SpaceMetadataTreeNode>();
@@ -312,7 +342,7 @@ namespace Integra.Space.Language.Analysis
                         {
                             column.ValueDataType = previousStep.ChildNodes.Where(x => x.Value.Equals(value.ChildNodes.First().TokenValue)).First().ValueDataType;
                         }
-                        if (value.Type.Equals(SpaceParseTreeNodeTypeEnum.identifier) && previousStep != null)
+                        else if (value.Type.Equals(SpaceParseTreeNodeTypeEnum.identifier) && previousStep != null)
                         {
                             column.ValueDataType = previousStep.ChildNodes.Where(x => x.Value.Equals(value.TokenValue)).First().ValueDataType;
                         }
@@ -335,41 +365,24 @@ namespace Integra.Space.Language.Analysis
             return metadataColumns;
         }
 
-        public SpaceParseTreeNode ConvertIronyParseTree(ParseTreeNode ptNode)
-        {
-            if (ptNode == null)
-            {
-                throw new Exception("Parse tree node cannot be null.");
-            }
-
-            SpaceParseTreeNode root = this.SelectSpaceParseTreeNode(ptNode);
-
-            if (ptNode.ChildNodes != null)
-            {
-                root.ChildNodes = new List<SpaceParseTreeNode>();
-
-                foreach (ParseTreeNode node in ptNode.ChildNodes)
-                {
-                    root.ChildNodes.Add(this.ConvertIronyParseTree(node));
-                }
-            }
-
-            return root;
-        }
-
-        private SpaceParseTreeNode SelectSpaceParseTreeNode(ParseTreeNode ptNode)
+        /// <summary>
+        /// Selects the space parse tree node type from the external parse tree node type given.
+        /// </summary>
+        /// <param name="externalParseTreeNode">Parse tree node with external type.</param>
+        /// <returns>Space parse tree node.</returns>
+        private SpaceParseTreeNode SelectSpaceParseTreeNode(ParseTreeNode externalParseTreeNode)
         {
             SpaceParseTreeNode result = null;
-            string nodeType = ptNode.Term.Name;
+            string nodeType = externalParseTreeNode.Term.Name;
 
             if (Enum.IsDefined(typeof(SpaceParseTreeNodeTypeEnum), nodeType))
             {
                 result = new SpaceParseTreeNode((SpaceParseTreeNodeTypeEnum)Enum.Parse(typeof(SpaceParseTreeNodeTypeEnum), nodeType));
-                if (ptNode.Token != null)
+                if (externalParseTreeNode.Token != null)
                 {
-                    result.Token = ptNode.Token.Text;
-                    result.TokenValueDataType = ptNode.Token.Value.GetType();
-                    result.TokenValue = ptNode.Token.ValueString;
+                    result.Token = externalParseTreeNode.Token.Text;
+                    result.TokenValueDataType = externalParseTreeNode.Token.Value.GetType();
+                    result.TokenValue = externalParseTreeNode.Token.ValueString;
                 }
             }
             else
