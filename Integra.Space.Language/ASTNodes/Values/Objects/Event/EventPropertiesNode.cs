@@ -45,7 +45,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             base.Init(context, treeNode);
 
             this.ev = AddChild(NodeUseType.Parameter, SR.EventRole, ChildrenNodes[0]) as AstNodeBase;
-            this.property = (string)ChildrenNodes[1].Token.Text;
+            this.property = ChildrenNodes[1].Token.Text;
 
             this.result = new PlanNode();
             this.result.Column = ChildrenNodes[1].Token.Location.Column;
@@ -64,7 +64,17 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             PlanNode auxEvent = (PlanNode)this.ev.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            this.result.NodeType = PlanNodeTypeEnum.Property;
+            if (auxEvent.Properties.ContainsKey("PropertyName"))
+            {
+                string propertyName = string.Format("{0}_{1}", auxEvent.Properties["PropertyName"], ChildrenNodes[1].Token.Value.ToString());
+                this.result.Properties.Add("PropertyName", propertyName);
+            }
+            else
+            {
+                this.result.Properties.Add("PropertyName", "_" + ChildrenNodes[1].Token.Value.ToString());
+            }
+
+            this.result.NodeType = PlanNodeTypeEnum.EventProperty;
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(auxEvent);
 

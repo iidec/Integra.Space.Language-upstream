@@ -324,9 +324,6 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_EVENT_PROPERTIES = new NonTerminal("EVENT_PROPERTY_VALUE", typeof(EventPropertiesNode));
             nt_EVENT_PROPERTIES.AstConfig.NodeType = null;
             nt_EVENT_PROPERTIES.AstConfig.DefaultNodeCreator = () => new EventPropertiesNode();
-            NonTerminal nt_EVENT_WITH_SOURCE = new NonTerminal("EVENT_WITH_SOURCE", typeof(EventWithSource));
-            nt_EVENT_WITH_SOURCE.AstConfig.NodeType = null;
-            nt_EVENT_WITH_SOURCE.AstConfig.DefaultNodeCreator = () => new EventWithSource();
             NonTerminal nt_OBJECT_ID_OR_NUMBER = new NonTerminal("OBJECT_ID_OR_NUMBER", typeof(ObjectIdOrNumberNode));
             nt_OBJECT_ID_OR_NUMBER.AstConfig.NodeType = null;
             nt_OBJECT_ID_OR_NUMBER.AstConfig.DefaultNodeCreator = () => new ObjectIdOrNumberNode();
@@ -468,10 +465,6 @@ namespace Integra.Space.Language.Grammars
             /* EVENTO */
             nt_EVENT.Rule = terminalId + terminalPunto + terminalArroba + terminalEvent
                             | terminalArroba + terminalEvent;
-            /* **************************** */
-            /* EVENTO CON FUENTE 
-            nt_EVENT_WITH_SOURCE.Rule = terminalId + terminalPunto + nt_OBJECT_VALUE
-                                            | terminalId + terminalPunto + nt_EVENT_PROPERTIES;
             /* **************************** */
 
             this.Root = this.logicExpression;

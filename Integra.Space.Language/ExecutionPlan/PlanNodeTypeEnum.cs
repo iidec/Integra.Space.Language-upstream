@@ -153,11 +153,6 @@ namespace Integra.Space.Language
         ObjectMessage = 74,
 
         /// <summary>
-        /// ObjectWithPrefix type
-        /// </summary>
-        ObjectWithPrefix = 75,
-
-        /// <summary>
         /// Object prefix type
         /// </summary>
         ObjectPrefix = 76,
@@ -196,6 +191,11 @@ namespace Integra.Space.Language
         /// Property type
         /// </summary>
         Property = 100,
+
+        /// <summary>
+        /// Event property type
+        /// </summary>
+        EventProperty = 101,
 
         /// <summary>
         /// TupleProjection type
@@ -570,7 +570,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Select for buffer observable type
         /// </summary>
-        ObservableSelectForBuffer = 510,
+        ObservableSelectForObservableBufferOrSource = 510,
 
         /// <summary>
         /// Buffer observable type

@@ -17,14 +17,20 @@ namespace Integra.Space.Language.Runtime
         /// Find the nodes of the specified type in the execution plan.
         /// </summary>
         /// <param name="plan">Execution plan.</param>
-        /// <param name="target">Plan node type to search.</param>
+        /// <param name="types">Plan node type to search.</param>
         /// <returns>List of plan nodes</returns>
-        internal static List<PlanNode> FindNode(this PlanNode plan, PlanNodeTypeEnum target)
+        internal static List<PlanNode> FindNode(this PlanNode plan, params PlanNodeTypeEnum[] types)
         {
             List<PlanNode> resultList = new List<PlanNode>();
 
             if (plan == null)
             {
+                return resultList;
+            }
+
+            if (types.Contains(plan.NodeType))
+            {
+                resultList.Add(plan);
                 return resultList;
             }
 
@@ -34,17 +40,45 @@ namespace Integra.Space.Language.Runtime
             {
                 foreach (PlanNode p in children)
                 {
-                    if (p.NodeType == target)
+                    foreach (PlanNode planAux in FindNode(p, types))
                     {
-                        resultList.Add(p);
+                        resultList.Add(planAux);
                     }
+                }
+            }
 
-                    if (p.Children != null)
+            return resultList;
+        }
+
+        /// <summary>
+        /// Find the parent nodes of the specified type in the execution plan.
+        /// </summary>
+        /// <param name="plan">Execution plan.</param>
+        /// <param name="types">Plan node type to search.</param>
+        /// <returns>List of plan nodes</returns>
+        internal static List<PlanNode> FindParentNode(this PlanNode plan, params PlanNodeTypeEnum[] types)
+        {
+            List<PlanNode> resultList = new List<PlanNode>();
+
+            if (plan == null)
+            {
+                return resultList;
+            }
+            
+            List<PlanNode> children = plan.Children;
+
+            if (children != null)
+            {
+                if (plan.Children.Any(x => types.Contains(x.NodeType)))
+                {
+                    resultList.Add(plan);
+                }
+
+                foreach (PlanNode p in children)
+                {
+                    foreach (PlanNode planAux in FindParentNode(p, types))
                     {
-                        foreach (PlanNode planAux in FindNode(p, target))
-                        {
-                            resultList.Add(planAux);
-                        }
+                        resultList.Add(planAux);
                     }
                 }
             }

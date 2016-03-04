@@ -116,14 +116,39 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6}", joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
             }
 
+            PlanNode sourcesNewScope = new PlanNode();
+            sourcesNewScope.NodeType = PlanNodeTypeEnum.NewScope;
+            sourcesNewScope.Children = new List<PlanNode>();
+
             this.result.Children = new List<PlanNode>();
-            this.result.Children.Add(joinAux.Children[0]);
-            this.result.Children.Add(whereJoinAux);
-            this.result.Children.Add(withAux.Children[0]);
-            this.result.Children.Add(whereWithAux);
+            if (whereJoinAux != null)
+            {
+                whereJoinAux.Children[0].Children.Add(joinAux);
+                sourcesNewScope.Children.Add(whereJoinAux);
+            }
+            else
+            {
+                sourcesNewScope.Children.Add(joinAux);
+            }
+
+            if (whereWithAux != null)
+            {
+                whereWithAux.Children[0].Children.Add(withAux);
+                sourcesNewScope.Children.Add(whereWithAux);
+            }
+            else
+            {
+                sourcesNewScope.Children.Add(withAux);
+            }
+
+            this.result.Children.Add(sourcesNewScope);
             this.result.Children.Add(onAux);
             this.result.Children.Add(timeoutAux);
-            this.result.Children.Add(eventLifeTimeAux);
+
+            if (eventLifeTimeAux != null)
+            {
+                this.result.Children.Add(eventLifeTimeAux);
+            }
 
             return this.result;
         }

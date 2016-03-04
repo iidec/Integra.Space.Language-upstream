@@ -113,7 +113,6 @@
     <Compile Include="ASTNodes\Lists\PlanNodeListNode.cs" />
     <Compile Include="ASTNodes\Values\Objects\Event\EventNode.cs" />
     <Compile Include="ASTNodes\Values\Objects\Event\EventPropertiesNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Event\EventWithSource.cs" />
     <Compile Include="ASTNodes\Values\Objects\Object\ObjectIdOrNumberNode.cs" />
     <Compile Include="ASTNodes\Values\Objects\Object\ObjectNode.cs" />
     <Compile Include="ASTNodes\Values\Objects\Object\ObjectValueNode.cs" />
@@ -207,6 +206,7 @@
     </Compile>
     <Compile Include="Runtime\CompileContext.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
+    <Compile Include="Runtime\TreeTransformations.cs" />
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Comparers\GroupByKeyComparer.cs" />
     <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />

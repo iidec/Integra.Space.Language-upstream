@@ -192,21 +192,10 @@ namespace Integra.Space.Language.Metadata
         /// <param name="getByUses">Indicates whether the properties will obtained by usage or by occurrence.</param>
         private void GetObjectPropertiesUsedInTheBranch(SpaceParseTreeNode branch, SpaceMetadataTreeNode parentNodeForProperties, SpaceMetadataTreeNode root, bool getByUses)
         {
-            IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = branch.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE)
+            IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = branch.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE)
                         .GroupBy(x =>
                         {
-                            SpaceParseTreeNode identifier = null;
-
-                            if (x.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
-                            {
-                                // identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).Single().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                                identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                            }
-                            else
-                            {
-                                // identifier = x.ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                                identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                            }
+                            SpaceParseTreeNode identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
 
                             if (identifier != null)
                             {
@@ -233,33 +222,10 @@ namespace Integra.Space.Language.Metadata
 
                 foreach (SpaceParseTreeNode column in @object)
                 {
-                    SpaceParseTreeNode aux = column;
                     string columnName = string.Empty;
                     Type columnType = typeof(object);
 
-                    if (column.Type == SpaceParseTreeNodeTypeEnum.EXPLICIT_CAST)
-                    {
-                        columnType = Type.GetType(column.ChildNodes.First().TokenValue);
-                        aux = aux.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE).First();
-                    }
-
-                    columnName = this.GetColumnName(aux);
-
-                    /*foreach (SpaceParseTreeNode nodesOfEventDefinition in aux.ChildNodes)
-                    {
-                        if (nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.OBJECT_ID_OR_NUMBER))
-                        {
-                            columnName += "_";
-                            foreach (SpaceParseTreeNode y in nodesOfEventDefinition.ChildNodes)
-                            {
-                                columnName += y.TokenValue;
-                            }
-                        }
-                        else if (!nodesOfEventDefinition.Type.Equals(SpaceParseTreeNodeTypeEnum.EVENT))
-                        {
-                            columnName += string.Format("_{0}", nodesOfEventDefinition.TokenValue);
-                        }
-                    }*/
+                    columnName = this.GetColumnName(column);
 
                     if (getByUses)
                     {

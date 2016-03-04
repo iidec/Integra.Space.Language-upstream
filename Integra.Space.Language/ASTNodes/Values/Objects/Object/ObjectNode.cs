@@ -88,6 +88,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
 
                 PlanNode auxMessage = new PlanNode();
                 auxMessage.Column = ChildrenNodes[1].Token.Location.Column;
+                auxMessage.Properties.Add("PropertyName", "_" + ChildrenNodes[1].Token.Value.ToString());
                 auxMessage.Properties.Add(SR.DataTypeProperty, typeof(Message));
                 auxMessage.Line = ChildrenNodes[1].Token.Location.Line;
                 auxMessage.NodeText = string.Format("{0}.{1}", eventObject.NodeText, this.message);
@@ -97,6 +98,8 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
 
                 PlanNode auxPart = new PlanNode();
                 auxPart.Column = idPartOrFieldObject.Column;
+                string propertyName = string.Format("{0}_{1}", auxMessage.Properties["PropertyName"], idPartOrFieldObject.Properties["PropertyName"]);
+                auxPart.Properties.Add("PropertyName", propertyName);
                 auxPart.Properties.Add(SR.DataTypeProperty, typeof(MessagePart));
                 auxPart.Line = idPartOrFieldObject.Line;
                 auxPart.NodeText = auxMessage.NodeText + "." + idPartOrFieldObject.NodeText;
@@ -107,6 +110,8 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
 
                 PlanNode auxField = new PlanNode();
                 auxField.Column = idFieldObject.Column;
+                propertyName = string.Format("{0}_{1}", auxPart.Properties["PropertyName"], idFieldObject.Properties["PropertyName"]);
+                auxField.Properties.Add("PropertyName", propertyName);
                 auxField.Properties.Add(SR.DataTypeProperty, typeof(MessageField));
                 auxField.Line = idFieldObject.Line;
                 auxField.NodeText = auxPart.NodeText + "." + idFieldObject.NodeText;
@@ -127,6 +132,8 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
 
                 PlanNode auxField = new PlanNode();
                 auxField.Column = idFieldObject.Column;
+                string propertyName = string.Format("{0}_{1}", idPartOrFieldObject.Properties["PropertyName"], idFieldObject.Properties["PropertyName"]);
+                auxField.Properties.Add("PropertyName", propertyName);
                 auxField.Properties.Add(SR.DataTypeProperty, typeof(MessageField));
                 auxField.Line = idFieldObject.Line;
                 auxField.NodeText = idPartOrFieldObject.NodeText + "." + idFieldObject.NodeText;

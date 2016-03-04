@@ -58,31 +58,33 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
+            PlanNode result = (PlanNode)this.value.Evaluate(thread);
+            this.EndEvaluate(thread);
 
-            PlanNode result;
             int cantHijos = ChildrenNodes.Count;
             if (cantHijos == 1)
             {
-                result = (PlanNode)this.value.Evaluate(thread);
-
+                string propertyName = string.Empty;
                 if (result.Properties["DataType"].Equals(typeof(string).ToString()))
                 {
                     result.NodeText = "[" + this.text + "]";
+                    propertyName = ChildrenNodes[0].Token.Value.ToString().Trim().Replace(' ', '_');
                 }
                 else if (result.Properties["DataType"].Equals(typeof(object).ToString()))
                 {
                     result.NodeText = this.text;
+                    propertyName = ChildrenNodes[0].Token.Value.ToString();
                 }
 
                 result.Properties["DataType"] = typeof(string).ToString();
+                result.Properties.Add("PropertyName", propertyName);
             }
             else
             {
-                result = (PlanNode)this.value.Evaluate(thread);
                 result.NodeText = this.text;
+                string propertyName = ChildrenNodes[0].Token.Value.ToString() + ChildrenNodes[1].Token.Value.ToString();
+                result.Properties.Add("PropertyName", propertyName);
             }
-
-            this.EndEvaluate(thread);
 
             return result;
         }

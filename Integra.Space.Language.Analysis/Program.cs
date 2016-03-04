@@ -1,4 +1,5 @@
 ﻿using Integra.Space.Language.Analysis.Metadata.MetadataNodes;
+using Integra.Space.Language.Runtime;
 using Irony.Parsing;
 using System;
 using System.Collections.Generic;
@@ -35,7 +36,8 @@ namespace Integra.Space.Language.Analysis
 
                         if (string.IsNullOrWhiteSpace(eql))
                         {
-                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                            
+                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria, Llave",
                                                                                             "SpaceObservable1",
                                                                                             "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -51,7 +53,7 @@ namespace Integra.Space.Language.Analysis
                                     "EVENTLIFETIME '00:00:10' " +
                                     "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
                                     "SELECT t1.@event.Message.#1.#43 as c1 ";
-                            */
+                          */  
                         }
 
                         EQLPublicParser parser = new EQLPublicParser(eql);
@@ -101,7 +103,7 @@ namespace Integra.Space.Language.Analysis
                     if (string.IsNullOrWhiteSpace(eql))
                     {
                         
-                        /*eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
                                                                                             "SpaceObservable1",
                                                                                             "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -109,7 +111,7 @@ namespace Integra.Space.Language.Analysis
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
                         
-                        */
+                        
                         eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
                                 "ON t1.@event.Adapter.Name == t2.@event.Adapter.Name and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
@@ -117,7 +119,13 @@ namespace Integra.Space.Language.Analysis
                                 "EVENTLIFETIME '00:00:10' " +
                                 "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
                                 "SELECT t1.@event.Message.#1.#43 as c1 ";
-                        
+
+                        /*eql = string.Format("from {0} apply window of {2} select {3} as monto",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
+                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            */
                     }
 
                     EQLPublicParser parser = new EQLPublicParser(eql);
@@ -131,6 +139,27 @@ namespace Integra.Space.Language.Analysis
                     Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
                     Console.WriteLine("Metadata created.");
+                    Console.WriteLine("Transforming plan...");
+
+                    PlanNode executionPlanNode = parser.Evaluate().First();
+                    /*
+                    TreeTransformations tf = new TreeTransformations(executionPlanNode);
+                    tf.Transform();
+                    */
+                    Console.WriteLine("Plan transformed.");
+                    Console.WriteLine("Creating graph...");
+
+                    string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
+                    TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
+                    tgg.GenerateGraph(executionPlanNode);
+
+                    Console.WriteLine("Graph created.");
+                    Console.WriteLine("Opening graph...");
+                    tgg.ShowGraph();
+                    Console.WriteLine("Graph opened.");
+                    Console.WriteLine("Write 'stop' to finish or enter to continue...");
+                    finish = Console.ReadLine();
+                    Console.WriteLine();
 
                     Console.WriteLine("Write 'stop' to finish or enter to continue...");
                     finish = Console.ReadLine();

@@ -14,26 +14,29 @@ namespace Integra.Space.Language.Runtime
     internal sealed class InternalPlanNodes
     {
         /// <summary>
-        /// Gets the execution plan for the duration of each event at the Observable.Join with sending the results to the observer.
+        /// Gets the execution plan for the duration of each event at the Observable.Join with sending the result timeout to the observer.
         /// </summary>
         /// <param name="sourceName">Source name.</param>
+        /// <param name="timespanValue">Timespan value to timeout.</param>
         /// <returns>Duration with sending results plan.</returns>
-        public PlanNode DurationWithSendingResults(string sourceName)
+        public PlanNode DurationWithSendingResults(string sourceName, PlanNode timespanValue)
         {
             /* INICIA NODOS NECESARIOS LEFT DURATION */
             /******************************************************************************************************************************************/
             PlanNode never = new PlanNode();
             never.NodeType = PlanNodeTypeEnum.ObservableNever;
 
+            /*
             PlanNode timespanValue = new PlanNode();
             timespanValue.NodeType = PlanNodeTypeEnum.Constant;
             timespanValue.Properties.Add("Value", TimeSpan.FromSeconds(1));
             timespanValue.Properties.Add("DataType", typeof(TimeSpan).ToString());
             timespanValue.Properties.Add("IsConstant", true);
+            */
 
             PlanNode timeout = new PlanNode();
             timeout.NodeType = PlanNodeTypeEnum.ObservableTimeout;
-            timeout.Properties.Add("ReturnObservable", true);
+            timeout.Properties.Add("ReturnObservable", false);
             timeout.Children = new System.Collections.Generic.List<PlanNode>();
             timeout.Children.Add(never);
             timeout.Children.Add(timespanValue);
@@ -109,6 +112,35 @@ namespace Integra.Space.Language.Runtime
             /* TERMINA NODOS NECESARIOS LEFT DURATION */
 
             return catchNode;
+        }
+
+        /// <summary>
+        /// Gets the execution plan for the duration of each event at the Observable.Join without sending the result timeout to the observer.
+        /// </summary>
+        /// <param name="sourceName">Source name.</param>
+        /// <param name="timespanValue">Timespan value to timeout.</param>
+        /// <returns>Duration with sending results plan.</returns>
+        public PlanNode DurationWithoutSendingResults(string sourceName, PlanNode timespanValue)
+        {
+            PlanNode never = new PlanNode();
+            never.NodeType = PlanNodeTypeEnum.ObservableNever;
+            
+            /*
+            PlanNode timespanValue = new PlanNode();
+            timespanValue.NodeType = PlanNodeTypeEnum.Constant;
+            timespanValue.Properties.Add("Value", TimeSpan.FromSeconds(1));
+            timespanValue.Properties.Add("DataType", typeof(TimeSpan).ToString());
+            timespanValue.Properties.Add("IsConstant", true);
+            */
+
+            PlanNode timeout = new PlanNode();
+            timeout.NodeType = PlanNodeTypeEnum.ObservableTimeout;
+            timeout.Properties.Add("ReturnObservable", true);
+            timeout.Children = new System.Collections.Generic.List<PlanNode>();
+            timeout.Children.Add(never);
+            timeout.Children.Add(timespanValue);
+
+            return timeout;
         }
     }
 }

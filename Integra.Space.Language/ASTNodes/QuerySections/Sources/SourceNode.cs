@@ -6,8 +6,8 @@
 namespace Integra.Space.Language.ASTNodes.QuerySections
 {
     using System.Collections.Generic;
-    using Integra.Space.Language.ASTNodes.Base;
-    
+    using System.Linq;
+    using Integra.Space.Language.ASTNodes.Base;    
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
@@ -84,8 +84,21 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             }
 
             this.result.NodeText = string.Format("{0} {1}", this.from, idFrom.NodeText);
+            
+            PlanNode scopeWhereForEventLock = new PlanNode();
+            scopeWhereForEventLock.NodeType = PlanNodeTypeEnum.NewScope;
+            scopeWhereForEventLock.Children = new List<PlanNode>();
 
-            return this.result;
+            scopeWhereForEventLock.Children.Add(this.result);
+
+            PlanNode whereForEventLock = new PlanNode();
+            whereForEventLock.NodeType = PlanNodeTypeEnum.ObservableWhereForEventLock;
+            whereForEventLock.Properties.Add("Source", idFrom.Children.Last().Properties["Value"]);
+            whereForEventLock.NodeText = this.result.NodeText;
+            whereForEventLock.Children = new List<PlanNode>();
+            whereForEventLock.Children.Add(scopeWhereForEventLock);
+
+            return whereForEventLock;
         }
     }
 }

@@ -137,29 +137,16 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 plan.NodeType = PlanNodeTypeEnum.TupleProjection;
                 plan.Children = new List<PlanNode>();
                 plan.Children.Add(tupla.Key);
-
-                // si el tipo de nodo es un identificador, se convierte a tipo Property para poder obtener la propiedad del objeto de la proyeccion
-                /*if (tupla.Value.NodeType.Equals(PlanNodeTypeEnum.Identifier))
-                {
-                    tupla.Value.NodeType = PlanNodeTypeEnum.Property;
-                }*/
-
                 plan.Children.Add(tupla.Value);
-
-                PlanNode fromForLambda = new PlanNode();
-                fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-
-                // se agrega el nodo from for lambda al nodo valor del nodo tupla
-                this.SetFromForLambda(tupla.Value, fromForLambda);
 
                 if (isFirst)
                 {
                     isFirst = false;
-                    this.result.NodeText += " " + tupla.Value.NodeText + " as " + tupla.Key.NodeText;
+                    this.result.NodeText += string.Format(" {0} {1}", this.reservedWordDirection, tupla.Value.NodeText);
                 }
                 else
                 {
-                    this.result.NodeText += ", " + tupla.Value.NodeText + " as " + tupla.Key.NodeText;
+                    this.result.NodeText += string.Format(", {0}", tupla.Value.NodeText);
                 }
 
                 planProjection.Children.Add(plan);

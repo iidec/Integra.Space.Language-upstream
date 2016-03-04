@@ -78,6 +78,7 @@ namespace Integra.Space.Language.ASTNodes.Lists
 
                 PlanNode property = new PlanNode();
                 property.NodeType = PlanNodeTypeEnum.Property;
+                property.NodeText = aux.Properties["Value"].ToString();
                 property.Properties.Add("Property", aux.Properties["Value"]);
                 property.Children = new List<PlanNode>();
                 property.Children.Add(fromForLambda);
@@ -96,6 +97,7 @@ namespace Integra.Space.Language.ASTNodes.Lists
 
                 PlanNode property = new PlanNode();
                 property.NodeType = PlanNodeTypeEnum.Property;
+                property.NodeText = aux.Properties["Value"].ToString();
                 property.Properties.Add("Property", aux.Properties["Value"]);
                 property.Children = new List<PlanNode>();
                 property.Children.Add(fromForLambda);

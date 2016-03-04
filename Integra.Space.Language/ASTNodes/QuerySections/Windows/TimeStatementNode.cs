@@ -1,12 +1,12 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ExplicitCast.cs" company="Integra.Space.Language">
+// <copyright file="TimeStatementNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.ASTNodes.Cast
+namespace Integra.Space.Language.ASTNodes.QuerySections
 {
-    using System;
     using System.Collections.Generic;
+    using System.Configuration;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -14,24 +14,34 @@ namespace Integra.Space.Language.ASTNodes.Cast
     using Irony.Parsing;
 
     /// <summary>
-    /// Explicit cast class
+    /// TimeoutStatementNode class
     /// </summary>
-    internal class ExplicitCast : AstNodeBase
+    internal class TimeStatementNode : AstNodeBase
     {
         /// <summary>
-        /// target type for cast
+        /// timeout reserved word
         /// </summary>
-        private AstNodeBase targetType;
+        private string timeoutWord;
 
         /// <summary>
-        /// value to cast
+        /// timespan value of the timeout
         /// </summary>
-        private AstNodeBase value;
+        private AstNodeBase timespan;
 
         /// <summary>
         /// result plan
         /// </summary>
         private PlanNode result;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TimeStatementNode"/> class.
+        /// </summary>
+        /// <param name="nodeType">Node type</param>
+        public TimeStatementNode(PlanNodeTypeEnum nodeType)
+        {
+            this.result = new PlanNode();
+            this.result.NodeType = nodeType;
+        }
 
         /// <summary>
         /// First method called
@@ -41,13 +51,11 @@ namespace Integra.Space.Language.ASTNodes.Cast
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.targetType = AddChild(NodeUseType.Parameter, "TargetType", ChildrenNodes[0]) as AstNodeBase;
-            this.value = AddChild(NodeUseType.Parameter, "Value", ChildrenNodes[1]) as AstNodeBase;
+            this.timeoutWord = (string)ChildrenNodes[0].Token.Value;
+            this.timespan = AddChild(NodeUseType.Parameter, "timespan", ChildrenNodes[1]) as AstNodeBase;
 
-            this.result = new PlanNode();
             this.result.Column = ChildrenNodes[0].Token.Location.Column;
             this.result.Line = ChildrenNodes[0].Token.Location.Line;
-            this.result.NodeType = PlanNodeTypeEnum.Cast;
         }
 
         /// <summary>
@@ -59,20 +67,13 @@ namespace Integra.Space.Language.ASTNodes.Cast
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            PlanNode targetTypeAux = (PlanNode)this.targetType.Evaluate(thread);
-            PlanNode valueAux = (PlanNode)this.value.Evaluate(thread);
+            PlanNode timespanAux = (PlanNode)this.timespan.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            this.result.Properties.Add("DataType", ((Type)targetTypeAux.Properties["Value"]).ToString());
-            this.result.NodeText = string.Format("({0}){1}", targetTypeAux.NodeText, valueAux.NodeText);
-            this.result.Properties.Add("IsConstant", bool.Parse(valueAux.Properties["IsConstant"].ToString()));
-            this.result.Children = new List<PlanNode>();
-            this.result.Children.Add(valueAux);
+            this.result.NodeText = string.Format("{0} {1}", this.timeoutWord, timespanAux.NodeText);
 
-            if (valueAux.Properties.ContainsKey("PropertyName"))
-            {
-                this.result.Properties.Add("PropertyName", valueAux.Properties["PropertyName"]);
-            }
+            this.result.Children = new List<PlanNode>();
+            this.result.Children.Add(timespanAux);
 
             return this.result;
         }
