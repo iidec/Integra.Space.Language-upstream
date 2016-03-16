@@ -82,7 +82,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
             else
             {
                 result.NodeText = this.text;
-                string propertyName = ChildrenNodes[0].Token.Value.ToString() + ChildrenNodes[1].Token.Value.ToString();
+                string propertyName = ChildrenNodes[1].Token.Value.ToString();
                 result.Properties.Add("PropertyName", propertyName);
             }
 

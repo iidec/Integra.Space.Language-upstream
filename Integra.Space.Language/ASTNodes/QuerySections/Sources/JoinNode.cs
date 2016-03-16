@@ -116,32 +116,40 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6}", joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
             }
 
-            PlanNode sourcesNewScope = new PlanNode();
-            sourcesNewScope.NodeType = PlanNodeTypeEnum.NewScope;
-            sourcesNewScope.Children = new List<PlanNode>();
+            PlanNode refCountLeft = null;
 
             this.result.Children = new List<PlanNode>();
             if (whereJoinAux != null)
             {
                 whereJoinAux.Children[0].Children.Add(joinAux);
-                sourcesNewScope.Children.Add(whereJoinAux);
+                refCountLeft = this.GetPublishAndRefCount(whereJoinAux);
             }
             else
             {
-                sourcesNewScope.Children.Add(joinAux);
+                refCountLeft = this.GetPublishAndRefCount(joinAux);
             }
+
+            PlanNode refCountRight = null;
 
             if (whereWithAux != null)
             {
                 whereWithAux.Children[0].Children.Add(withAux);
-                sourcesNewScope.Children.Add(whereWithAux);
+                refCountRight = this.GetPublishAndRefCount(whereWithAux);
             }
             else
             {
-                sourcesNewScope.Children.Add(withAux);
+                refCountRight = this.GetPublishAndRefCount(withAux);
             }
 
+            PlanNode sourcesNewScope = new PlanNode();
+            sourcesNewScope.NodeType = PlanNodeTypeEnum.NewScope;
+            sourcesNewScope.Properties.Add("ScopeParameters", new ScopeParameter[] { new ScopeParameter(0, null), new ScopeParameter(1, null) });
+            sourcesNewScope.Children = new List<PlanNode>();
+            sourcesNewScope.Children.Add(refCountLeft);
+            sourcesNewScope.Children.Add(refCountRight);
+
             this.result.Children.Add(sourcesNewScope);
+            onAux.NodeType = PlanNodeTypeEnum.On;
             this.result.Children.Add(onAux);
             this.result.Children.Add(timeoutAux);
 
@@ -159,19 +167,19 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <param name="joinTypeNode">Join type node</param>
         private void SetResultJoinType(PlanNode joinTypeNode)
         {
-            if (PlanNodeTypeEnum.LeftJoin.ToString().Equals(joinTypeNode.NodeText, System.StringComparison.InvariantCultureIgnoreCase))
+            if (PlanNodeTypeEnum.LeftJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 this.result.NodeType = PlanNodeTypeEnum.LeftJoin;
             }
-            else if (PlanNodeTypeEnum.RightJoin.ToString().Equals(joinTypeNode.NodeText, System.StringComparison.InvariantCultureIgnoreCase))
+            else if (PlanNodeTypeEnum.RightJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 this.result.NodeType = PlanNodeTypeEnum.RightJoin;
             }
-            else if (PlanNodeTypeEnum.CrossJoin.ToString().Equals(joinTypeNode.NodeText, System.StringComparison.InvariantCultureIgnoreCase))
+            else if (PlanNodeTypeEnum.CrossJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 this.result.NodeType = PlanNodeTypeEnum.CrossJoin;
             }
-            else if (PlanNodeTypeEnum.InnerJoin.ToString().Equals(joinTypeNode.NodeText, System.StringComparison.InvariantCultureIgnoreCase))
+            else if (PlanNodeTypeEnum.InnerJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 this.result.NodeType = PlanNodeTypeEnum.InnerJoin;
             }
@@ -179,6 +187,86 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 this.result.NodeType = PlanNodeTypeEnum.CrossJoin;
             }
+        }
+
+        /// <summary>
+        /// Creates the nods for publish and ref-count.
+        /// </summary>
+        /// <param name="child">Child for this branch.</param>
+        /// <returns>Publish and ref-count execution plan.</returns>
+        private PlanNode GetPublishAndRefCount(PlanNode child)
+        {
+            PlanNode publish = new PlanNode();
+            publish.NodeType = PlanNodeTypeEnum.ObservablePublish;
+            publish.Children = new List<PlanNode>();
+            publish.Children.Add(this.GetApplyWindow(child));
+
+            PlanNode refCount = new PlanNode();
+            refCount.NodeType = PlanNodeTypeEnum.ObservableRefCount;
+            refCount.Children = new List<PlanNode>();
+            refCount.Children.Add(publish);
+
+            return refCount;
+        }
+
+        /// <summary>
+        /// Creates the nodes for apply window of 500 milliseconds.
+        /// </summary>
+        /// <param name="child">Child for this branch.</param>
+        /// <returns>Apply window execution plan.</returns>
+        private PlanNode GetApplyWindow(PlanNode child)
+        {
+            PlanNode result = new PlanNode();
+            result.NodeType = PlanNodeTypeEnum.ObservableBufferTimeAndSize;
+            result.Properties.Add("internallyGenerated", true);
+            result.Children = new List<PlanNode>();
+            result.Children.Add(child);
+
+            PlanNode planProjection = new PlanNode();
+            planProjection.NodeType = PlanNodeTypeEnum.ProjectionOfConstants;
+            planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
+            planProjection.Children = new List<PlanNode>();
+
+            PlanNode planTuple1 = new PlanNode();
+            planTuple1.NodeType = PlanNodeTypeEnum.TupleProjection;
+            planTuple1.Children = new List<PlanNode>();
+
+            PlanNode alias1 = new PlanNode();
+            alias1.NodeType = PlanNodeTypeEnum.Constant;
+            alias1.Properties.Add("Value", "TimeSpanValue");
+            alias1.Properties.Add("DataType", typeof(object).ToString());
+
+            PlanNode windowSize = new PlanNode();
+            windowSize.NodeType = PlanNodeTypeEnum.Constant;
+            windowSize.Properties.Add("Value", System.TimeSpan.FromMilliseconds(500));
+            windowSize.Properties.Add("DataType", typeof(System.TimeSpan).ToString());
+
+            planTuple1.Children.Add(alias1);
+            planTuple1.Children.Add(windowSize);
+
+            PlanNode planTuple2 = new PlanNode();
+            planTuple2.NodeType = PlanNodeTypeEnum.TupleProjection;
+            planTuple2.Children = new List<PlanNode>();
+
+            PlanNode alias2 = new PlanNode();
+            alias2.NodeType = PlanNodeTypeEnum.Constant;
+            alias2.Properties.Add("Value", "IntegerValue");
+            alias2.Properties.Add("DataType", typeof(object).ToString());
+
+            PlanNode maxWindowSize = new PlanNode();
+            maxWindowSize.NodeType = PlanNodeTypeEnum.Constant;
+            maxWindowSize.Properties.Add("Value", int.Parse(System.Configuration.ConfigurationManager.AppSettings["MaxWindowSize"]));
+            maxWindowSize.Properties.Add("DataType", typeof(int));
+
+            planTuple2.Children.Add(alias2);
+            planTuple2.Children.Add(maxWindowSize);
+
+            planProjection.Children.Add(planTuple1);
+            planProjection.Children.Add(planTuple2);
+            
+            result.Children.Add(planProjection);
+
+            return result;
         }
     }
 }

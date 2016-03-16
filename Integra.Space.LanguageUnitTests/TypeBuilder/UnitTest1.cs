@@ -15,43 +15,6 @@ namespace Integra.Space.LanguageUnitTests.TypeBuilder
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
-        {
-            QueryResultWriter qrw1 = new QueryResultWriter();
-            List<FieldNode> l = new List<FieldNode>();
-            l.Add(new FieldNode("x", typeof(string)));
-            l.Add(new FieldNode("y", typeof(int)));
-            l.Add(new FieldNode("z", typeof(bool)));
-
-            var eventResultType = LanguageTypeBuilder.CompileResultType(l, typeof(EventResult));
-            var objectResultType1 = Activator.CreateInstance(eventResultType);
-            var objectResultType2 = Activator.CreateInstance(eventResultType);
-            var objectResultType3 = Activator.CreateInstance(eventResultType);
-
-            objectResultType1.GetType().GetMethod("Serialize").Invoke(objectResultType1, new[] { qrw1 });
-            
-            QueryResultWriter qrw = new QueryResultWriter();
-
-            Type resultType = ResultTypeBuilder.CreateResultType("UnQueryX", eventResultType);
-            Console.WriteLine("");
-            Array x = Array.CreateInstance(eventResultType, 3);
-            x.SetValue(objectResultType1, 0);
-            x.SetValue(objectResultType2, 1);
-            x.SetValue(objectResultType3, 2);
-            var result = Activator.CreateInstance(resultType, "QueryResultXYZ", DateTime.Now,  x);
-
-            result.GetType().GetMethod("Serialize").Invoke(result, new[] { qrw });
-
-            Console.WriteLine("JSON: {0}", qrw.JsonResult);
-        }
-
-        private class FieldTest
-        {
-            public string FieldName { get; set; }
-            public Type FieldType { get; set; }
-        }
-
-        [TestMethod]
         public void TestJoin()
         {
             TestScheduler scheduler = new TestScheduler();

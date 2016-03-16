@@ -24,6 +24,11 @@ namespace Integra.Space.Language.Runtime
         /// <param name="right">Right expression</param>
         public static void Validate(PlanNodeTypeEnum nodeType, PlanNode actualNode, Expression left, Expression right)
         {
+            if (actualNode.Properties.ContainsKey("internallyGenerated") && bool.Parse(actualNode.Properties["internallyGenerated"].ToString()))
+            {
+                return;
+            }
+
             switch (nodeType)
             {
                 case PlanNodeTypeEnum.ObservableBuffer:

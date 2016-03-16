@@ -15,6 +15,11 @@ namespace Integra.Space.Language.Runtime
     internal sealed class Scope
     {
         /// <summary>
+        /// Parameter position
+        /// </summary>
+        private int paramPosition;
+
+        /// <summary>
         /// scope level
         /// </summary>
         private int level;
@@ -22,7 +27,7 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// dictionary of variables of the actual scope
         /// </summary>
-        private Dictionary<string, ParameterExpression> variables;
+        private Dictionary<int, ParameterExpression> variables;
 
         /// <summary>
         /// list of inner scopes
@@ -43,8 +48,9 @@ namespace Integra.Space.Language.Runtime
         {
             this.level = level;
             this.parentScope = parentScope;
+            this.paramPosition = 0;
             this.innerScopes = new List<Scope>();
-            this.variables = new Dictionary<string, ParameterExpression>();
+            this.variables = new Dictionary<int, ParameterExpression>();
         }
 
         /// <summary>
@@ -101,39 +107,12 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Gets the specify parameter.
         /// </summary>
-        /// <param name="name">Parameter name.</param>
-        /// <returns>Parameter found</returns>
-        public ParameterExpression GetParameterByName(string name)
-        {
-            ParameterExpression param = null;
-
-            if (this.variables.ContainsKey(name))
-            {
-                param = this.variables[name];
-            }
-
-            if (param == null && this.parentScope != null)
-            {
-                param = this.parentScope.GetParameterByName(name);
-            }
-
-            if (param == null)
-            {
-                throw new Exceptions.CompilationException(string.Format("Variable {0} not found", name));
-            }
-
-            return param;
-        }
-
-        /// <summary>
-        /// Gets the specify parameter.
-        /// </summary>
         /// <param name="type">Parameter types.</param>
         /// <returns>Parameter found</returns>
         public ParameterExpression GetParameterByType(params System.Type[] type)
         {
             ParameterExpression[] @params = this.variables.Values.Where(x => type.Contains(x.Type)).ToArray();
-            
+
             ParameterExpression param = null;
             if (@params.Count() == 0 && this.parentScope != null)
             {
@@ -155,9 +134,10 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Gets the specify parameter.
         /// </summary>
+        /// <param name="index">Parameter position in the dictionary.</param>
         /// <param name="genericType">Generic parameter types.</param>
         /// <returns>Parameter found</returns>
-        public ParameterExpression GetParameterByGenericType(params System.Type[] genericType)
+        public ParameterExpression GetParameterByGenericType(int index, params System.Type[] genericType)
         {
             ParameterExpression[] @params = this.variables.Values.Where(x =>
             {
@@ -172,11 +152,11 @@ namespace Integra.Space.Language.Runtime
             ParameterExpression param = null;
             if (@params.Count() == 0 && this.parentScope != null)
             {
-                param = this.parentScope.GetParameterByGenericType(genericType);
+                param = this.parentScope.GetParameterByGenericType(index, genericType);
             }
             else if (@params.Count() != 0)
             {
-                param = @params[0];
+                param = @params[index];
             }
 
             if (param == null)
@@ -188,30 +168,62 @@ namespace Integra.Space.Language.Runtime
         }
 
         /// <summary>
-        ///  Push a new parameter.
+        /// Gets the specify parameter.
         /// </summary>
-        /// <param name="name">Variable name.</param>
-        /// <param name="param">Parameter name.</param>
-        public void AddParameter(string name, ParameterExpression param)
+        /// <returns>Parameter found</returns>
+        public ParameterExpression GetFirstParameter()
         {
             try
             {
-                this.variables.Add(name, param);
+                return this.variables.Values.First();
+            }
+            catch (System.Exception e)
+            {
+                throw new Exceptions.CompilationException("No parameters defined.");
+            }
+        }
+
+        /// <summary>
+        /// Gets the specify parameter.
+        /// </summary>
+        /// <param name="index">Position of the parameter, zero base.</param>
+        /// <returns>Parameter found</returns>
+        public ParameterExpression GetParameterByIndex(int index)
+        {
+            try
+            {
+                int cantidadDeVariables = this.variables.Count;
+                if ((index + 1) > cantidadDeVariables && cantidadDeVariables == 1 && index <= 1)
+                {
+                    if (this.variables[0].Type.GetGenericTypeDefinition().Equals(typeof(System.Tuple<,>)))
+                    {
+                        return this.variables[0];
+                    }
+                }
+
+                return this.variables[index];
+            }
+            catch (System.Exception e)
+            {
+                throw new Exceptions.CompilationException("No parameters defined.");
+            }
+        }
+
+        /// <summary>
+        ///  Push a new parameter.
+        /// </summary>
+        /// <param name="param">Parameter name.</param>
+        public void AddParameter(ParameterExpression param)
+        {
+            try
+            {
+                this.variables.Add(this.paramPosition, param);
+                this.paramPosition++;
             }
             catch (System.Exception e)
             {
                 throw new Exceptions.CompilationException(string.Format("The variable already exists in this scope."));
             }
-        }
-
-        /// <summary>
-        /// Pop a parameter.
-        /// </summary>
-        /// <param name="name">Parameter name.</param>
-        /// <returns>The variable at the first position of the dictionary.</returns>
-        public bool RemoveParameter(string name = "")
-        {
-            return this.variables.Remove(name);
         }
     }
 }

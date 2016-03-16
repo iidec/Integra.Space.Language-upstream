@@ -7,308 +7,14 @@ using System.Reactive.Linq;
 using System.Reactive;
 using Microsoft.Reactive.Testing;
 using Integra.Messaging;
+using System.Linq;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class JoinTests
     {
-        [TestMethod]
-        public void JoinTest1()
-        {
-            string leftSourceName = "left";
-            string rightSourceName = "right";
-
-            PlanNode idLeftSource = new PlanNode();
-            idLeftSource.NodeType = PlanNodeTypeEnum.Identifier;
-            idLeftSource.Properties.Add("Value", leftSourceName);
-            idLeftSource.Properties.Add("DataType", typeof(object).ToString());
-
-            PlanNode from1 = new PlanNode();
-            from1.NodeType = PlanNodeTypeEnum.ObservableFrom;
-            from1.Properties.Add("SourcePosition", 0);
-            from1.Children = new List<PlanNode>();
-            from1.Children.Add(idLeftSource);
-
-            PlanNode idRightSource = new PlanNode();
-            idRightSource.NodeType = PlanNodeTypeEnum.Identifier;
-            idRightSource.Properties.Add("Value", rightSourceName);
-            idRightSource.Properties.Add("DataType", typeof(object).ToString());
-
-            PlanNode from2 = new PlanNode();
-            from2.NodeType = PlanNodeTypeEnum.ObservableFrom;
-            from2.Properties.Add("SourcePosition", 0);
-            from2.Children = new List<PlanNode>();
-            from2.Children.Add(idRightSource);
-
-            PlanNode newScope0 = new PlanNode();
-            newScope0.NodeType = PlanNodeTypeEnum.NewScope;
-            newScope0.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(IEnumerable<EventObject>)));
-            newScope0.Children = new List<PlanNode>();
-            newScope0.Children.Add(from1);
-            newScope0.Children.Add(from2);
-
-            /* INICIA NODOS NECESARIOS LEFT DURATION */
-            /******************************************************************************************************************************************/
-            PlanNode never = new PlanNode();
-            never.NodeType = PlanNodeTypeEnum.ObservableNever;
-
-            never.Children = new List<PlanNode>(); // esto es solo para pruebas
-            never.Children.Add(newScope0); // esto es solo para pruebas
-
-            PlanNode timespanValue = new PlanNode();
-            timespanValue.NodeType = PlanNodeTypeEnum.Constant;
-            timespanValue.Properties.Add("Value", TimeSpan.FromSeconds(1));
-            timespanValue.Properties.Add("DataType", typeof(TimeSpan).ToString());
-            timespanValue.Properties.Add("IsConstant", true);
-
-            PlanNode timeout = new PlanNode();
-            timeout.NodeType = PlanNodeTypeEnum.ObservableTimeout;
-            timeout.Properties.Add("ReturnObservable", true);
-            timeout.Children = new System.Collections.Generic.List<PlanNode>();
-            timeout.Children.Add(never);
-            timeout.Children.Add(timespanValue);
-            /******************************************************************************************************************************************/
-            PlanNode fromForLambdaLeftWhere = new PlanNode();
-            fromForLambdaLeftWhere.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-
-            PlanNode getMatchedProperty = new PlanNode();
-            getMatchedProperty.NodeType = PlanNodeTypeEnum.Property;
-            getMatchedProperty.Properties.Add("Property", "Matched");
-            getMatchedProperty.Children = new List<PlanNode>();
-            getMatchedProperty.Children.Add(fromForLambdaLeftWhere);
-
-            PlanNode negate = new PlanNode();
-            negate.NodeType = PlanNodeTypeEnum.Not;
-            negate.Children = new List<PlanNode>();
-            negate.Children.Add(getMatchedProperty);
-            /******************************************************************************************************************************************/
-            PlanNode fromForLambdaLeft1 = new PlanNode();
-            fromForLambdaLeft1.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-            fromForLambdaLeft1.Properties.Add("ParameterName", leftSourceName);
-
-            PlanNode newScopeLeftWhere = new PlanNode();
-            newScopeLeftWhere.NodeType = PlanNodeTypeEnum.NewScope;
-            newScopeLeftWhere.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(EventObject)));
-            newScopeLeftWhere.Children = new List<PlanNode>();
-            newScopeLeftWhere.Children.Add(fromForLambdaLeft1);
-
-            PlanNode leftWhere = new PlanNode();
-            leftWhere.NodeType = PlanNodeTypeEnum.EnumerableWhere;
-            leftWhere.Children = new List<PlanNode>();
-            leftWhere.Children.Add(newScopeLeftWhere);
-            leftWhere.Children.Add(negate);
-            /******************************************************************************************************************************************/
-            PlanNode newScopenumerableLeftSelect = new PlanNode();
-            newScopenumerableLeftSelect.NodeType = PlanNodeTypeEnum.NewScope;
-            newScopenumerableLeftSelect.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(EventObject)));
-            newScopenumerableLeftSelect.Children = new List<PlanNode>();
-            newScopenumerableLeftSelect.Children.Add(leftWhere);
-
-            PlanNode fromForLambdaLeftSelect = new PlanNode();
-            fromForLambdaLeftSelect.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-
-            PlanNode leftDurationProjection = new PlanNode();
-            leftDurationProjection.NodeType = PlanNodeTypeEnum.JoinProjection;
-            leftDurationProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.JoinLeftDuration);
-            leftDurationProjection.Children = new List<PlanNode>();
-            leftDurationProjection.Children.Add(fromForLambdaLeftSelect);
-            /******************************************************************************************************************************************/
-            PlanNode leftSelect = new PlanNode();
-            leftSelect.NodeType = PlanNodeTypeEnum.EnumerableSelectForEnumerable;
-            leftSelect.Children = new List<PlanNode>();
-            leftSelect.Children.Add(newScopenumerableLeftSelect);
-            leftSelect.Children.Add(leftDurationProjection);
-
-            PlanNode toArray = new PlanNode();
-            toArray.NodeType = PlanNodeTypeEnum.EnumerableToArray;
-            toArray.Children = new List<PlanNode>();
-            toArray.Children.Add(leftSelect);
-            /******************************************************************************************************************************************/
-            PlanNode newScope1 = new PlanNode();
-            newScope1.NodeType = PlanNodeTypeEnum.NewScope;
-            newScope1.Properties.Add("ScopeParameter", new ScopeParameter("Exception", typeof(TimeoutException)));
-            newScope1.Children = new List<PlanNode>();
-            newScope1.Children.Add(timeout);
-
-            PlanNode catchNode = new PlanNode();
-            catchNode.NodeType = PlanNodeTypeEnum.ObservableCatch;
-            catchNode.Children = new System.Collections.Generic.List<PlanNode>();
-            catchNode.Children.Add(newScope1);
-            catchNode.Children.Add(toArray);
-            /******************************************************************************************************************************************/
-            /* TERMINA NODOS NECESARIOS LEFT DURATION */
-
-            PlanNode newScope2 = new PlanNode();
-            newScope2.NodeType = PlanNodeTypeEnum.NewScope;
-            newScope2.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(Tuple<EventObject, EventObject>[])));
-            newScope2.Children = new List<PlanNode>();
-            newScope2.Children.Add(catchNode);
-
-            PlanNode subscription = new PlanNode();
-            subscription.NodeType = PlanNodeTypeEnum.Subscription;
-            subscription.Children = new List<PlanNode>();
-            subscription.Children.Add(newScope2);
-
-            PlanNode create = new PlanNode();
-            create.NodeType = PlanNodeTypeEnum.ObservableCreate;
-            create.Children = new System.Collections.Generic.List<PlanNode>();
-            create.Children.Add(subscription);
-
-            ObservableConstructor oc = new ObservableConstructor(new CompileContext() { QueryName = string.Empty, Scheduler = DefaultSchedulerFactory.Current, PrintLog = false });
-            Func<IObservable<EventObject>> funcResult = oc.Compile<IObservable<EventObject>>(create);
-
-            funcResult()
-                .Subscribe(x =>
-                {
-                    Console.WriteLine(x);
-                });
-
-            System.Threading.Tasks.Task.Delay(3000);
-
-            Console.WriteLine();
-
-            TestScheduler scheduler = new TestScheduler();
-
-            scheduler.AdvanceBy(TimeSpan.FromSeconds(1).Ticks);
-            ITestableObserver<EventObject> results = scheduler.Start(
-                () => funcResult(),
-                created: 10,
-                subscribed: 20,
-                disposed: 4000);
-
-            //scheduler.Sleep(TimeSpan.FromSeconds(3).Ticks);
-
-            ReactiveAssert.AreElementsEqual(new Recorded<Notification<EventObject>>[] {
-                    new Recorded<Notification<EventObject>>(1000, Notification.CreateOnNext(new EventObject(null))),
-                    new Recorded<Notification<EventObject>>(1000, Notification.CreateOnCompleted<EventObject>())
-                }, results.Messages);
-        }
-
-        [TestMethod]
-        public void Test2()
-        {
-            string leftSourceName = "left";
-            string rightSourceName = "right";
-
-            PlanNode idLeftSource = new PlanNode();
-            idLeftSource.NodeType = PlanNodeTypeEnum.Identifier;
-            idLeftSource.Properties.Add("Value", leftSourceName);
-            idLeftSource.Properties.Add("DataType", typeof(object).ToString());
-
-            PlanNode from1 = new PlanNode();
-            from1.NodeType = PlanNodeTypeEnum.ObservableFrom;
-            from1.Properties.Add("SourcePosition", 0);
-            from1.Children = new List<PlanNode>();
-            from1.Children.Add(idLeftSource);
-
-            PlanNode idRightSource = new PlanNode();
-            idRightSource.NodeType = PlanNodeTypeEnum.Identifier;
-            idRightSource.Properties.Add("Value", rightSourceName);
-            idRightSource.Properties.Add("DataType", typeof(object).ToString());
-
-            PlanNode from2 = new PlanNode();
-            from2.NodeType = PlanNodeTypeEnum.ObservableFrom;
-            from2.Properties.Add("SourcePosition", 0);
-            from2.Children = new List<PlanNode>();
-            from2.Children.Add(idRightSource);
-
-            PlanNode newScope0 = new PlanNode();
-            newScope0.NodeType = PlanNodeTypeEnum.NewScope;
-            newScope0.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(IEnumerable<EventObject>)));
-            newScope0.Children = new List<PlanNode>();
-            newScope0.Children.Add(from1);
-            newScope0.Children.Add(from2);
-
-            /* INICIA NODOS NECESARIOS RESULT SELECTOR */
-            /******************************************************************************************************************************************/
-            PlanNode fromForLambdaLeft2 = new PlanNode();
-            fromForLambdaLeft2.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-            fromForLambdaLeft2.Properties.Add("ParameterName", leftSourceName);
-            /******************************************************************************************************************************************/
-            PlanNode leftTupleProjection = this.GetKeyComparer(leftSourceName);
-            PlanNode rightTupleProjection = this.GetKeyComparer(leftSourceName);
-
-            PlanNode leftProjection = new PlanNode();
-            leftProjection.NodeType = PlanNodeTypeEnum.Projection;
-            leftProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.KeySelectorProjection);
-            leftProjection.Properties.Add("OverrideGetHashCodeMethod", true);
-            leftProjection.Children = new List<PlanNode>();
-            leftProjection.Children.Add(leftTupleProjection);
-
-            PlanNode rightProjection = new PlanNode();
-            rightProjection.NodeType = PlanNodeTypeEnum.Projection;
-            rightProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.KeySelectorProjection);
-            rightProjection.Properties.Add("OverrideGetHashCodeMethod", true);
-            rightProjection.Children = new List<PlanNode>();
-            rightProjection.Children.Add(rightTupleProjection);
-
-            PlanNode onSection = new PlanNode();
-            onSection.NodeType = PlanNodeTypeEnum.On;
-            onSection.Children = new List<PlanNode>();
-            onSection.Children.Add(leftProjection);
-            onSection.Children.Add(rightProjection);
-            /******************************************************************************************************************************************/
-            PlanNode enumerableJoinProjection = new PlanNode();
-            enumerableJoinProjection.NodeType = PlanNodeTypeEnum.JoinProjection;
-            enumerableJoinProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.JoinResultSelector);
-            enumerableJoinProjection.Children = new List<PlanNode>();
-            /******************************************************************************************************************************************/
-            PlanNode enumerableJoin = new PlanNode();
-            enumerableJoin.NodeType = PlanNodeTypeEnum.EnumerableJoin;
-            enumerableJoin.Children = new List<PlanNode>();
-            enumerableJoin.Children.Add(newScope0);
-            enumerableJoin.Children.Add(onSection);
-            enumerableJoin.Children.Add(enumerableJoinProjection);
-            /******************************************************************************************************************************************/
-            /* TERMINA NODOS NECESARIOS RESULT SELECTOR */
-
-            PlanNode newScope2 = new PlanNode();
-            newScope2.NodeType = PlanNodeTypeEnum.NewScope;
-            newScope2.Properties.Add("ScopeParameter", new ScopeParameter(leftSourceName, typeof(Tuple<EventObject, EventObject>[])));
-            newScope2.Children = new List<PlanNode>();
-            newScope2.Children.Add(enumerableJoin);
-
-            PlanNode subscription = new PlanNode();
-            subscription.NodeType = PlanNodeTypeEnum.Subscription;
-            subscription.Children = new List<PlanNode>();
-            subscription.Children.Add(newScope2);
-
-            PlanNode create = new PlanNode();
-            create.NodeType = PlanNodeTypeEnum.ObservableCreate;
-            create.Children = new System.Collections.Generic.List<PlanNode>();
-            create.Children.Add(subscription);
-
-            ObservableConstructor oc = new ObservableConstructor(new CompileContext() { QueryName = string.Empty, Scheduler = DefaultSchedulerFactory.Current, PrintLog = false });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<Tuple<EventObject, EventObject>>> funcResult = oc.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<Tuple<EventObject, EventObject>>>(create);
-
-            Console.WriteLine();
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> leftInput = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
-                );
-
-            ITestableObservable<EventObject> rightInput = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
-                );
-            
-            ITestableObserver<Tuple<EventObject, EventObject>> results = scheduler.Start(
-                () => funcResult(leftInput, rightInput),
-                created: 10,
-                subscribed: 20,
-                disposed: 4000);
-
-            ReactiveAssert.AreElementsEqual(new Recorded<Notification<Tuple<EventObject, EventObject>>>[] {
-                    new Recorded<Notification<Tuple<EventObject, EventObject>>>(100, Notification.CreateOnNext(Tuple.Create<EventObject, EventObject>(TestObjects.EventObjectTest1, TestObjects.EventObjectTest1))),
-                    new Recorded<Notification<Tuple<EventObject, EventObject>>>(200, Notification.CreateOnCompleted<Tuple<EventObject, EventObject>>())
-                }, results.Messages);
-        }
-
-        internal PlanNode GetKeyComparer(string sourceName)
+        internal PlanNode GetKeyComparer(int sourcePosition)
         {
             PlanNode idPropertyLeftKey = new PlanNode();
             idPropertyLeftKey.NodeType = PlanNodeTypeEnum.Identifier;
@@ -317,7 +23,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             PlanNode idParamLeftKey = new PlanNode();
             idParamLeftKey.NodeType = PlanNodeTypeEnum.Identifier;
-            idParamLeftKey.Properties.Add("Value", sourceName);
+            idParamLeftKey.Properties.Add("Value", sourcePosition);
             idParamLeftKey.Properties.Add("DataType", typeof(object).ToString());
 
             PlanNode leftEvent = new PlanNode();
@@ -367,6 +73,61 @@ namespace Integra.Space.LanguageUnitTests.Queries
             leftTupleProjection.Children.Add(leftObjectValue);
 
             return leftTupleProjection;
+        }
+
+        [TestMethod]
+        public void JoinEQLTest()
+        {
+            string eql = "cross JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#143 " +
+                                "TIMEOUT '00:00:01' " +
+                                "EVENTLIFETIME '00:00:10' " +
+                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            List<PlanNode> plan = parser.Evaluate();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+            Func<IQbservable<EventObject>, IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IQbservable<EventObject>, IObservable<object>>(plan.First());
+
+            TestScheduler scheduler = new TestScheduler();
+
+            ITestableObservable<EventObject> input1 = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
+
+            ITestableObservable<EventObject> input2 = scheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
+
+            ITestableObserver<object> results = scheduler.Start(
+                () => result(input1.AsQbservable(), input2.AsQbservable())
+                .Select(x =>
+                    (object)(new
+                    {
+                        result = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("suma").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
+                    })
+                ),
+                created: 10,
+                subscribed: 50,
+                disposed: 40000);
+            
+            scheduler.AdvanceTo(TimeSpan.FromSeconds(30).Ticks);
+            System.Threading.Tasks.Task.Delay(4000);
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { suma1 = (decimal)3, monto1 = (decimal)1, campo1 = "campoXX", suma2 = (decimal)3, monto2 = (decimal)1, campo2 = "campoXX" }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())                    
+                }, results.Messages);
+
+            Console.WriteLine("");
         }
     }
 }

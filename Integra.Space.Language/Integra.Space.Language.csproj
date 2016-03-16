@@ -142,6 +142,7 @@
     <Compile Include="Event\EventObject.cs" />
     <Compile Include="Event\EventPropertiesEnum.cs" />
     <Compile Include="Event\EventResult.cs" />
+    <Compile Include="Event\ExtractedEventData.cs" />
     <Compile Include="Event\SpaceExceptionTypeEnum.cs" />
     <Compile Include="Event\SpaceResultTypeEnum.cs" />
     <Compile Include="Exceptions\CompilationException.cs" />
@@ -206,6 +207,8 @@
     </Compile>
     <Compile Include="Runtime\CompileContext.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
+    <Compile Include="Runtime\LeftExtractedData.cs" />
+    <Compile Include="Runtime\RightExtractedData.cs" />
     <Compile Include="Runtime\TreeTransformations.cs" />
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Comparers\GroupByKeyComparer.cs" />

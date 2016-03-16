@@ -15,7 +15,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// parameter name.
         /// </summary>
-        private string name;
+        private int position;
 
         /// <summary>
         /// parameter type.
@@ -25,22 +25,22 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="ScopeParameter"/> class.
         /// </summary>
-        /// <param name="name">Parameter name.</param>
+        /// <param name="position">Parameter position.</param>
         /// <param name="type">Parameter type.</param>
-        public ScopeParameter(string name, Type type)
+        public ScopeParameter(int position, Type type)
         {
-            this.name = name;
+            this.position = position;
             this.type = type;
         }
 
         /// <summary>
         /// Gets the parameter name.
         /// </summary>
-        public string Name
+        public int Position
         {
             get
             {
-                return this.name;
+                return this.position;
             }
         }
 

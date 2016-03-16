@@ -17,6 +17,11 @@ namespace Integra.Space.Language.Runtime
     public static class LanguageTypeBuilder
     {
         /// <summary>
+        /// Count of objects generated.
+        /// </summary>
+        private static volatile int countObjectsGenerated = 0;
+
+        /// <summary>
         /// Create a new object based in the created type.
         /// </summary>
         /// <param name="listOfFields">List of fields.</param>
@@ -25,7 +30,7 @@ namespace Integra.Space.Language.Runtime
         /// <returns>The new object.</returns>
         public static object CreateNewObject(List<FieldNode> listOfFields, Type parentType, Type queryWriter)
         {
-            return Activator.CreateInstance(CompileResultType(listOfFields, parentType));
+            return Activator.CreateInstance(CompileResultType(listOfFields));
         }
 
         /// <summary>
@@ -36,21 +41,16 @@ namespace Integra.Space.Language.Runtime
         /// <returns>The created type.</returns>
         public static Type CompileResultType(List<FieldNode> listOfFields, bool overrideGetHashCodeMethod = false)
         {
-            TypeBuilder tb = GetTypeBuilder();
+            TypeBuilder tb = GetTypeBuilder(string.Empty);
             ConstructorBuilder constructor = tb.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
 
             // creo la lista de campos antes de volver a crear propiedades
-            List<Tuple<string, Type, FieldBuilder>> fieldList = new List<Tuple<string, Type, FieldBuilder>>();
+            List<Tuple<string, Type, FieldBuilder, int>> fieldList = new List<Tuple<string, Type, FieldBuilder, int>>();
 
             // The list contains a dynamic object with fields FieldName of type string and FieldType of type Type
             foreach (var field in listOfFields)
             {
-                CreateProperty(tb, field.FieldName, field.FieldType, fieldList);
-            }
-
-            if (overrideGetHashCodeMethod)
-            {
-                CreateGetHashCodeMethod(tb, fieldList);
+                CreateProperty(tb, field, fieldList);
             }
 
             Type objectType = tb.CreateType();
@@ -58,19 +58,74 @@ namespace Integra.Space.Language.Runtime
         }
 
         /// <summary>
-        /// Creates a new type based in the list of fields.
+        /// Creates a type derived of type ExtractedEventData.
+        /// </summary>
+        /// <param name="listOfFields">List of fields</param>
+        /// <returns>New type.</returns>
+        public static Type CompileExtractedEventDataSpecificTypeForJoin(List<FieldNode> listOfFields)
+        {
+            TypeBuilder tb = CreateTypeBuilder("EXTRACTED", listOfFields, typeof(ExtractedEventData), false, false, null, false, null);
+            Type objectType = tb.CreateType();
+            return objectType;
+        }
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        /// <param name="listOfFields">List of fields for hash code.</param>
+        /// <param name="parentType">Parent type</param>
+        /// <param name="typeOfTheOtherSource">Type of the other source, left or right source.</param>
+        /// <param name="isSecondSource">Is left source type.</param>
+        /// <param name="onCondition">Lambda expression of the on condition.</param>
+        /// <returns>New type.</returns>
+        public static Type CompileExtractedEventDataComparerTypeForJoin(List<FieldNode> listOfFields, Type parentType, Type typeOfTheOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
+        {
+            TypeBuilder tb = CreateTypeBuilder("COMPARER", listOfFields, parentType, true, true, typeOfTheOtherSource, isSecondSource, onCondition);
+            Type objectType = tb.CreateType();
+            return objectType;
+        }
+
+        /// <summary>
+        /// Creates a new type based in the list of fields. The constructor of the parent type must be 0 arity. Note: Settings.StyleCop was edited because Stylecop don't know the word arity ¬¬
         /// </summary>
         /// <param name="listOfFields">List of fields.</param>
-        /// <param name="parentType">Event result type for the projection.</param>
-        /// <param name="overrideGetHashCodeMethod">Flag that indicates whether override the GetHashCode method of the new type.</param>
         /// <returns>The created type.</returns>
-        public static Type CompileResultType(List<FieldNode> listOfFields, Type parentType, bool overrideGetHashCodeMethod = false)
+        public static Type CompileResultType(List<FieldNode> listOfFields)
         {
-            TypeBuilder tb = GetTypeBuilder();
-            tb.SetParent(parentType);
-            ConstructorBuilder constructor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, parentType.GetProperties().Select(x => x.PropertyType).ToArray());
+            TypeBuilder tb = CreateTypeBuilder("RESULT", listOfFields, typeof(EventResult), false, false, null, false, null);
+            Type objectType = tb.CreateType();
+            return objectType;
+        }
 
-            var baseConstructor = parentType.GetConstructor(parentType.GetProperties().Select(x => x.PropertyType).ToArray());
+        /// <summary>
+        /// Creates the type builder of the new type to create.
+        /// </summary>
+        /// <param name="typeSufixId">Identifier of the type.</param>
+        /// <param name="listOfFields">List of fields.</param>
+        /// <param name="parentType">Parent type.</param>
+        /// <param name="overrideGetHashCodeMethod">Override GetHashCode method flag</param>
+        /// <param name="overrideEquals">Override Equals method flag.</param>
+        /// <param name="typeOtherSource">Type of the other source.</param>
+        /// <param name="isSecondSource">Is left source flag.</param>
+        /// <param name="onCondition">Lambda expression of the on condition.</param>
+        /// <returns>Type builder for the actual type.</returns>
+        private static TypeBuilder CreateTypeBuilder(string typeSufixId, List<FieldNode> listOfFields, Type parentType, bool overrideGetHashCodeMethod, bool overrideEquals, Type typeOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
+        {
+            TypeBuilder tb = GetTypeBuilder(typeSufixId);
+            tb.SetParent(parentType);
+            ConstructorBuilder constructor = null;
+            ConstructorInfo baseConstructor = null;
+
+            if (parentType.Equals(typeof(EventResult)))
+            {
+                constructor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, parentType.GetProperties().Select(x => x.PropertyType).ToArray());
+                baseConstructor = parentType.GetConstructor(parentType.GetProperties().Select(x => x.PropertyType).ToArray());
+            }
+            else
+            {
+                constructor = tb.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, new Type[] { });
+                baseConstructor = parentType.GetConstructor(new Type[] { });
+            }
 
             ILGenerator ctorIL = constructor.GetILGenerator();
             ctorIL.Emit(OpCodes.Ldarg_0);                // push "this"
@@ -78,33 +133,45 @@ namespace Integra.Space.Language.Runtime
             ctorIL.Emit(OpCodes.Ret);
 
             // creo la lista de campos antes de volver a crear propiedades
-            List<Tuple<string, Type, FieldBuilder>> fieldList = new List<Tuple<string, Type, FieldBuilder>>();
+            List<Tuple<string, Type, FieldBuilder, int>> fieldList = new List<Tuple<string, Type, FieldBuilder, int>>();
 
-            // The list contains a dynamic object with fields FieldName of type string and FieldType of type Type
-            foreach (var field in listOfFields)
+            // si no es null quiere decir que se esta creando el objeto para comparar llaves en el join
+            if (onCondition == null)
             {
-                CreateProperty(tb, field.FieldName, field.FieldType, fieldList);
+                // The list contains a dynamic object with fields FieldName of type string and FieldType of type Type
+                foreach (var field in listOfFields)
+                {
+                    CreateProperty(tb, field, fieldList);
+                }
             }
 
-            // creo el metodo Serialize
-            CreateSerializeMethod(tb, parentType, fieldList);
+            if (parentType.Equals(typeof(EventResult)))
+            {
+                // creo el metodo Serialize
+                CreateSerializeMethod(tb, parentType, fieldList);
+            }
 
             if (overrideGetHashCodeMethod)
             {
-                CreateGetHashCodeMethod(tb, fieldList);
+                CreateGetHashCodeMethod(tb, listOfFields, parentType);
             }
 
-            Type objectType = tb.CreateType();
-            return objectType;
+            if (overrideEquals)
+            {
+                CreateEqualsMethod(tb, parentType, typeOtherSource, isSecondSource, onCondition);
+            }
+
+            return tb;
         }
 
         /// <summary>
         /// Gets the type builder.
         /// </summary>
+        /// <param name="sufix">Identifier of the type.</param>
         /// <returns>Type builder.</returns>
-        private static TypeBuilder GetTypeBuilder()
+        private static TypeBuilder GetTypeBuilder(string sufix)
         {
-            var typeSignature = "SpaceDynamicType_" + DateTime.Now.Millisecond;
+            var typeSignature = string.Format("SpaceDynamicType_{0}_{1}", sufix, countObjectsGenerated++);
             var an = new AssemblyName(typeSignature);
             AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
             ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("MainModule");
@@ -119,14 +186,15 @@ namespace Integra.Space.Language.Runtime
         /// Creates a new property for the new type.
         /// </summary>
         /// <param name="tb">The type builder.</param>
-        /// <param name="propertyName">The property name.</param>
-        /// <param name="propertyType">The property type.</param>
+        /// <param name="field">Field node.</param>
         /// <param name="fieldList">List of fields.</param>
-        private static void CreateProperty(TypeBuilder tb, string propertyName, Type propertyType, List<Tuple<string, Type, FieldBuilder>> fieldList)
+        private static void CreateProperty(TypeBuilder tb, FieldNode field, List<Tuple<string, Type, FieldBuilder, int>> fieldList)
         {
+            string propertyName = field.FieldName;
+            Type propertyType = field.FieldType;
             string fieldName = "_" + propertyName;
             FieldBuilder fieldBuilder = tb.DefineField(fieldName, propertyType, FieldAttributes.Private);
-            fieldList.Add(new Tuple<string, Type, FieldBuilder>(fieldName, propertyType, fieldBuilder));
+            fieldList.Add(new Tuple<string, Type, FieldBuilder, int>(fieldName, propertyType, fieldBuilder, field.IncidenciasEnOnCondition));
 
             PropertyBuilder propertyBuilder = tb.DefineProperty(propertyName, PropertyAttributes.HasDefault, propertyType, null);
 
@@ -162,7 +230,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="tb">Type builder.</param>
         /// <param name="parentType">Parent type.</param>
         /// <param name="fieldList">List of fields.</param>
-        private static void CreateSerializeMethod(TypeBuilder tb, Type parentType, List<Tuple<string, Type, FieldBuilder>> fieldList)
+        private static void CreateSerializeMethod(TypeBuilder tb, Type parentType, List<Tuple<string, Type, FieldBuilder, int>> fieldList)
         {
             // obtengo el método Serialize del padre
             MethodInfo parentSerialize = parentType.GetMethod("Serialize", new Type[] { typeof(IQueryResultWriter) });
@@ -187,7 +255,7 @@ namespace Integra.Space.Language.Runtime
             serializeIL.Emit(OpCodes.Call, parentSerialize);    // llamo al método base para que imprima el nombre del query
 
             MethodInfo writeValueMethod = null;
-            foreach (Tuple<string, Type, FieldBuilder> t in fieldList)
+            foreach (Tuple<string, Type, FieldBuilder, int> t in fieldList)
             {
                 writeValueMethod = typeof(IQueryResultWriter).GetMethods().Where(x => x.Name == "WriteValue" && x.GetParameters()[0].ParameterType == ToPrimitiveNullable(t.Item2)).Single();
 
@@ -205,39 +273,87 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="tb">Type builder.</param>
         /// <param name="fieldList">List of fields.</param>
-        private static void CreateGetHashCodeMethod(TypeBuilder tb, List<Tuple<string, Type, FieldBuilder>> fieldList)
+        /// <param name="parentType">Parent type to get the properties.</param>
+        private static void CreateGetHashCodeMethod(TypeBuilder tb, List<FieldNode> fieldList, Type parentType)
         {
             // obtengo el método Serialize del padre
-            MethodInfo parentSerialize = typeof(object).GetMethod("GetHashCode");
+            MethodInfo parentGetHashCode = parentType.GetMethod("GetHashCode");
 
             // defino el cuerpo que sobreescribirá al cuerpo del método Serialize
-            // MethodBuilder serializeMethod = tb.DefineMethod("Serialize", MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, null, new Type[] { typeof(IQueryResultWriter) });
-            MethodBuilder getHashCodeMethod = tb.DefineMethod("GetHashCode", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, CallingConventions.HasThis, null, new Type[] { typeof(IQueryResultWriter) });
+            MethodBuilder getHashCodeMethod = tb.DefineMethod("GetHashCode", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, CallingConventions.HasThis, typeof(int), Type.EmptyTypes);
+            tb.DefineMethodOverride(getHashCodeMethod, parentGetHashCode);
 
             // defino el cuerpo del metodo Serialize
             ILGenerator getHashCodeIL = getHashCodeMethod.GetILGenerator();
-
-            MethodInfo getHashCodeMethodOfFields = null;
+            
+            MethodInfo getHashCodeMethodOfField = typeof(object).GetMethod("GetHashCode");
             bool first = true;
-            foreach (Tuple<string, Type, FieldBuilder> t in fieldList)
-            {
-                getHashCodeMethodOfFields = t.Item2.GetMethod("GetHashCode");
 
+            foreach (FieldNode t in fieldList)
+            {
                 if (first)
                 {
                     getHashCodeIL.Emit(OpCodes.Ldc_I4, 2166136261);
                     first = false;
                 }
 
-                getHashCodeIL.Emit(OpCodes.Ldc_I4, 16777619);
-                getHashCodeIL.Emit(OpCodes.Ldfld, t.Item3);
-                getHashCodeIL.Emit(OpCodes.Callvirt, getHashCodeMethod);
-                getHashCodeIL.Emit(OpCodes.Or);
+                for (int i = 0; i < t.IncidenciasEnOnCondition; i++)
+                {
+                    getHashCodeIL.Emit(OpCodes.Ldc_I4, 16777619);
+                    getHashCodeIL.Emit(OpCodes.Mul);
 
-                getHashCodeIL.Emit(OpCodes.Mul);
+                    getHashCodeIL.Emit(OpCodes.Ldarg_0); // <-- esto faltaba ¬¬
+                    getHashCodeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
+                    getHashCodeIL.Emit(OpCodes.Callvirt, getHashCodeMethodOfField);
+                    getHashCodeIL.Emit(OpCodes.Xor);                    
+                }
+            }
+            
+            getHashCodeIL.Emit(OpCodes.Ret);
+        }
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        /// <param name="tb">Type builder</param>
+        /// <param name="parentType">Parent type.</param>
+        /// <param name="typeOtherSource">Type of the other source.</param>
+        /// <param name="isSecondSource">Is left source flag.</param>
+        /// <param name="onCondition">Lambda expression of the on condition.</param>
+        private static void CreateEqualsMethod(TypeBuilder tb, Type parentType, Type typeOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
+        {
+            // obtengo el método Serialize del padre
+            MethodInfo parentEquals = parentType.GetMethod("Equals", new Type[] { typeof(object) });
+
+            // defino el cuerpo que sobreescribirá al cuerpo del método Serialize
+            MethodBuilder equalsMethod = tb.DefineMethod("Equals", MethodAttributes.Public | MethodAttributes.HideBySig | MethodAttributes.NewSlot | MethodAttributes.Virtual | MethodAttributes.Final, CallingConventions.HasThis, typeof(bool), new Type[] { typeof(object) });
+            tb.DefineMethodOverride(equalsMethod, parentEquals);
+
+            ILGenerator equalsIL = equalsMethod.GetILGenerator();
+            equalsIL.Emit(OpCodes.Nop);
+            MethodBuilder evaluateOnCondition = null;
+
+            if (!isSecondSource)
+            {
+                equalsIL.Emit(OpCodes.Ldarg_0); // push "this"
+                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                equalsIL.Emit(OpCodes.Castclass, typeOtherSource);
+
+                evaluateOnCondition = tb.DefineMethod("EvaluateOnCondition", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new[] { parentType, typeOtherSource });
+                onCondition.CompileToMethod(evaluateOnCondition);
+            }
+            else
+            {
+                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                equalsIL.Emit(OpCodes.Castclass, typeOtherSource);
+                equalsIL.Emit(OpCodes.Ldarg_0); // push "this"
+
+                evaluateOnCondition = tb.DefineMethod("EvaluateOnCondition", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new[] { typeOtherSource, parentType });
+                onCondition.CompileToMethod(evaluateOnCondition);
             }
 
-            getHashCodeIL.Emit(OpCodes.Ret);
+            equalsIL.Emit(OpCodes.Call, evaluateOnCondition);
+            equalsIL.Emit(OpCodes.Ret);
         }
 
         /// <summary>

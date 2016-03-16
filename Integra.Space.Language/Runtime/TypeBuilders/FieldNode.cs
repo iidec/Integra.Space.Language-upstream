@@ -23,18 +23,25 @@ namespace Integra.Space.Language.Runtime
         private Type fieldType;
 
         /// <summary>
+        /// Indicates whether the field is belongs to ON condition.
+        /// </summary>
+        private int incidenciasEnOnCondition;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="FieldNode" /> class.
         /// </summary>
         /// <param name="fieldName">Field name.</param>
         /// <param name="fieldType">Field type.</param>
-        public FieldNode(string fieldName, Type fieldType)
+        /// <param name="incidenciasEnOnCondition">Incidences in ON condition.</param>
+        public FieldNode(string fieldName, Type fieldType, int incidenciasEnOnCondition)
         {
             this.fieldName = fieldName;
             this.fieldType = fieldType;
+            this.incidenciasEnOnCondition = incidenciasEnOnCondition;
         }
 
         /// <summary>
-        /// Gets or sets the field name
+        /// Gets or sets the field name.
         /// </summary>
         public string FieldName
         {
@@ -50,7 +57,7 @@ namespace Integra.Space.Language.Runtime
         }
 
         /// <summary>
-        /// Gets or sets the field type
+        /// Gets or sets the field type.
         /// </summary>
         public Type FieldType
         {
@@ -62,6 +69,17 @@ namespace Integra.Space.Language.Runtime
             set
             {
                 this.fieldType = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the field belongs to the ON condition.
+        /// </summary>
+        public int IncidenciasEnOnCondition
+        {
+            get
+            {
+                return this.incidenciasEnOnCondition;
             }
         }
     }

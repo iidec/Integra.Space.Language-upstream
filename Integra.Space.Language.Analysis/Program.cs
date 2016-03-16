@@ -110,15 +110,16 @@ namespace Integra.Space.Language.Analysis
                                                                                             "@event.Message.#1.CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
-                        
-                        
-                        eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+
+
+                        eql = "cross JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
-                                "ON t1.@event.Adapter.Name == t2.@event.Adapter.Name and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
+                                //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#0.#0 != t2.@event.Message.#1.#43 " +
                                 "TIMEOUT '00:00:01' " +
                                 "EVENTLIFETIME '00:00:10' " +
-                                "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
-                                "SELECT t1.@event.Message.#1.#43 as c1 ";
+                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 ";
 
                         /*eql = string.Format("from {0} apply window of {2} select {3} as monto",
                                                                                             "SpaceObservable1",
@@ -152,6 +153,14 @@ namespace Integra.Space.Language.Analysis
                     string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
                     TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
                     tgg.GenerateGraph(executionPlanNode);
+
+                    /*PlanNode timespanValue = new PlanNode();
+                    timespanValue.NodeType = PlanNodeTypeEnum.Constant;
+                    timespanValue.Properties.Add("Value", TimeSpan.FromSeconds(1));
+                    timespanValue.Properties.Add("DataType", typeof(TimeSpan).ToString());
+                    timespanValue.Properties.Add("IsConstant", true);
+                    InternalPlanNodes ipn = new InternalPlanNodes();
+                    tgg.GenerateGraph(ipn.DurationWithSendingResults("left", timespanValue, string.Empty));*/
 
                     Console.WriteLine("Graph created.");
                     Console.WriteLine("Opening graph...");

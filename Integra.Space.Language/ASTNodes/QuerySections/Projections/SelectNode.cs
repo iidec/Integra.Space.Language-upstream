@@ -70,7 +70,9 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.result.Line = ChildrenNodes[0].Token.Location.Line;
             this.result.NodeType = PlanNodeTypeEnum.Projection;
             this.result.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableSelect);
+            this.result.Properties.Add("ParentType", typeof(EventResult));
             this.result.Properties.Add("OverrideGetHashCodeMethod", false);
+            this.result.Properties.Add("IncidenciasEnOn", 0);
         }
 
         /// <summary>

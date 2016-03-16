@@ -75,6 +75,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             }
 
             this.result.NodeType = PlanNodeTypeEnum.EventProperty;
+            this.result.Properties.Add("IncidenciasEnOn", 0);
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(auxEvent);
 

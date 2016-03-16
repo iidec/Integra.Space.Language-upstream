@@ -299,8 +299,14 @@
   <data name="RE58" xml:space="preserve">
     <value>RE58: Error with event unlock in observable where.</value>
   </data>
+  <data name="RE59" xml:space="preserve">
+    <value>RE59: Error in Switch.</value>
+  </data>
   <data name="RE6" xml:space="preserve">
-    <value />
+    <value>RE6: Error in ToArray.</value>
+  </data>
+  <data name="RE61" xml:space="preserve">
+    <value>RE61: Error in ToObservable.</value>
   </data>
   <data name="RE7" xml:space="preserve">
     <value />

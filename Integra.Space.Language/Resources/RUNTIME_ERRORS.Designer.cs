@@ -547,11 +547,29 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to .
+        ///   Looks up a localized string similar to RE59: Error in Switch..
+        /// </summary>
+        internal static string RE59 {
+            get {
+                return ResourceManager.GetString("RE59", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE6: Error in ToArray..
         /// </summary>
         internal static string RE6 {
             get {
                 return ResourceManager.GetString("RE6", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE61: Error in ToObservable..
+        /// </summary>
+        internal static string RE61 {
+            get {
+                return ResourceManager.GetString("RE61", resourceCulture);
             }
         }
         

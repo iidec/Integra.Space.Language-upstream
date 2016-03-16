@@ -120,6 +120,20 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             this.result.Children = new System.Collections.Generic.List<PlanNode>();
             int childrenCount = ChildrenNodes.Count;
 
+            PlanNode sources = fromAux;
+
+            if (fromAux.NodeType.Equals(PlanNodeTypeEnum.LeftJoin) || fromAux.NodeType.Equals(PlanNodeTypeEnum.RightJoin) || fromAux.NodeType.Equals(PlanNodeTypeEnum.CrossJoin) || fromAux.NodeType.Equals(PlanNodeTypeEnum.InnerJoin))
+            {
+                PlanNode subsAndCreate = this.AddSubscribeAndCreate(fromAux);
+
+                PlanNode switchNode = new PlanNode();
+                switchNode.NodeType = PlanNodeTypeEnum.ObservableSwitch;
+                switchNode.Children = new List<PlanNode>();
+                switchNode.Children.Add(subsAndCreate);
+
+                sources = switchNode;
+            }
+
             if (childrenCount == 3)
             {
                 PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
@@ -128,11 +142,11 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 // two and three arguments
                 if (secondArgument == null)
                 {
-                    this.AuxTwoParts(fromAux, projectionAux);
+                    this.AuxTwoParts(sources, projectionAux);
                 }
                 else
                 {
-                    this.AuxThreeParts(fromAux, secondArgument, projectionAux);
+                    this.AuxThreeParts(sources, secondArgument, projectionAux);
                 }
             }
             else if (childrenCount == 6)
@@ -146,42 +160,42 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 // six, five, four, and three arguments
                 if (secondArgument != null && fourthArgument != null && sixthArgument != null)
                 {
-                    this.AuxSixParts(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
+                    this.AuxSixParts(sources, secondArgument, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
                 }
                 else if (secondArgument == null && fourthArgument != null && sixthArgument != null)
                 {
-                    this.AuxFiveParts(fromAux, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
+                    this.AuxFiveParts(sources, thirdArgument, fourthArgument, fifthArgument, sixthArgument);
                 }
                 else if (secondArgument != null && fourthArgument == null && sixthArgument != null)
                 {
-                    this.AuxFiveParts(fromAux, secondArgument, thirdArgument, fifthArgument, sixthArgument);
+                    this.AuxFiveParts(sources, secondArgument, thirdArgument, fifthArgument, sixthArgument);
                 }
                 else if (secondArgument != null && fourthArgument != null && sixthArgument == null)
                 {
-                    this.AuxFiveParts(fromAux, secondArgument, thirdArgument, fourthArgument, fifthArgument);
+                    this.AuxFiveParts(sources, secondArgument, thirdArgument, fourthArgument, fifthArgument);
                 }
                 else if (secondArgument == null && fourthArgument == null && sixthArgument != null)
                 {
-                    this.AuxFourParts(fromAux, thirdArgument, fifthArgument, sixthArgument);
+                    this.AuxFourParts(sources, thirdArgument, fifthArgument, sixthArgument);
                 }
                 else if (secondArgument != null && fourthArgument == null && sixthArgument == null)
                 {
-                    this.AuxFourParts(fromAux, secondArgument, thirdArgument, fifthArgument);
+                    this.AuxFourParts(sources, secondArgument, thirdArgument, fifthArgument);
                 }
                 else if (secondArgument == null && fourthArgument != null && sixthArgument == null)
                 {
-                    this.AuxFourParts(fromAux, thirdArgument, fourthArgument, fifthArgument);
+                    this.AuxFourParts(sources, thirdArgument, fourthArgument, fifthArgument);
                 }
                 else if (secondArgument == null && fourthArgument == null && sixthArgument == null)
                 {
-                    this.AuxThreeParts(fromAux, thirdArgument, fifthArgument);
+                    this.AuxThreeParts(sources, thirdArgument, fifthArgument);
                 }
             }
 
             this.EndEvaluate(thread);
 
-            this.result.Column = fromAux.Column;
-            this.result.Line = fromAux.Line;
+            this.result.Column = sources.Column;
+            this.result.Line = sources.Line;
             /* ******************************************************************************************************************************************************** */
 
             // nodos para crear el objeto QueryResult resultante
@@ -200,18 +214,41 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             lambdaForResult.Children.Add(fromForLambda);
 
-            PlanNode finalResult = new PlanNode();
-            finalResult.NodeType = PlanNodeTypeEnum.SelectForResult;
-            finalResult.Children = new List<PlanNode>();
+            PlanNode finalSelect = new PlanNode();
+            finalSelect.NodeType = PlanNodeTypeEnum.SelectForResult;
+            finalSelect.NodeText = this.result.NodeText;
+            finalSelect.Children = new List<PlanNode>();
 
-            finalResult.Children.Add(scopeFinalResult);
-            finalResult.Children.Add(lambdaForResult);
+            finalSelect.Children.Add(scopeFinalResult);
+            finalSelect.Children.Add(lambdaForResult);
 
+            PlanNode finalResult = finalSelect;
+
+            if (!fromAux.NodeType.Equals(PlanNodeTypeEnum.LeftJoin) && !fromAux.NodeType.Equals(PlanNodeTypeEnum.RightJoin) && !fromAux.NodeType.Equals(PlanNodeTypeEnum.CrossJoin) && !fromAux.NodeType.Equals(PlanNodeTypeEnum.InnerJoin))
+            {
+                finalResult = this.AddSubscribeAndCreate(finalSelect);
+            }
+
+            // agrega algunos nodos extra para a la compilación
+            PlanNode executionPlanNode = finalResult;
+            TreeTransformations tf = new TreeTransformations(executionPlanNode);
+            tf.Transform();
+
+            return finalResult;
+        }
+
+        /// <summary>
+        /// Adds the nodes to compile Subscribe and Create observable extensions.
+        /// </summary>
+        /// <param name="child">Child node.</param>
+        /// <returns>Execution plan node with subscribe and create nodes</returns>
+        private PlanNode AddSubscribeAndCreate(PlanNode child)
+        {
             // nodo para crear el subscribe
             PlanNode scopeSubscribe = new PlanNode();
             scopeSubscribe.NodeType = PlanNodeTypeEnum.NewScope;
             scopeSubscribe.Children = new List<PlanNode>();
-            scopeSubscribe.Children.Add(finalResult);
+            scopeSubscribe.Children.Add(child);
 
             PlanNode subscriptionNode = new PlanNode();
             subscriptionNode.NodeType = PlanNodeTypeEnum.Subscription;
@@ -220,14 +257,9 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             PlanNode observableCreateNode = new PlanNode();
             observableCreateNode.NodeType = PlanNodeTypeEnum.ObservableCreate;
-            observableCreateNode.NodeText = this.result.NodeText;
+            observableCreateNode.NodeText = child.NodeText;
             observableCreateNode.Children = new List<PlanNode>();
             observableCreateNode.Children.Add(subscriptionNode);
-
-            // agrega algunas cosas a la compilación
-            PlanNode executionPlanNode = observableCreateNode;
-            TreeTransformations tf = new TreeTransformations(executionPlanNode);
-            tf.Transform();
 
             return observableCreateNode;
         }

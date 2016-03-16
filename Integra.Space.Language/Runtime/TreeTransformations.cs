@@ -22,6 +22,11 @@ namespace Integra.Space.Language.Runtime
         private PlanNode executionPlanRootNode;
 
         /// <summary>
+        /// Dictionary of specific extracted data types for each source.
+        /// </summary>
+        private Dictionary<string, Type> dictionaryOfTypes;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TreeTransformations"/> class.
         /// </summary>
         /// <param name="executionPlanRootNode">Execution plan root node.</param>
@@ -36,11 +41,27 @@ namespace Integra.Space.Language.Runtime
         public void Transform()
         {
             this.AddSourceIdToEventNodes();
-            IEnumerable<IGrouping<string, PlanNode>> objects = this.GetValuesFromEvents();
+            IEnumerable<IGrouping<string, PlanNode>> objects = this.GetValuesFromEvents(this.executionPlanRootNode);
+
             if (objects.Count() > 0)
             {
+                this.CreateExtractedEventDataSpecificTypes(objects);
                 this.InsertGenerationOfLocalObjects(objects);
                 this.ReplaceEventsByLocalObject(objects);
+            }
+
+            PlanNode join = this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.CrossJoin, PlanNodeTypeEnum.InnerJoin, PlanNodeTypeEnum.LeftJoin, PlanNodeTypeEnum.RightJoin).FirstOrDefault();
+
+            if (join != null)
+            {
+                IEnumerable<PlanNode> ffls = join.Children.First().FindNode(PlanNodeTypeEnum.ObservableFromForLambda);
+                foreach (PlanNode ffl in ffls)
+                {
+                    if (ffl.Properties.ContainsKey("ParameterPosition"))
+                    {
+                        ffl.Properties["ParameterPosition"] = 0;
+                    }
+                }
             }
         }
 
@@ -50,6 +71,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="objects">Objects grouped by source.</param>
         private void ReplaceEventsByLocalObject(IEnumerable<IGrouping<string, PlanNode>> objects)
         {
+            int position = 0;
             foreach (IGrouping<string, PlanNode> @object in objects)
             {
                 foreach (PlanNode column in @object)
@@ -63,10 +85,33 @@ namespace Integra.Space.Language.Runtime
                     column.Children = new List<PlanNode>();
 
                     PlanNode fromForLambda = new PlanNode();
-                    /*fromForLambda.Properties.Add("ParameterName", @object.Key);*/
+                    fromForLambda.Properties.Add("ParameterPosition", position);
                     fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
                     column.Children.Add(fromForLambda);
                 }
+
+                position++;
+            }
+        }
+
+        /// <summary>
+        /// Creates the specific extracted event data types for each source.
+        /// </summary>
+        /// <param name="objects">Objects used in the query grouped by source.</param>
+        private void CreateExtractedEventDataSpecificTypes(IEnumerable<IGrouping<string, PlanNode>> objects)
+        {
+            this.dictionaryOfTypes = new Dictionary<string, Type>();
+            List<FieldNode> fieldList;
+            foreach (IGrouping<string, PlanNode> grupo in objects)
+            {
+                fieldList = new List<FieldNode>();
+                foreach (PlanNode @object in grupo.Distinct(new PropertyNameComparer()))
+                {
+                    fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), typeof(object), 0));
+                }
+
+                Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
+                this.dictionaryOfTypes.Add(grupo.Key, newType);
             }
         }
 
@@ -84,7 +129,8 @@ namespace Integra.Space.Language.Runtime
 
                 PlanNode projection = new PlanNode();
                 projection.NodeType = PlanNodeTypeEnum.Projection;
-                projection.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableSelect);
+                projection.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableExtractedEventData);
+                projection.Properties.Add("ParentType", typeof(ExtractedEventData));
                 projection.Properties.Add("DisposeEvents", true);
                 projection.Properties.Add("OverrideGetHashCodeMethod", false);
                 projection.Children = new List<PlanNode>();
@@ -99,6 +145,30 @@ namespace Integra.Space.Language.Runtime
                 localObjects.Add(selectNode);
 
                 IEnumerable<PlanNode> replicas = this.CreateACopyOfQueryObjectsAccessors(@object.Distinct(new PropertyNameComparer()));
+                IEnumerable<IGrouping<string, PlanNode>> objectsInOnCondition = this.GetValuesFromEvents(this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.On).FirstOrDefault());
+
+                if (objectsInOnCondition != null && objectsInOnCondition.Count() > 0)
+                {
+                    projection.Properties["ProjectionType"] = PlanNodeTypeEnum.ObservableExtractedEventDataComparer;
+                    projection.Properties["OverrideGetHashCodeMethod"] = true;
+
+                    // esto solo servirá para casos con dos fuentes unicamente
+                    projection.Properties["ParentType"] = this.dictionaryOfTypes[@object.Key];
+                    projection.Properties.Add("OtherSourceType", this.dictionaryOfTypes.Where(x => x.Key != @object.Key).FirstOrDefault().Value);
+
+                    IGrouping<string, PlanNode> aux = objectsInOnCondition.First(x => x.Key == @object.Key);
+                    foreach (PlanNode objectInOn in aux)
+                    {
+                        foreach (PlanNode column in replicas)
+                        {
+                            if (objectInOn.Properties["PropertyName"].Equals(column.Properties["PropertyName"]))
+                            {
+                                column.Properties["IncidenciasEnOn"] = int.Parse(column.Properties["IncidenciasEnOn"].ToString()) + 1;
+                            }
+                        }
+                    }
+                }
+
                 foreach (PlanNode column in replicas)
                 {
                     PlanNode tupleProjection = new PlanNode();
@@ -174,10 +244,11 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Gets and replace the event values branches with the access to the properties of the respective local object.
         /// </summary>
+        /// <param name="branch">Branch to get the values of the events.</param>
         /// <returns>Objects grouped by source.</returns>
-        private IEnumerable<IGrouping<string, PlanNode>> GetValuesFromEvents()
+        private IEnumerable<IGrouping<string, PlanNode>> GetValuesFromEvents(PlanNode branch)
         {
-            IEnumerable<IGrouping<string, PlanNode>> objects = this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.ObjectValue, PlanNodeTypeEnum.EventProperty)
+            IEnumerable<IGrouping<string, PlanNode>> objects = branch.FindNode(PlanNodeTypeEnum.ObjectValue, PlanNodeTypeEnum.EventProperty)
                         .GroupBy(x =>
                         {
                             PlanNode identifier = x.FindNode(PlanNodeTypeEnum.Event).First().Children.Where(y => y.NodeType == PlanNodeTypeEnum.Identifier).FirstOrDefault();

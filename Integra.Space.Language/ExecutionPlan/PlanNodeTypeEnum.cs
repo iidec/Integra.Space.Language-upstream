@@ -633,6 +633,31 @@ namespace Integra.Space.Language
         ObservableJoin = 522,
 
         /// <summary>
+        /// Observable publish type
+        /// </summary>
+        ObservablePublish = 523,
+
+        /// <summary>
+        /// Observable ref-count type
+        /// </summary>
+        ObservableRefCount = 524,
+
+        /// <summary>
+        /// Observable extracted event data type
+        /// </summary>
+        ObservableExtractedEventData = 525,
+
+        /// <summary>
+        /// Observable extracted event data comparer type
+        /// </summary>
+        ObservableExtractedEventDataComparer = 526,
+
+        /// <summary>
+        /// Observable switch type
+        /// </summary>
+        ObservableSwitch = 527,
+
+        /// <summary>
         /// Enumerable count type
         /// </summary>
         EnumerableCount = 613,
@@ -701,6 +726,11 @@ namespace Integra.Space.Language
         /// Enumerable to array type
         /// </summary>
         EnumerableToArray = 626,
+
+        /// <summary>
+        /// Enumerable to observable type
+        /// </summary>
+        EnumerableToObservable = 625,
 
         /// <summary>
         /// New Scope type
