@@ -96,15 +96,15 @@ namespace Integra.Space.Language.Runtime
             leftSelect.Children.Add(newScopenumerableLeftSelect);
             leftSelect.Children.Add(leftDurationProjection);
 
-            PlanNode toArray = new PlanNode();
+            /*PlanNode toArray = new PlanNode();
             toArray.NodeType = PlanNodeTypeEnum.EnumerableToArray;
             toArray.Children = new List<PlanNode>();
-            toArray.Children.Add(leftSelect);
+            toArray.Children.Add(leftSelect);*/
 
             PlanNode toObservable = new PlanNode();
             toObservable.NodeType = PlanNodeTypeEnum.EnumerableToObservable;
             toObservable.Children = new List<PlanNode>();
-            toObservable.Children.Add(toArray);
+            toObservable.Children.Add(leftSelect);
             /******************************************************************************************************************************************/
             PlanNode newScope1 = new PlanNode();
             newScope1.NodeType = PlanNodeTypeEnum.NewScope;

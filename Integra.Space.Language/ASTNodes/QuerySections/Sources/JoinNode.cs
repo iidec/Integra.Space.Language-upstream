@@ -107,13 +107,13 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.SetResultJoinType(joinTypeAux);
                 this.result.Column = joinTypeAux.Column;
                 this.result.Line = joinTypeAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6} {7}", joinTypeAux.NodeText, joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
+                this.result.NodeText = string.Format("{0} ", joinTypeAux.NodeText);
             }
             else
             {
                 this.result.Column = joinAux.Column;
                 this.result.Line = joinAux.Line;
-                this.result.NodeText = string.Format("{0} {1} {2} {3} {4} {5} {6}", joinAux.NodeText, whereJoinAux.NodeText, withAux.NodeText, whereWithAux.NodeText, onAux.NodeText, timeoutAux.NodeText, eventLifeTimeAux.NodeText);
+                this.result.NodeText = string.Empty;
             }
 
             PlanNode refCountLeft = null;
@@ -123,10 +123,12 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 whereJoinAux.Children[0].Children.Add(joinAux);
                 refCountLeft = this.GetPublishAndRefCount(whereJoinAux);
+                this.result.NodeText = string.Format("{0} {1} {2} ", this.result.NodeText, joinAux.NodeText, whereJoinAux.NodeText);
             }
             else
             {
                 refCountLeft = this.GetPublishAndRefCount(joinAux);
+                this.result.NodeText = string.Format("{0} {1}", this.result.NodeText, joinAux.NodeText);
             }
 
             PlanNode refCountRight = null;
@@ -135,11 +137,15 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 whereWithAux.Children[0].Children.Add(withAux);
                 refCountRight = this.GetPublishAndRefCount(whereWithAux);
+                this.result.NodeText = string.Format("{0} {1} {2} ", this.result.NodeText, withAux.NodeText, whereWithAux.NodeText);
             }
             else
             {
                 refCountRight = this.GetPublishAndRefCount(withAux);
+                this.result.NodeText = string.Format("{0} {1} ", this.result.NodeText, withAux.NodeText);
             }
+            
+            this.result.NodeText = string.Format("{0} {1} ", this.result.NodeText, timeoutAux.NodeText);
 
             PlanNode sourcesNewScope = new PlanNode();
             sourcesNewScope.NodeType = PlanNodeTypeEnum.NewScope;
@@ -156,6 +162,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             if (eventLifeTimeAux != null)
             {
                 this.result.Children.Add(eventLifeTimeAux);
+                this.result.NodeText = string.Format("{0} {1} ", this.result.NodeText, eventLifeTimeAux.NodeText);
             }
 
             return this.result;

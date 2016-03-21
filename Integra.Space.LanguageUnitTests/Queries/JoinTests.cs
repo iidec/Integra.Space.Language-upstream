@@ -78,13 +78,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void JoinEQLTest()
         {
-            string eql = "cross JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#143 " +
-                                "TIMEOUT '00:00:01' " +
-                                "EVENTLIFETIME '00:00:10' " +
-                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"EVENTLIFETIME '00:00:10' " +
+                                //"WHERE  t1.@event.Message.#0.#0 == \"0110\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
             EQLPublicParser parser = new EQLPublicParser(eql);

@@ -207,8 +207,10 @@
     </Compile>
     <Compile Include="Runtime\CompileContext.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
-    <Compile Include="Runtime\LeftExtractedData.cs" />
-    <Compile Include="Runtime\RightExtractedData.cs" />
+    <Compile Include="Runtime\TestObjects\LeftExtractedDataComparer.cs" />
+    <Compile Include="Runtime\TestObjects\LeftExtractedData.cs" />
+    <Compile Include="Runtime\TestObjects\RightExtractedDataComparer.cs" />
+    <Compile Include="Runtime\TestObjects\RightExtractedData.cs" />
     <Compile Include="Runtime\TreeTransformations.cs" />
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Comparers\GroupByKeyComparer.cs" />

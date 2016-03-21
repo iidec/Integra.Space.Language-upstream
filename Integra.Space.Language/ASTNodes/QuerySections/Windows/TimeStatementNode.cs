@@ -51,11 +51,14 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.timeoutWord = (string)ChildrenNodes[0].Token.Value;
-            this.timespan = AddChild(NodeUseType.Parameter, "timespan", ChildrenNodes[1]) as AstNodeBase;
+            if (ChildrenNodes.Count != 0)
+            {
+                this.timeoutWord = (string)ChildrenNodes[0].Token.Value;
+                this.timespan = AddChild(NodeUseType.Parameter, "timespan", ChildrenNodes[1]) as AstNodeBase;
 
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+                this.result.Column = ChildrenNodes[0].Token.Location.Column;
+                this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            }
         }
 
         /// <summary>
@@ -66,16 +69,21 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            this.BeginEvaluate(thread);
-            PlanNode timespanAux = (PlanNode)this.timespan.Evaluate(thread);
-            this.EndEvaluate(thread);
+            if (ChildrenNodes.Count != 0)
+            {
+                this.BeginEvaluate(thread);
+                PlanNode timespanAux = (PlanNode)this.timespan.Evaluate(thread);
+                this.EndEvaluate(thread);
 
-            this.result.NodeText = string.Format("{0} {1}", this.timeoutWord, timespanAux.NodeText);
+                this.result.NodeText = string.Format("{0} {1}", this.timeoutWord, timespanAux.NodeText);
 
-            this.result.Children = new List<PlanNode>();
-            this.result.Children.Add(timespanAux);
+                this.result.Children = new List<PlanNode>();
+                this.result.Children.Add(timespanAux);
 
-            return this.result;
+                return this.result;
+            }
+
+            return null;
         }
     }
 }

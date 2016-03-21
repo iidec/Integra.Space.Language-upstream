@@ -8,8 +8,6 @@ namespace Integra.Space.Language.Runtime
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using Exceptions;
-    using Metadata;
 
     /// <summary>
     /// Tree transformations class
@@ -102,6 +100,7 @@ namespace Integra.Space.Language.Runtime
         {
             this.dictionaryOfTypes = new Dictionary<string, Type>();
             List<FieldNode> fieldList;
+            bool isSecondSource = false;
             foreach (IGrouping<string, PlanNode> grupo in objects)
             {
                 fieldList = new List<FieldNode>();
@@ -110,7 +109,8 @@ namespace Integra.Space.Language.Runtime
                     fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), typeof(object), 0));
                 }
 
-                Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
+                Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList, isSecondSource); // typeof(ExtractedEventData); // LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
+                isSecondSource = true;
                 this.dictionaryOfTypes.Add(grupo.Key, newType);
             }
         }
@@ -198,8 +198,9 @@ namespace Integra.Space.Language.Runtime
             }
 
             List<PlanNode> parentsWheresEventLock = this.executionPlanRootNode.FindParentNode(PlanNodeTypeEnum.ObservableWhereForEventLock);
-            foreach (PlanNode whereEventLockParent in parentsWheresEventLock)
+            /*foreach (PlanNode whereEventLockParent in parentsWheresEventLock)
             {
+                Console.WriteLine();
                 for (int i = 0; i < whereEventLockParent.Children.Count; i++)
                 {
                     PlanNode whereEventLock = whereEventLockParent.Children[i];
@@ -208,6 +209,15 @@ namespace Integra.Space.Language.Runtime
                     selectNode.Children[0].Children.Add(whereEventLock);
                     whereEventLockParent.Children[i] = selectNode;
                 }
+            }*/
+
+            foreach (PlanNode whereEventLockParent in parentsWheresEventLock)
+            {
+                PlanNode whereEventLock = whereEventLockParent.Children[0];
+                PlanNode selectNode = localObjects.Where(x => x.Properties["Source"].Equals(whereEventLock.Properties["Source"])).Single();
+                selectNode.Children[0].Children = new List<PlanNode>();
+                selectNode.Children[0].Children.Add(whereEventLock);
+                whereEventLockParent.Children[0] = selectNode;
             }
 
             localObjects.ToArray();

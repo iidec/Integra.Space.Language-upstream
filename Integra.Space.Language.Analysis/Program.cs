@@ -112,12 +112,13 @@ namespace Integra.Space.Language.Analysis
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
 
 
-                        eql = "cross JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
-                                //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                        eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#0.#0 == \"0110\"
+                                                                  //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
                                 "ON t1.@event.Message.#0.#0 != t2.@event.Message.#1.#43 " +
                                 "TIMEOUT '00:00:01' " +
-                                "EVENTLIFETIME '00:00:10' " +
+                                // "EVENTLIFETIME '00:00:10' " +
                                 //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
                                 "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 ";
 

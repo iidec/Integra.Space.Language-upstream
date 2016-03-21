@@ -62,11 +62,6 @@ namespace Integra.Space.Language.Runtime
         private Expression groupExpression;
 
         /// <summary>
-        /// ON node.
-        /// </summary>
-        private PlanNode onNode;
-
-        /// <summary>
         /// Projection with dispose.
         /// </summary>
         private bool projectionWithDispose;
@@ -129,6 +124,25 @@ namespace Integra.Space.Language.Runtime
         #endregion Constructors
 
         #region Compile methods
+
+        /// <summary>
+        /// Gets or sets the ON node.
+        /// </summary>
+        public PlanNode OnNode
+        {
+            get; set;
+        }
+
+        /// <summary>
+        /// Gets the parameter list.
+        /// </summary>
+        public List<ParameterExpression> ParameterList
+        {
+            get
+            {
+                return this.parameterList;
+            }
+        }
 
         /// <summary>
         /// Creates a delegate
@@ -244,15 +258,15 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Creates a lambda expression
         /// </summary>
-        /// <typeparam name="In">Input type</typeparam>
-        /// <typeparam name="IScheduler">Scheduler type</typeparam>
+        /// <typeparam name="In1">Input type</typeparam>
+        /// <typeparam name="In2">Scheduler type</typeparam>
         /// <typeparam name="Out">Output type</typeparam>
         /// <param name="plan">Execution plan</param>
         /// <returns>Expression lambda</returns>
-        public Expression<Func<In, IScheduler, Out>> CreateLambda<In, IScheduler, Out>(PlanNode plan)
+        public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
         {
             Expression rootExpression = this.GenerateExpressionTree(plan);
-            Expression<Func<In, IScheduler, Out>> result = Expression.Lambda<Func<In, IScheduler, Out>>(rootExpression, this.parameterList.ToArray());
+            Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootExpression, this.parameterList.First(), this.parameterList.Last());
 
             return result;
         }
@@ -660,9 +674,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable create."))),
                                     Expression.Assign(result, Expression.Call(methodCreate, lambdaOfTheSubscribe)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable create.")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -726,9 +740,75 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
                                     Expression.Assign(result, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );
+
+                return tryCatchExpr;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE20, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Creates the subscription to the observable and send the result through the observer.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <param name="source">Name of the source that calls the subscribe.</param>
+        /// <returns>IDisposable expression</returns>
+        private Expression CreateSubscription(PlanNode actualNode, Expression incomingObservable, string source)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IDisposable), "ResultDisposable");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+                
+                // creo el Action del cual se creará el lambda
+                LambdaExpression lambdaOfTheOnCompleted = Expression.Lambda(
+                    typeof(Action),
+                    Expression.IfThen(
+                        Expression.Constant(this.context.PrintLog), 
+                        Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant(source + " RefCount completed."))
+                        )
+                    );
+                
+                // creo el Action<"tipo creado en tiempo de ejecución"> del cual se creará el lambda
+                Type delegateType = typeof(Action<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]);
+                
+                Expression auxOnNext = Expression.Block(
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Incomming type for refCount."))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(incomingObservable.Type, typeof(object))))
+                    );
+
+                // creo el lambda que será retornado como hijo derecho del nodo padre, por ejemplo un nodo select
+                LambdaExpression lambdaOfTheOnNext = Expression.Lambda(delegateType, auxOnNext, new ParameterExpression[] { Expression.Parameter(incomingObservable.Type.GetGenericArguments()[0]) });
+                
+                MethodInfo subscribeMethod = typeof(ObservableExtensions).GetMethods()
+                                                .Where(m => { return m.Name == "Subscribe" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Action`1[T]") && m.GetParameters()[2].ParameterType.ToString().Equals("System.Action"); })
+                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
+
+                Expression tryCatchExpr =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
+                                    Expression.Assign(result, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -770,9 +850,9 @@ namespace Integra.Space.Language.Runtime
             Expression tryCatchExpr =
                 Expression.Block(
                     new[] { result },
-                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable never."))),
                         Expression.Assign(result, Expression.Call(null, methodNever)),
-                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by"))),
+                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable never."))),
                     result
                     );
 
@@ -796,9 +876,9 @@ namespace Integra.Space.Language.Runtime
             Expression tryCatchExpr =
                 Expression.Block(
                     new[] { result },
-                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable empty."))),
                         Expression.Assign(result, Expression.Call(null, methodEmpty)),
-                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by"))),
+                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable empty."))),
                     result
                     );
 
@@ -842,9 +922,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable timeout"))),
                                     Expression.Assign(result, valueResult),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable timeout")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -876,12 +956,6 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
-                // observer de prueba, quitar la siguiente línea cuando ya este todo unído
-                if (this.observer == null)
-                {
-                    this.observer = Expression.Parameter(typeof(IObserver<>).MakeGenericType(right.Type), "ObserverDePrueba");
-                }
-
                 MethodInfo onNextMethod = this.observer.Type.GetMethod("OnNext");
 
                 var body =
@@ -909,9 +983,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable catch."))),
                                     Expression.Assign(result, Expression.Call(catchMethod, incomingObservable, lambdaOfTheOnNext)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable catch.")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -944,16 +1018,41 @@ namespace Integra.Space.Language.Runtime
             try
             {
                 // on condition
-                this.onNode = actualNode.Children[1];
+                this.OnNode = actualNode.Children[1];
 
                 // get the sources of the join node
-                Expression source1 = this.GenerateExpressionTree(actualNode.Children[0].Children[0]);
+                ObservableConstructor oe1 = new ObservableConstructor(this.context);
+                oe1.OnNode = this.OnNode;
+                Expression source1 = oe1.GenerateExpressionTree(actualNode.Children[0].Children[0]);
+                this.sources.Add(LEFTSOURCE, null);
+                this.parameterList.Add(oe1.ParameterList.First());
+
+                // Expression source1 = this.GenerateExpressionTree(actualNode.Children[0].Children[1]);
+                ParameterExpression paramLeftSource = Expression.Variable(source1.Type, "LeftSourceParameter");
+                Expression leftSource = Expression.Block(new[] { paramLeftSource }, Expression.Assign(paramLeftSource, source1), paramLeftSource);
+
+                ParameterExpression auxLeft = Expression.Variable(leftSource.Type);
+                ParameterExpression resultLeft = Expression.Variable(leftSource.Type);
+
+                Expression leftSourceAux = Expression.Block(
+                    new[] { auxLeft, resultLeft },
+                    Expression.Assign(auxLeft, leftSource),
+                    this.CreateSubscription(actualNode, auxLeft, "left")
+                    );
+
+                // ObservableConstructor oe2 = new ObservableConstructor(this.context);
+                // oe2.OnNode = this.OnNode;
+                this.isSecondSource = true;
                 Expression source2 = this.GenerateExpressionTree(actualNode.Children[0].Children[1]);
+                ParameterExpression paramRightSource = Expression.Variable(source2.Type, "RightSourceParameter");
+                Expression rightSource = Expression.Block(new[] { paramRightSource }, Expression.Assign(paramRightSource, source2), paramRightSource);
+                this.isSecondSource = false;
+                this.observer = Expression.Parameter(typeof(IObserver<>).MakeGenericType(typeof(IObservable<>).MakeGenericType(typeof(Tuple<,>).MakeGenericType(source1.Type.GetGenericArguments()[0].GetGenericArguments()[0], source2.Type.GetGenericArguments()[0].GetGenericArguments()[0]))), "ObserverDePrueba");
 
                 // creates the scope for the join with two parameters
-                ScopeParameter[] newScopeParameters = new ScopeParameter[] { new ScopeParameter(0, source1.Type.GetGenericArguments()[0]), new ScopeParameter(1, source2.Type.GetGenericArguments()[0]) };
+                ScopeParameter[] newScopeParameters = new ScopeParameter[] { new ScopeParameter(0, source1.Type.GetGenericArguments()[0]), new ScopeParameter(0, source2.Type.GetGenericArguments()[0]) };
                 actualNode.Children[0].Properties["ScopeParameters"] = newScopeParameters;
-                this.CreateNewScope(actualNode.Children[0], source1, source2);
+                this.CreateNewScope(actualNode.Children[0], null, null);
 
                 // get the durations of the observable join
                 InternalPlanNodes ipn = new InternalPlanNodes();
@@ -1004,7 +1103,8 @@ namespace Integra.Space.Language.Runtime
                 // left key
                 ParameterExpression leftKeyParam = Expression.Parameter(selectorScopeParameters[0].Type.GetGenericArguments()[0]);
                 Expression leftKey = Expression.Block(
-                    /*Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Call(leftKeyParam, leftKeyParam.Type.GetMethod("GetHashCode")), typeof(object)))),*/
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("****************************************************** "))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Property(leftKeyParam, "_message_1_2"), typeof(object)))),
                     leftKeyParam
                     );
                 Type delegateTypeLeftKey = typeof(Func<,>).MakeGenericType(leftKeyParam.Type, leftKeyParam.Type);
@@ -1013,7 +1113,8 @@ namespace Integra.Space.Language.Runtime
                 // right key
                 ParameterExpression rightKeyParam = Expression.Parameter(selectorScopeParameters[1].Type.GetGenericArguments()[0]);
                 Expression rightKey = Expression.Block(
-                    /*Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Call(rightKeyParam, rightKeyParam.Type.GetMethod("GetHashCode")), typeof(object)))),*/
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("####################################################### "))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Property(rightKeyParam, "_message_1_2"), typeof(object)))),
                     rightKeyParam
                     );
                 Type delegateTypeRightKey = typeof(Func<,>).MakeGenericType(rightKeyParam.Type, rightKeyParam.Type);
@@ -1027,6 +1128,10 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(enumerableSelectorLeftParam.Type, enumerableSelectorRightParam.Type);
 
                 Expression enumerableSelector = Expression.Block(
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ "))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Property(enumerableSelectorLeftParam, "_message_1_2"), typeof(object)))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("----------------------------------------------------------- "))),
+                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(Expression.Property(enumerableSelectorRightParam, "_message_1_2"), typeof(object)))),
                     Expression.Call(methodCreate, enumerableSelectorLeftParam, enumerableSelectorRightParam)
                     );
 
@@ -1066,15 +1171,9 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression projectionResult = Expression.Variable(tryCatchExprEnumJoin.Type.GetGenericArguments()[0], "EnumerableJoinProjectionResult");
                 ParameterExpression projectionResultAux = Expression.Variable(projectionResult.Type, "EnumerableJoinProjectionResultAux");
                 Expression projectionBlock = Expression.Block(
-                    new[] { projectionResultAux },
-                    Expression.Assign(projectionResultAux, projectionResult),
-                    /*Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("+++++++++++++++++++++++++++++++++++++++++++++++"))),
-                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(projectionResultAux, "Item1"))),
-                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(projectionResultAux, "Item2"))),
-                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("+++++++++++++++++++++++++++++++++++++++++++++++"))),*/
-                    Expression.Assign(Expression.Property(Expression.Property(projectionResultAux, "Item1"), "Matched"), Expression.Constant(true)),
-                    Expression.Assign(Expression.Property(Expression.Property(projectionResultAux, "Item2"), "Matched"), Expression.Constant(true)),
-                    projectionResultAux
+                    Expression.Assign(Expression.Property(Expression.Property(projectionResult, "Item1"), "Matched"), Expression.Constant(true)),
+                    Expression.Assign(Expression.Property(Expression.Property(projectionResult, "Item2"), "Matched"), Expression.Constant(true)),
+                    projectionResult
                     );
 
                 LambdaExpression lambdaEnumerableSelect = Expression.Lambda(typeof(Func<,>).MakeGenericType(projectionResult.Type, projectionResult.Type), projectionBlock, new ParameterExpression[] { projectionResult });
@@ -1082,8 +1181,7 @@ namespace Integra.Space.Language.Runtime
                 this.CreateNewScope(actualNode, tryCatchExprEnumJoin, null);
                 Expression enumerableSelect = this.CreateSelectForEnumerable(actualNode, tryCatchExprEnumJoin, lambdaEnumerableSelect);
 
-                Expression toArrayEnumJoin = this.EnumerableToArray(actualNode, enumerableSelect);
-                Expression toObservable = this.EnumerableToObservable(actualNode, toArrayEnumJoin);
+                Expression toObservable = this.EnumerableToObservable(actualNode, enumerableSelect);
 
                 Type delegateTypeObservableSelector = typeof(Func<,,>).MakeGenericType(this.actualScope.GetParameterByIndex(0).Type, this.actualScope.GetParameterByIndex(1).Type, toObservable.Type);
                 LambdaExpression lambdaObservableSelector = Expression.Lambda(delegateTypeObservableSelector, toObservable, new ParameterExpression[] { this.actualScope.GetParameterByIndex(0), this.actualScope.GetParameterByIndex(1) });
@@ -1103,9 +1201,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { obvJoinResult },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
-                                    Expression.Assign(obvJoinResult, Expression.Call(methodObservableJoin, source1, source2, lambdaLeftDuration, lambdaRightDuration, lambdaObservableSelector)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable join."))),
+                                    Expression.Assign(obvJoinResult, Expression.Call(methodObservableJoin, leftSource, rightSource, lambdaLeftDuration, lambdaRightDuration, lambdaObservableSelector)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable join.")))
                                     ),
                                 Expression.Catch(
                                     paramException2,
@@ -1153,9 +1251,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable publish."))),
                                     Expression.Assign(result, Expression.Call(publishMethod, incomingObservable)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable publish.")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -1199,9 +1297,13 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable RefCount"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Incomming type for refCount."))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(incomingObservable.Type, typeof(object)))),
                                     Expression.Assign(result, Expression.Call(refCountMethod, incomingObservable)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Result type of refCount."))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(result.Type, typeof(object)))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable RefCount")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -1249,9 +1351,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { result },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable group by"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable select for result."))),
                                     Expression.Assign(result, Expression.Call(methodSelect, incomingObservable, expSelect)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable group by")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable select for result.")))
                                     ),
                                 Expression.Catch(
                                     paramException,
@@ -2304,12 +2406,12 @@ namespace Integra.Space.Language.Runtime
                         Expression.Assign(objetoAConvertir, incomingObservable),
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to list"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable switch."))),
                                     Expression.IfThen(
                                         Expression.NotEqual(objetoAConvertir, Expression.Constant(null)),
                                         Expression.Assign(result, Expression.Call(methodToObservable, objetoAConvertir))
                                     ),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to list")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable switch.")))
                                     ),
                                 Expression.Catch(
                                      paramException,
@@ -2603,12 +2705,12 @@ namespace Integra.Space.Language.Runtime
                         Expression.Assign(objetoAConvertir, incomingObservable),
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to list"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to array."))),
                                     Expression.IfThen(
                                         Expression.NotEqual(objetoAConvertir, Expression.Constant(null, objetoAConvertir.Type)),
                                         Expression.Assign(result, Expression.Call(methodToArray, objetoAConvertir))
                                     ),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to list")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to array.")))
                                     ),
                                 Expression.Catch(
                                      paramException,
@@ -2651,14 +2753,14 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
-                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetElementType()), "ToObservableParam");
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ToObservableParam");
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
                 ParameterExpression objetoAConvertir = Expression.Variable(incomingObservable.Type, "ObjetoAConvertirAObservable");
 
                 MethodInfo methodToObservable = typeof(System.Reactive.Linq.Observable)
                     .GetMethods()
                     .Where(m => m.Name == "ToObservable" && m.GetParameters().Length == 2)
-                    .Single().MakeGenericMethod(incomingObservable.Type.GetElementType());
+                    .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 System.Reactive.Concurrency.IScheduler scheduler = this.context.Scheduler.GetScheduler();
                 Expression schedulerExp = Expression.Constant(scheduler);
@@ -2669,17 +2771,29 @@ namespace Integra.Space.Language.Runtime
                         Expression.Assign(objetoAConvertir, incomingObservable),
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to list"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to observable"))),
                                     Expression.IfThen(
                                         Expression.NotEqual(objetoAConvertir, Expression.Constant(null)),
                                         Expression.Assign(result, Expression.Call(methodToObservable, objetoAConvertir, schedulerExp))
                                     ),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to list")))
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to observable")))
                                     ),
                                 Expression.Catch(
                                      paramException,
                                      Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Error")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("************************* INCOMING TYPE: " + incomingObservable.Type.ToString())),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* Message ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* Source ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Source")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* TargetSite ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "TargetSite")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* StackTrace ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "StackTrace")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* HelpLink ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "HelpLink")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("************************* InnerException ")),
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "InnerException")),
                                         Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE61, actualNode.NodeText), typeof(string)), paramException))
                                     )
                                 )
@@ -3104,7 +3218,7 @@ namespace Integra.Space.Language.Runtime
         private Expression CreateProjectionExpression(PlanNode plans)
         {
             List<Expression> expressionList = new List<Expression>();
-            
+
             // se agrega el print log que indica el inicio de la proyección
             expressionList.Add(Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the projection"))));
 
@@ -3144,9 +3258,9 @@ namespace Integra.Space.Language.Runtime
             }
             else if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableExtractedEventData))
             {
-                myType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(listOfFields);
+                /*myType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(listOfFields);
                 y = Expression.Variable(myType);
-                expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));
+                expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));*/
             }
             else if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableExtractedEventDataComparer))
             {
@@ -3156,24 +3270,24 @@ namespace Integra.Space.Language.Runtime
 
                 if (!this.isSecondSource)
                 {
-                    this.onNode.Children.RemoveAt(0);
+                    this.OnNode.Children.RemoveAt(0);
                     ScopeParameter[] newScopeParameters = new ScopeParameter[] { new ScopeParameter(0, leftSourceExtractedEventDataType), new ScopeParameter(1, rightSourceExtractedEventDataType) };
-                    this.onNode.Properties.Add("ScopeParameters", newScopeParameters);
+                    this.OnNode.Properties.Add("ScopeParameters", newScopeParameters);
 
                     delegateTypeOnCondition = typeof(Func<,,>).MakeGenericType(leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, typeof(bool));
                 }
                 else
                 {
                     ScopeParameter[] newScopeParameters = new ScopeParameter[] { new ScopeParameter(0, rightSourceExtractedEventDataType), new ScopeParameter(1, leftSourceExtractedEventDataType) };
-                    this.onNode.Properties["ScopeParameters"] = newScopeParameters;
+                    this.OnNode.Properties["ScopeParameters"] = newScopeParameters;
 
                     delegateTypeOnCondition = typeof(Func<,,>).MakeGenericType(rightSourceExtractedEventDataType, leftSourceExtractedEventDataType, typeof(bool));
                 }
 
-                this.CreateNewScope(this.onNode, null, null);
+                this.CreateNewScope(this.OnNode, null, null);
 
                 this.isInConditionOn = true;
-                Expression onCondition = this.GenerateExpressionTree(this.onNode.Children.First());
+                Expression onCondition = Expression.Constant(true); // this.GenerateExpressionTree(this.onNode.Children.First());
                 this.isInConditionOn = false;
 
                 ParameterExpression resultOnCondition = Expression.Parameter(typeof(bool), "onConditionResult");
@@ -3197,11 +3311,11 @@ namespace Integra.Space.Language.Runtime
                             ),
                         resultOnCondition
                         );
-                
+
                 Expression block = Expression.Block(
                     new[] { resultOnCondition },
                     Expression.Assign(resultOnCondition, onCondition),
-                    resultOnCondition);                    
+                    resultOnCondition);
 
                 LambdaExpression lambdaOnCondition = Expression.Lambda(delegateTypeOnCondition, block, new ParameterExpression[] { this.actualScope.GetParameterByIndex(0), this.actualScope.GetParameterByIndex(1) });
 
@@ -3407,6 +3521,7 @@ namespace Integra.Space.Language.Runtime
                     rightItem = this.actualScope.ParentScope.ParentScope.GetParameterByIndex(1);
                     leftType = leftItem.Type;
                     rightType = rightItem.Type.GetGenericArguments()[0];
+
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, leftItem, Expression.Constant(null, rightType));
                 }
@@ -3415,6 +3530,7 @@ namespace Integra.Space.Language.Runtime
                     leftItem = this.actualScope.ParentScope.ParentScope.GetParameterByIndex(0);
                     rightItem = this.actualScope.GetParameterByIndex(0);
                     leftType = leftItem.Type.GetGenericArguments()[0];
+
                     rightType = rightItem.Type;
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(null, leftType), rightItem);
@@ -3536,9 +3652,9 @@ namespace Integra.Space.Language.Runtime
 
                     return Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable to list"))),
+                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the enumerable foreach."))),
                                         Expression.Call(toList, methodForEach, lambda),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable to list")))
+                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the enumerable foreach.")))
                                         ),
                                     Expression.Catch(
                                          paramException,
@@ -3609,38 +3725,6 @@ namespace Integra.Space.Language.Runtime
         private Expression GenerateEvent(PlanNode actualNode, ConstantExpression sourceId)
         {
             return this.actualScope.GetFirstParameter();
-
-            /*
-            return param;
-
-            if (this.sources.ContainsValue(sourceId.Value.ToString()))
-            {
-                int paramToTake = this.sources.First(x => x.Value == sourceId.Value.ToString()).Key;
-
-                ParameterExpression param = this.actualScope.GetFirstParameter();
-
-                if (param.Type.IsGenericType)
-                {
-                    if (param.Type.GetGenericTypeDefinition().Equals(typeof(Tuple<,>)))
-                    {
-                        if (paramToTake == LEFTSOURCE)
-                        {
-                            return Expression.Property(param, "Item1");
-                        }
-                        else if (paramToTake == RIGHTSOURCE)
-                        {
-                            return Expression.Property(param, "Item2");
-                        }
-                    }
-                }
-
-                return param;
-            }
-            else
-            {
-                throw new Exceptions.CompilationException(string.Format("Invalid source {0}.", sourceId.Value));
-            }
-            */
         }
 
         /// <summary>
@@ -3753,6 +3837,7 @@ namespace Integra.Space.Language.Runtime
             MethodInfo getItemNMethod = null;
             Expression tupleItem = leftNode;
             MethodInfo aux1 = null;
+            string position = string.Empty;
 
             if (leftNode.Type.IsGenericType && leftNode.Type.GetGenericTypeDefinition().Equals(typeof(Tuple<,>)))
             {
@@ -3762,21 +3847,19 @@ namespace Integra.Space.Language.Runtime
                 {
                     if (paramToTake == LEFTSOURCE)
                     {
-                        // tupleItem = Expression.Property(leftNode, "Item1");
                         getItemNMethod = leftNode.Type.GetMethod("get_Item1");
-                        aux1 = leftNode.Type.GetMethod("get_Item1").ReturnType.GetProperty(propiedad).GetGetMethod();
+                        aux1 = getItemNMethod.ReturnType.GetProperty(propiedad).GetGetMethod();
 
                         tupleItem = Expression.Call(leftNode, getItemNMethod);
-                        /*tupleItem = Expression.Call(tupleItem, aux1);*/
+                        position = "left";
                     }
                     else if (paramToTake == RIGHTSOURCE)
                     {
-                        // tupleItem = Expression.Property(leftNode, "Item2");
                         getItemNMethod = leftNode.Type.GetMethod("get_Item2");
-                        aux1 = leftNode.Type.GetMethod("get_Item2").ReturnType.GetProperty(propiedad).GetGetMethod();
+                        aux1 = getItemNMethod.ReturnType.GetProperty(propiedad).GetGetMethod();
 
                         tupleItem = Expression.Call(leftNode, getItemNMethod);
-                        /*tupleItem = Expression.Call(tupleItem, aux1);*/
+                        position = "right";
                     }
                 }
                 else
@@ -3805,7 +3888,7 @@ namespace Integra.Space.Language.Runtime
                             Expression.TryCatch(
                                 Expression.Block(
                                     Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the get property operation: " + propiedad))),
-                                    Expression.Assign(param, expGetProperty),                                    
+                                    Expression.Assign(param, expGetProperty),
                                     Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the get property operation: " + propiedad)))
                                 ),
                                 Expression.Catch(
@@ -3826,11 +3909,14 @@ namespace Integra.Space.Language.Runtime
                             new[] { param },
                             Expression.IfThen(
                                 Expression.AndAlso(Expression.NotEqual(leftNode, Expression.Constant(null, leftNode.Type)), Expression.NotEqual(Expression.Call(leftNode, getItemNMethod), Expression.Constant(null, tupleItem.Type))),
-                                aux
+                                Expression.Block(
+                                    aux,
+                                    Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Tupla " + position + ": " + propiedad + " Valor: ")),
+                                    Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), param)
+                                    )
                             ),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object)))),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(string.Empty))),
+                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
+                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object)))),
                             param);
                 }
                 else
@@ -3842,9 +3928,8 @@ namespace Integra.Space.Language.Runtime
                                 Expression.NotEqual(leftNode, Expression.Constant(null, leftNode.Type)),
                                 aux
                             ),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object)))),
-                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(string.Empty))),
+                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
+                            Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object)))),
                             param);
                 }
 
@@ -4542,8 +4627,7 @@ namespace Integra.Space.Language.Runtime
                             Expression.Block(
                                 Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the not equal operation '!=': "))),
                                 Expression.Assign(param, Expression.NotEqual(this.StandardizeType(leftNode, leftNode.Type), this.StandardizeType(rightNode, rightNode.Type))),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the not equal operation"))),
-                                Expression.Empty()
+                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the not equal operation")))
                                 ),
                             Expression.Catch(
                                 paramException,
@@ -4585,8 +4669,7 @@ namespace Integra.Space.Language.Runtime
                             Expression.Block(
                                 Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the equal operation '==': "))),
                                 Expression.Assign(param, Expression.Equal(this.StandardizeType(leftNode, leftNode.Type), this.StandardizeType(rightNode, rightNode.Type))),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the equal operation"))),
-                                Expression.Empty()
+                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the equal operation")))
                                 ),
                             Expression.Catch(
                                 paramException,

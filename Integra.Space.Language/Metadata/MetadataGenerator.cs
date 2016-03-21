@@ -58,7 +58,7 @@ namespace Integra.Space.Language.Metadata
             // se obtiene la ventana de la consulta
             SpaceParseTreeNode applyWindow = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.APPLY_WINDOW).SingleOrDefault();
 
-            if (applyWindow != null)
+            if (applyWindow != null && applyWindow.ChildNodes.Count != 0)
             {
                 SpaceParseTreeNode windowValue = applyWindow.ChildNodes.Last();
                 SpaceMetadataTreeNode metadataApplyWindow = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Window);
@@ -69,7 +69,7 @@ namespace Integra.Space.Language.Metadata
 
             // se obtiene el agrupamiento     
             SpaceParseTreeNode groupBy = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.GROUP_BY_OP).SingleOrDefault();
-            if (groupBy != null)
+            if (groupBy != null && groupBy.ChildNodes.Count != 0l)
             {
                 SpaceMetadataTreeNode metadataGroupBy = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.GroupBy);
                 metadataGroupBy.ChildNodes = this.CreateMetadataColumnNodes(groupBy.FindNode(SpaceParseTreeNodeTypeEnum.VALUES_WITH_ALIAS), null);
@@ -85,7 +85,7 @@ namespace Integra.Space.Language.Metadata
             metadataSelect.ChildNodes = this.CreateMetadataColumnNodes(select.FindNode(SpaceParseTreeNodeTypeEnum.VALUES_WITH_ALIAS), root.ChildNodes.Where(x => x.Type == SpaceMetadataTreeNodeTypeEnum.GroupBy).FirstOrDefault());
 
             SpaceParseTreeNode top = select.FindNode(SpaceParseTreeNodeTypeEnum.TOP).SingleOrDefault();
-            if (top != null)
+            if (top != null && top.ChildNodes.Count != 0)
             {
                 SpaceMetadataTreeNode metadataTop = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.Top);
                 metadataTop.Value = top.ChildNodes.Last().TokenValue;
@@ -95,7 +95,7 @@ namespace Integra.Space.Language.Metadata
 
             // se obtiene el ordenamiento     
             SpaceParseTreeNode orderBy = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.ORDER_BY).SingleOrDefault();
-            if (orderBy != null)
+            if (orderBy != null && orderBy.ChildNodes.Count != 0)
             {
                 SpaceMetadataTreeNode metadataOrderBy = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.OrderBy);
                 metadataOrderBy.ChildNodes = this.CreateMetadataColumnNodes(orderBy.FindNode(SpaceParseTreeNodeTypeEnum.LIST_OF_VALUES), root.ChildNodes.Where(x => x.Type == SpaceMetadataTreeNodeTypeEnum.Select).First());
@@ -143,7 +143,7 @@ namespace Integra.Space.Language.Metadata
                 // se obtiene el timeout del join
                 SpaceParseTreeNode eventLifeTime = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.EVENT_LIFE_TIME).SingleOrDefault();
 
-                if (eventLifeTime != null)
+                if (eventLifeTime != null && eventLifeTime.ChildNodes.Count != 0)
                 {
                     SpaceParseTreeNode eventLifeTimeValue = eventLifeTime.ChildNodes.Last();
                     SpaceMetadataTreeNode metadataEventLifeTime = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.EventLifeTime);

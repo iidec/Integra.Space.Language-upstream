@@ -61,9 +61,19 @@ namespace Integra.Space.Language.Runtime
         /// Creates a type derived of type ExtractedEventData.
         /// </summary>
         /// <param name="listOfFields">List of fields</param>
+        /// <param name="isSecondSource">Is left source type.</param>
         /// <returns>New type.</returns>
-        public static Type CompileExtractedEventDataSpecificTypeForJoin(List<FieldNode> listOfFields)
+        public static Type CompileExtractedEventDataSpecificTypeForJoin(List<FieldNode> listOfFields, bool isSecondSource)
         {
+            /*if (isSecondSource)
+            {
+                return typeof(RightExtractedData);
+            }
+            else
+            {
+                return typeof(LeftExtractedData);
+            }*/
+
             TypeBuilder tb = CreateTypeBuilder("EXTRACTED", listOfFields, typeof(ExtractedEventData), false, false, null, false, null);
             Type objectType = tb.CreateType();
             return objectType;
@@ -80,6 +90,15 @@ namespace Integra.Space.Language.Runtime
         /// <returns>New type.</returns>
         public static Type CompileExtractedEventDataComparerTypeForJoin(List<FieldNode> listOfFields, Type parentType, Type typeOfTheOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
         {
+            /*if (isSecondSource)
+            {
+                return typeof(RightExtractedDataComparer);
+            }
+            else
+            {
+                return typeof(LeftExtractedDataComparer);
+            }*/
+            
             TypeBuilder tb = CreateTypeBuilder("COMPARER", listOfFields, parentType, true, true, typeOfTheOtherSource, isSecondSource, onCondition);
             Type objectType = tb.CreateType();
             return objectType;
@@ -285,7 +304,7 @@ namespace Integra.Space.Language.Runtime
 
             // defino el cuerpo del metodo Serialize
             ILGenerator getHashCodeIL = getHashCodeMethod.GetILGenerator();
-            
+
             MethodInfo getHashCodeMethodOfField = typeof(object).GetMethod("GetHashCode");
             bool first = true;
 
@@ -303,12 +322,14 @@ namespace Integra.Space.Language.Runtime
                     getHashCodeIL.Emit(OpCodes.Mul);
 
                     getHashCodeIL.Emit(OpCodes.Ldarg_0); // <-- esto faltaba ¬¬
+
+                    // getHashCodeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
                     getHashCodeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
                     getHashCodeIL.Emit(OpCodes.Callvirt, getHashCodeMethodOfField);
-                    getHashCodeIL.Emit(OpCodes.Xor);                    
+                    getHashCodeIL.Emit(OpCodes.Xor);
                 }
             }
-            
+
             getHashCodeIL.Emit(OpCodes.Ret);
         }
 
@@ -332,6 +353,8 @@ namespace Integra.Space.Language.Runtime
             ILGenerator equalsIL = equalsMethod.GetILGenerator();
             equalsIL.Emit(OpCodes.Nop);
             MethodBuilder evaluateOnCondition = null;
+            MethodInfo getTypeMethodInfo = typeof(object).GetMethod("GetType");
+            MethodInfo writeLineMethodInfo = typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) });
 
             if (!isSecondSource)
             {
@@ -344,6 +367,10 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
+                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
                 equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
                 equalsIL.Emit(OpCodes.Castclass, typeOtherSource);
                 equalsIL.Emit(OpCodes.Ldarg_0); // push "this"

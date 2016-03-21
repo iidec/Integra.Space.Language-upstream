@@ -11,6 +11,16 @@ namespace Integra.Space.Language.Runtime
     public class RightExtractedData : ExtractedEventData
     {
         /// <summary>
+        /// Doc goes here
+        /// </summary>
+        private object message132;
+
+        /// <summary>
+        /// Doc goes here
+        /// </summary>
+        private object message12;
+
+        /// <summary>
         /// Gets the adapter name.
         /// </summary>
         public object _adapter_Name
@@ -22,24 +32,34 @@ namespace Integra.Space.Language.Runtime
         }
 
         /// <summary>
-        /// Gets the fourth field.
+        /// Gets or sets the fourth field.
         /// </summary>
-        public object _message_1_4
+        public object _message_1_32
         {
             get
             {
                 return (decimal)1;
             }
+
+            set
+            {
+                this.message132 = value;
+            }
         }
 
         /// <summary>
-        /// Gets other field.
+        /// Gets or sets other field.
         /// </summary>
-        public object _message_1_43
+        public object _message_1_2
         {
             get
             {
-                return "123456789";
+                return "9999941616073663_2";
+            }
+
+            set
+            {
+                this.message12 = value;
             }
         }
     }
