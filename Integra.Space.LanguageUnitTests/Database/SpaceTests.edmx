@@ -1,0 +1,317 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="SpaceTestsModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2008" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'SpaceTests.dbo.ActualResults' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="ActualResults">
+          <Key>
+            <PropertyRef Name="id_test" />
+          </Key>
+          <Property Name="left_primary_account_number" Type="char" MaxLength="16" />
+          <Property Name="left_retrieval_reference_number" Type="char" MaxLength="8" />
+          <Property Name="right_primary_account_number" Type="char" MaxLength="16" />
+          <Property Name="right_retrieval_reference_number" Type="char" MaxLength="8" />
+          <Property Name="id_test" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'SpaceTests.dbo.Events' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="Events">
+          <Key>
+            <PropertyRef Name="message_type" />
+            <PropertyRef Name="primary_account_number" />
+            <PropertyRef Name="retrieval_reference_number" />
+            <PropertyRef Name="id_test" />
+            <PropertyRef Name="relative_time" />
+          </Key>
+          <Property Name="message_type" Type="char" MaxLength="4" Nullable="false" />
+          <Property Name="primary_account_number" Type="char" MaxLength="16" Nullable="false" />
+          <Property Name="retrieval_reference_number" Type="char" MaxLength="8" Nullable="false" />
+          <Property Name="id_test" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="relative_time" Type="bigint" Nullable="false" />
+        </EntityType>
+        <!--Errors Found During Generation:
+warning 6002: The table/view 'SpaceTests.dbo.ExpectedResults' does not have a primary key defined. The key has been inferred and the definition was created as a read-only table/view.-->
+        <EntityType Name="ExpectedResults">
+          <Key>
+            <PropertyRef Name="id_test" />
+            <PropertyRef Name="matched" />
+          </Key>
+          <Property Name="left_primary_account_number" Type="char" MaxLength="16" />
+          <Property Name="left_retrieval_reference_number" Type="char" MaxLength="8" />
+          <Property Name="right_primary_account_number" Type="char" MaxLength="16" />
+          <Property Name="right_retrieval_reference_number" Type="char" MaxLength="8" />
+          <Property Name="id_test" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="matched" Type="bit" Nullable="false" />
+        </EntityType>
+        <EntityType Name="Tests">
+          <Key>
+            <PropertyRef Name="id_test" />
+          </Key>
+          <Property Name="test_name" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="id_test" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="fecha_creacion" Type="datetime" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_ActualResults_Tests">
+          <End Role="Tests" Type="Self.Tests" Multiplicity="1" />
+          <End Role="ActualResults" Type="Self.ActualResults" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="ActualResults">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Events_Tests">
+          <End Role="Tests" Type="Self.Tests" Multiplicity="1" />
+          <End Role="Events" Type="Self.Events" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="Events">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ExpectedResults_Tests">
+          <End Role="Tests" Type="Self.Tests" Multiplicity="1" />
+          <End Role="ExpectedResults" Type="Self.ExpectedResults" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="ExpectedResults">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SpaceTestsModelStoreContainer">
+          <EntitySet Name="Tests" EntityType="Self.Tests" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="ActualResults" EntityType="Self.ActualResults" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [ActualResults].[left_primary_account_number] AS [left_primary_account_number], 
+    [ActualResults].[left_retrieval_reference_number] AS [left_retrieval_reference_number], 
+    [ActualResults].[right_primary_account_number] AS [right_primary_account_number], 
+    [ActualResults].[right_retrieval_reference_number] AS [right_retrieval_reference_number], 
+    [ActualResults].[id_test] AS [id_test]
+    FROM [dbo].[ActualResults] AS [ActualResults]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="Events" EntityType="Self.Events" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [Events].[message_type] AS [message_type], 
+    [Events].[primary_account_number] AS [primary_account_number], 
+    [Events].[retrieval_reference_number] AS [retrieval_reference_number], 
+    [Events].[id_test] AS [id_test], 
+    [Events].[relative_time] AS [relative_time]
+    FROM [dbo].[Events] AS [Events]</DefiningQuery>
+          </EntitySet>
+          <EntitySet Name="ExpectedResults" EntityType="Self.ExpectedResults" store:Type="Tables" store:Schema="dbo">
+            <DefiningQuery>SELECT 
+    [ExpectedResults].[left_primary_account_number] AS [left_primary_account_number], 
+    [ExpectedResults].[left_retrieval_reference_number] AS [left_retrieval_reference_number], 
+    [ExpectedResults].[right_primary_account_number] AS [right_primary_account_number], 
+    [ExpectedResults].[right_retrieval_reference_number] AS [right_retrieval_reference_number], 
+    [ExpectedResults].[id_test] AS [id_test], 
+    [ExpectedResults].[matched] AS [matched]
+    FROM [dbo].[ExpectedResults] AS [ExpectedResults]</DefiningQuery>
+          </EntitySet>
+          <AssociationSet Name="FK_ActualResults_Tests" Association="Self.FK_ActualResults_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="ActualResults" EntitySet="ActualResults" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Events_Tests" Association="Self.FK_Events_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="Events" EntitySet="Events" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ExpectedResults_Tests" Association="Self.FK_ExpectedResults_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="ExpectedResults" EntitySet="ExpectedResults" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="SpaceTestsModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Test">
+          <Key>
+            <PropertyRef Name="id_test" />
+          </Key>
+          <Property Name="test_name" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="id_test" Type="Guid" Nullable="false" />
+          <Property Name="fecha_creacion" Type="DateTime" Nullable="false" Precision="3" />
+          <NavigationProperty Name="ActualResult" Relationship="Self.FK_ActualResults_Tests" FromRole="Tests" ToRole="ActualResults" />
+          <NavigationProperty Name="Events" Relationship="Self.FK_Events_Tests" FromRole="Tests" ToRole="Events" />
+          <NavigationProperty Name="ExpectedResults" Relationship="Self.FK_ExpectedResults_Tests" FromRole="Tests" ToRole="ExpectedResults" />
+        </EntityType>
+        <EntityType Name="ActualResult">
+          <Key>
+            <PropertyRef Name="id_test" />
+          </Key>
+          <Property Name="left_primary_account_number" Type="String" MaxLength="16" FixedLength="true" Unicode="false" />
+          <Property Name="left_retrieval_reference_number" Type="String" MaxLength="8" FixedLength="true" Unicode="false" />
+          <Property Name="right_primary_account_number" Type="String" MaxLength="16" FixedLength="true" Unicode="false" />
+          <Property Name="right_retrieval_reference_number" Type="String" MaxLength="8" FixedLength="true" Unicode="false" />
+          <Property Name="id_test" Type="Guid" Nullable="false" />
+          <NavigationProperty Name="Test" Relationship="Self.FK_ActualResults_Tests" FromRole="ActualResults" ToRole="Tests" />
+        </EntityType>
+        <EntityType Name="Event">
+          <Key>
+            <PropertyRef Name="message_type" />
+            <PropertyRef Name="primary_account_number" />
+            <PropertyRef Name="retrieval_reference_number" />
+            <PropertyRef Name="id_test" />
+            <PropertyRef Name="relative_time" />
+          </Key>
+          <Property Name="message_type" Type="String" MaxLength="4" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="primary_account_number" Type="String" MaxLength="16" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="retrieval_reference_number" Type="String" MaxLength="8" FixedLength="true" Unicode="false" Nullable="false" />
+          <Property Name="id_test" Type="Guid" Nullable="false" />
+          <Property Name="relative_time" Type="Int64" Nullable="false" />
+          <NavigationProperty Name="Test" Relationship="Self.FK_Events_Tests" FromRole="Events" ToRole="Tests" />
+        </EntityType>
+        <EntityType Name="ExpectedResult">
+          <Key>
+            <PropertyRef Name="id_test" />
+            <PropertyRef Name="matched" />
+          </Key>
+          <Property Name="left_primary_account_number" Type="String" MaxLength="16" FixedLength="true" Unicode="false" />
+          <Property Name="left_retrieval_reference_number" Type="String" MaxLength="8" FixedLength="true" Unicode="false" />
+          <Property Name="right_primary_account_number" Type="String" MaxLength="16" FixedLength="true" Unicode="false" />
+          <Property Name="right_retrieval_reference_number" Type="String" MaxLength="8" FixedLength="true" Unicode="false" />
+          <Property Name="id_test" Type="Guid" Nullable="false" />
+          <Property Name="matched" Type="Boolean" Nullable="false" />
+          <NavigationProperty Name="Test" Relationship="Self.FK_ExpectedResults_Tests" FromRole="ExpectedResults" ToRole="Tests" />
+        </EntityType>
+        <Association Name="FK_ActualResults_Tests">
+          <End Role="Tests" Type="Self.Test" Multiplicity="1" />
+          <End Role="ActualResults" Type="Self.ActualResult" Multiplicity="0..1" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="ActualResults">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Events_Tests">
+          <End Role="Tests" Type="Self.Test" Multiplicity="1" />
+          <End Role="Events" Type="Self.Event" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="Events">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_ExpectedResults_Tests">
+          <End Role="Tests" Type="Self.Test" Multiplicity="1" />
+          <End Role="ExpectedResults" Type="Self.ExpectedResult" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Tests">
+              <PropertyRef Name="id_test" />
+            </Principal>
+            <Dependent Role="ExpectedResults">
+              <PropertyRef Name="id_test" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="SpaceTestsEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Tests" EntityType="Self.Test" />
+          <EntitySet Name="ActualResults" EntityType="Self.ActualResult" />
+          <EntitySet Name="Events" EntityType="Self.Event" />
+          <EntitySet Name="ExpectedResults" EntityType="Self.ExpectedResult" />
+          <AssociationSet Name="FK_ActualResults_Tests" Association="Self.FK_ActualResults_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="ActualResults" EntitySet="ActualResults" />
+          </AssociationSet>
+          <AssociationSet Name="FK_Events_Tests" Association="Self.FK_Events_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="Events" EntitySet="Events" />
+          </AssociationSet>
+          <AssociationSet Name="FK_ExpectedResults_Tests" Association="Self.FK_ExpectedResults_Tests">
+            <End Role="Tests" EntitySet="Tests" />
+            <End Role="ExpectedResults" EntitySet="ExpectedResults" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="SpaceTestsModelStoreContainer" CdmEntityContainer="SpaceTestsEntities">
+          <EntitySetMapping Name="Tests">
+            <EntityTypeMapping TypeName="SpaceTestsModel.Test">
+              <MappingFragment StoreEntitySet="Tests">
+                <ScalarProperty Name="test_name" ColumnName="test_name" />
+                <ScalarProperty Name="id_test" ColumnName="id_test" />
+                <ScalarProperty Name="fecha_creacion" ColumnName="fecha_creacion" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ActualResults">
+            <EntityTypeMapping TypeName="SpaceTestsModel.ActualResult">
+              <MappingFragment StoreEntitySet="ActualResults">
+                <ScalarProperty Name="left_primary_account_number" ColumnName="left_primary_account_number" />
+                <ScalarProperty Name="left_retrieval_reference_number" ColumnName="left_retrieval_reference_number" />
+                <ScalarProperty Name="right_primary_account_number" ColumnName="right_primary_account_number" />
+                <ScalarProperty Name="right_retrieval_reference_number" ColumnName="right_retrieval_reference_number" />
+                <ScalarProperty Name="id_test" ColumnName="id_test" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Events">
+            <EntityTypeMapping TypeName="SpaceTestsModel.Event">
+              <MappingFragment StoreEntitySet="Events">
+                <ScalarProperty Name="message_type" ColumnName="message_type" />
+                <ScalarProperty Name="primary_account_number" ColumnName="primary_account_number" />
+                <ScalarProperty Name="retrieval_reference_number" ColumnName="retrieval_reference_number" />
+                <ScalarProperty Name="id_test" ColumnName="id_test" />
+                <ScalarProperty Name="relative_time" ColumnName="relative_time" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="ExpectedResults">
+            <EntityTypeMapping TypeName="SpaceTestsModel.ExpectedResult">
+              <MappingFragment StoreEntitySet="ExpectedResults">
+                <ScalarProperty Name="left_primary_account_number" ColumnName="left_primary_account_number" />
+                <ScalarProperty Name="left_retrieval_reference_number" ColumnName="left_retrieval_reference_number" />
+                <ScalarProperty Name="right_primary_account_number" ColumnName="right_primary_account_number" />
+                <ScalarProperty Name="right_retrieval_reference_number" ColumnName="right_retrieval_reference_number" />
+                <ScalarProperty Name="id_test" ColumnName="id_test" />
+                <ScalarProperty Name="matched" ColumnName="matched" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

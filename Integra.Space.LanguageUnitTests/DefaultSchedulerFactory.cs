@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Reactive.Concurrency;
 using System.Configuration;
+using Microsoft.Reactive.Testing;
 
 namespace Integra.Space.LanguageUnitTests
 {
     class DefaultSchedulerFactory : IQuerySchedulerFactory
     {
-        static DefaultSchedulerFactory factory = new DefaultSchedulerFactory();
+        private static DefaultSchedulerFactory factory = new DefaultSchedulerFactory();
+        private TestScheduler testScheduler;
+        
+        public DefaultSchedulerFactory()
+        {
+            this.testScheduler = new TestScheduler();
+        }
 
         public static DefaultSchedulerFactory Current
         {
@@ -16,6 +23,13 @@ namespace Integra.Space.LanguageUnitTests
             }
         }
 
+        public TestScheduler TestScheduler
+        {
+            get
+            {
+                return this.testScheduler;
+            }
+        }
         public IScheduler GetObserverScheduler()
         {
             return System.Reactive.Concurrency.ThreadPoolScheduler.Instance;
@@ -51,6 +65,8 @@ namespace Integra.Space.LanguageUnitTests
                     return TaskPoolScheduler.Default;
                 case (int)SchedulerTypeEnum.ThreadPoolScheduler:
                     return ThreadPoolScheduler.Instance;
+                case (int)SchedulerTypeEnum.TestScheduler:
+                    return this.TestScheduler;
                 default:
                     throw new Exception("Undefined or not suported scheduler.");
             }

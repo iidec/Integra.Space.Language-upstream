@@ -529,6 +529,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to sourcetimestamp.
+        /// </summary>
+        internal static string SourceTimestamp {
+            get {
+                return ResourceManager.GetString("SourceTimestamp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} {1} {2}.
         /// </summary>
         internal static string StartStopNodeText {
@@ -583,11 +592,11 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to timestamp.
+        ///   Looks up a localized string similar to systemtimestamp.
         /// </summary>
-        internal static string TimestampProperty {
+        internal static string SystemTimestamp {
             get {
-                return ResourceManager.GetString("TimestampProperty", resourceCulture);
+                return ResourceManager.GetString("SystemTimestamp", resourceCulture);
             }
         }
         

@@ -100,6 +100,7 @@
     <Compile Include="ASTNodes\Values\Constants\BooleanNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\ConstantValueWithOptionalAliasNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\ConstantValueWithAliasNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\MathFunctionNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\StringFunctionNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\DateFunctionNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\DateTimeOrTimespanNode.cs" />
@@ -107,6 +108,7 @@
     <Compile Include="ASTNodes\Values\Constants\NullValueNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\NumberNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\StringNode.cs" />
+    <Compile Include="ASTNodes\Values\Functions\IsNullFunction.cs" />
     <Compile Include="ASTNodes\Values\ValueNode.cs" />
     <Compile Include="ASTNodes\Values\Objects\NonConstantValueNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Sources\JoinNode.cs" />
@@ -143,6 +145,7 @@
     <Compile Include="Event\EventPropertiesEnum.cs" />
     <Compile Include="Event\EventResult.cs" />
     <Compile Include="Event\ExtractedEventData.cs" />
+    <Compile Include="Event\ExtractedEventDataStateEnum.cs" />
     <Compile Include="Event\SpaceExceptionTypeEnum.cs" />
     <Compile Include="Event\SpaceResultTypeEnum.cs" />
     <Compile Include="Exceptions\CompilationException.cs" />
@@ -207,6 +210,7 @@
     </Compile>
     <Compile Include="Runtime\CompileContext.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
+    <Compile Include="Runtime\Helpers\Validations.cs" />
     <Compile Include="Runtime\TestObjects\LeftExtractedDataComparer.cs" />
     <Compile Include="Runtime\TestObjects\LeftExtractedData.cs" />
     <Compile Include="Runtime\TestObjects\RightExtractedDataComparer.cs" />

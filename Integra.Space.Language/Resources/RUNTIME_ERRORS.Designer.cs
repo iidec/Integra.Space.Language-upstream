@@ -574,6 +574,33 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE62: Error in observable concat..
+        /// </summary>
+        internal static string RE62 {
+            get {
+                return ResourceManager.GetString("RE62", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE63: Error calling the SetTimeout method of a ExtractedEventData object..
+        /// </summary>
+        internal static string RE63 {
+            get {
+                return ResourceManager.GetString("RE63", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE64: Error in &apos;abs&apos; function..
+        /// </summary>
+        internal static string RE64 {
+            get {
+                return ResourceManager.GetString("RE64", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE7 {

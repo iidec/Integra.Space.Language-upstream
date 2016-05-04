@@ -198,7 +198,7 @@ namespace Integra.Space.Language.Grammars
             nt_WITH.Rule = terminalWith + nt_ID_OR_ID_WITH_ALIAS;
             /* **************************** */
             /* JOIN */
-            nt_JOIN.Rule = nt_JOIN_TYPE + nt_JOIN_SOURCE + nt_WHERE + nt_WITH + nt_WHERE + nt_ON + nt_TIMEOUT + nt_EVENT_LIFE_TIME;
+            nt_JOIN.Rule = nt_JOIN_TYPE + nt_JOIN_SOURCE + nt_WHERE + nt_WITH + nt_WHERE + nt_ON + nt_TIMEOUT;
             /* **************************** */
             /* JOIN TYPE */
             nt_JOIN_TYPE.Rule = terminalLeft

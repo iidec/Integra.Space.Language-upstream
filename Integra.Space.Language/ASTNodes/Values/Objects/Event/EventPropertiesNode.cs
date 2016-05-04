@@ -79,9 +79,15 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(auxEvent);
 
-            if (this.property.ToLower() == SR.TimestampProperty)
+            if (this.property.ToLower() == SR.SystemTimestamp)
             {
-                this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.Timestamp.ToString());
+                this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.SystemTimestamp.ToString());
+                this.result.Properties.Add(SR.DataTypeProperty, typeof(DateTime));
+                this.result.NodeText = auxEvent.NodeText + "." + this.property;
+            }
+            else if (this.property.ToLower() == SR.SourceTimestamp)
+            {
+                this.result.Properties.Add(SR.PrpoertyProperty, EventPropertiesEnum.SourceTimestamp.ToString());
                 this.result.Properties.Add(SR.DataTypeProperty, typeof(DateTime));
                 this.result.NodeText = auxEvent.NodeText + "." + this.property;
             }

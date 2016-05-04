@@ -46,6 +46,16 @@ namespace Integra.Space.Language
         /// String lower function type
         /// </summary>
         StringLowerFunction = 16,
+        
+        /// <summary>
+        /// Math function type
+        /// </summary>
+        MathFunctionWithOneParameter = 17,
+
+        /// <summary>
+        /// IsNull function type
+        /// </summary>
+        IsNullFunction = 18,
 
         /// <summary>
         /// Cast type
@@ -656,6 +666,11 @@ namespace Integra.Space.Language
         /// Observable switch type
         /// </summary>
         ObservableSwitch = 527,
+
+        /// <summary>
+        /// Observable concatenate type
+        /// </summary>
+        ObservableConcat = 528,
 
         /// <summary>
         /// Enumerable count type

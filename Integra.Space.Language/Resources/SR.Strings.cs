@@ -417,6 +417,12 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	sourcetimestamp
+		/// </summary>
+		public static string SourceTimestamp { get { return global::Integra.Space.Language.SR.SourceTimestamp; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	{0} {1} {2}
 		/// </summary>
 		public static string StartStopNodeText(object arg0, object arg1, object arg2)
@@ -496,9 +502,9 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	timestamp
+		///	systemtimestamp
 		/// </summary>
-		public static string TimestampProperty { get { return global::Integra.Space.Language.SR.TimestampProperty; } }
+		public static string SystemTimestamp { get { return global::Integra.Space.Language.SR.SystemTimestamp; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

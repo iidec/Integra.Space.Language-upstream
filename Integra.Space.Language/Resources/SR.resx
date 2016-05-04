@@ -273,6 +273,9 @@
   <data name="SourceRole" xml:space="preserve">
     <value>Source</value>
   </data>
+  <data name="SourceTimestamp" xml:space="preserve">
+    <value>sourcetimestamp</value>
+  </data>
   <data name="StartStopNodeText" xml:space="preserve">
     <value>{0} {1} {2}</value>
   </data>
@@ -291,8 +294,8 @@
   <data name="SyntaxError" xml:space="preserve">
     <value>Invalid input. Syntax error: {0}. Line {1}, column {2}</value>
   </data>
-  <data name="TimestampProperty" xml:space="preserve">
-    <value>timestamp</value>
+  <data name="SystemTimestamp" xml:space="preserve">
+    <value>systemtimestamp</value>
   </data>
   <data name="ToProperty" xml:space="preserve">
     <value>To</value>

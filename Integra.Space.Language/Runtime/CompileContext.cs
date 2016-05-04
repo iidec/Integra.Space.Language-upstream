@@ -18,6 +18,11 @@ namespace Integra.Space.Language.Runtime
         private string queryName;
 
         /// <summary>
+        /// Observable type for the compilation.
+        /// </summary>
+        private System.Type observerType;
+
+        /// <summary>
         /// Gets or sets a value indicating whether the print log is activated.
         /// </summary>
         public bool PrintLog { get; set; }

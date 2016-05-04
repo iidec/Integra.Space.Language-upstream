@@ -13,7 +13,7 @@ using Integra.Space.Language.Runtime;
 namespace Integra.Space.LanguageUnitTests.Operations
 {
     [TestClass]
-    public class ComparativeExpressionNodeTests
+    public class ComparativeExpressionNodeTests : ReactiveTest
     {
         [TestMethod()]
         public void IsNumericTypeFunctionTestTrue()
@@ -120,7 +120,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 == 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -152,7 +152,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where +1 == +1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -184,21 +184,21 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where -1 == -1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
+                created: 0,
+                subscribed: 10,
+                disposed: 400
+                );
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
                     new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
@@ -206,7 +206,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
+                    new Subscription(10, 200)
                 });
         }
 
@@ -216,30 +216,32 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where true == true select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, Scheduler = new DefaultSchedulerFactory() });
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateColdObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(2000, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateColdObservable(
+                OnNext(TimeSpan.FromSeconds(1).Ticks, TestObjects.EventObjectTest1)
+                , OnCompleted<EventObject>(TimeSpan.FromSeconds(2).Ticks)
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
-                created: 10,
-                subscribed: 50,
-                disposed: 4000);
-            
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded <Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(150, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(2050, Notification.CreateOnCompleted<bool>())
-                });
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => result(input.AsQbservable())
+                        .Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()))
+                        ,
+                created: TimeSpan.FromSeconds(1).Ticks,
+                subscribed: TimeSpan.FromSeconds(2).Ticks,
+                disposed: TimeSpan.FromSeconds(10).Ticks
+                );
 
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 2050)
-                });
+            ReactiveAssert.AreElementsEqual(new [] {
+                    OnNext(TimeSpan.FromSeconds(3).Ticks, true)
+                    , OnCompleted<bool>(TimeSpan.FromSeconds(4).Ticks)
+                }, results.Messages);
+
+            ReactiveAssert.AreElementsEqual(new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(2).Ticks, TimeSpan.FromSeconds(4).Ticks)
+                }, input.Subscriptions);
         }
 
         [TestMethod]
@@ -248,7 +250,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '01/01/2014' == '01/01/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -280,7 +282,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"a\" == \"a\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -312,7 +314,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where left(\"ca\", 1) == \"c\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -344,7 +346,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where left(\"xyzxxx\", 3) == \"xyz\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -376,7 +378,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where left((string)@event.Message.#1.CardAcceptorNameLocation, 5) == \"Shell\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -408,7 +410,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where right(\"ab\", 1) == \"b\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -440,7 +442,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where right(\"xxxabcd\", 4) == \"abcd\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -472,7 +474,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where right((string)@event.Message.#1.CardAcceptorNameLocation, 2) == \"GT\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -504,7 +506,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where upper(\"ca\") == \"CA\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -536,7 +538,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where upper((string)@event.Message.#1.CardAcceptorNameLocation) == \"SHELL EL RODEO1GUATEMALA    GT\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -568,7 +570,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where lower(\"CA\") == \"ca\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -600,7 +602,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where lower((string)@event.Message.#1.CardAcceptorNameLocation) == \"shell el rodeo1guatemala    gt\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -632,7 +634,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where null == null select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -664,7 +666,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.#103.[\"Campo que no existe\"] == null select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -696,7 +698,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where null == @event.Message.Body.#103.[\"Campo que no existe\"] select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -728,7 +730,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -760,7 +762,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.[\"Campo103\"].#1 == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -792,7 +794,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Header.MessageType == @event.Message.Header.MessageType select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -824,7 +826,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Header.MessageType == \"0100\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -856,7 +858,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Adapter.Name == \"Anonimo\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -888,7 +890,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"0100\" == @event.Message.Header.MessageType select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -920,7 +922,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.Body.TransactionAmount == 1m select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -952,7 +954,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1m == @event.Message.Body.TransactionAmount select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -984,7 +986,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (false == true) select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1016,7 +1018,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not (true == false) select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1048,7 +1050,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(@event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1079,7 +1081,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where not(@event.Message.Body.#103.[\"Campo103.1\"] != @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1111,7 +1113,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 < 2 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1143,7 +1145,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2015' < '01/01/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1174,7 +1176,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1-1 < 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1206,7 +1208,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.21 < 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1238,7 +1240,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where hour('02/03/2015') - hour('01/01/2014') < 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1270,7 +1272,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 <= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1302,7 +1304,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 <= 2 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1334,7 +1336,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 2 <= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1365,7 +1367,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2014' <= '01/01/2015' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1397,7 +1399,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2014' <= '02/03/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1429,7 +1431,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2015' <= '01/01/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1460,7 +1462,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1-1 <= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1492,7 +1494,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 2-1 <= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1524,7 +1526,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 4-1 <= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1555,7 +1557,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.21 <= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1587,7 +1589,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.22 <= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1619,7 +1621,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.23 <= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1650,7 +1652,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where hour('02/03/2015') - hour('01/01/2014') <= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1682,7 +1684,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/1015') <= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1714,7 +1716,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/1010') <= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1745,7 +1747,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 >= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1777,7 +1779,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 2 >= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1809,7 +1811,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 >= 2 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1840,7 +1842,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '01/01/2015' >= '02/03/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1872,7 +1874,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2014' >= '02/03/2014' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1904,7 +1906,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '02/03/2014' >= '01/01/2015' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1935,7 +1937,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 3-1 >= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1967,7 +1969,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 2-1 >= 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -1999,7 +2001,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 4-1 >= 10 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2030,7 +2032,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.23 >= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2062,7 +2064,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.22 >= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2094,7 +2096,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.21 >= 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2125,7 +2127,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/1008') >= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2157,7 +2159,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/1015') >= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2189,7 +2191,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/1018') >= 1000 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2220,7 +2222,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 2 > 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2252,7 +2254,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where '01/01/2014' > '02/03/2015' select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2283,7 +2285,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 20-10 > 1 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2315,7 +2317,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 10.23 > 10.22 select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2347,7 +2349,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1000 >  hour('02/03/2015') - hour('01/01/2014') select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2379,7 +2381,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"cadena\" like \"%ena\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2411,7 +2413,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"cadena\" like \"%ena2\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2442,7 +2444,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"cadena\" like \"cad%\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2474,7 +2476,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where \"cadena\" like \"c3ad%\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2505,7 +2507,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.#1.#2 like \"99999%\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2537,7 +2539,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.#1.#2 like \"%663\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();
@@ -2569,7 +2571,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where @event.Message.#1.#2 like \"%4161%\" select true as resultado");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler scheduler = new TestScheduler();

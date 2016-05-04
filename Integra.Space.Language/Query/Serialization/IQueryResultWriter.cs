@@ -42,7 +42,7 @@ namespace Integra.Space
         /// Serialize a TimeSpan value.
         /// </summary>
         /// <param name="value">Value to serialize.</param>
-        void WriteValue(TimeSpan value);
+        void WriteValue(TimeSpan? value);
 
         /// <summary>
         /// Serialize a unique identifier value.
@@ -138,7 +138,7 @@ namespace Integra.Space
         /// Serialize a DateTime value.
         /// </summary>
         /// <param name="value">Value to serialize.</param>
-        void WriteValue(DateTime value);
+        void WriteValue(DateTime? value);
 
         /// <summary>
         /// Serialize a string value.

@@ -17,6 +17,7 @@ namespace Integra.Space.Language.Grammars
     using ASTNodes.Objects.Object;
     using ASTNodes.Operations;
     using ASTNodes.QuerySections;
+    using ASTNodes.Values.Functions;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -159,11 +160,14 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalRight = ToTerm("right", "right");
             KeyTerm terminalUpper = ToTerm("upper", "upper");
             KeyTerm terminalLower = ToTerm("lower", "lower");
+            KeyTerm terminalAbs = ToTerm("abs", "abs");
+            KeyTerm terminalIsnull = ToTerm("isnull", "isnull");
 
             /* EVENTOS */
             KeyTerm terminalEvent = ToTerm("event", "event");
             KeyTerm terminalMessage = ToTerm("Message", "Message");
-            KeyTerm terminalTimestamp = ToTerm("Timestamp", "Timestamp");
+            KeyTerm terminalSystemTimestamp = ToTerm("SystemTimestamp", "SystemTimestamp");
+            KeyTerm terminalSourceTimestamp = ToTerm("SourceTimestamp", "SourceTimestamp");
             KeyTerm terminalAgent = ToTerm("Agent", "Agent");
             KeyTerm terminalAdapter = ToTerm("Adapter", "Adapter");
             KeyTerm terminalName = ToTerm("Name", "Name");
@@ -220,7 +224,9 @@ namespace Integra.Space.Language.Grammars
             terminalType.Add("bool?", typeof(bool?));
             terminalType.Add("object", typeof(object));
             terminalType.Add("DateTime", typeof(DateTime));
+            terminalType.Add("DateTime?", typeof(DateTime?));
             terminalType.Add("TimeSpan", typeof(TimeSpan));
+            terminalType.Add("TimeSpan?", typeof(TimeSpan?));
             terminalType.AstConfig.NodeType = null;
             terminalType.AstConfig.DefaultNodeCreator = () => new TypeNode();
 
@@ -351,6 +357,12 @@ namespace Integra.Space.Language.Grammars
             this.groupByValue = new NonTerminal("GROUP_BY_VALUES", typeof(PassNode));
             this.groupByValue.AstConfig.NodeType = null;
             this.groupByValue.AstConfig.DefaultNodeCreator = () => new PassNode();
+            NonTerminal nt_MATH_FUNCTIONS = new NonTerminal("MATH_FUNCTIONS", typeof(MathFunctionNode));
+            nt_MATH_FUNCTIONS.AstConfig.NodeType = null;
+            nt_MATH_FUNCTIONS.AstConfig.DefaultNodeCreator = () => new MathFunctionNode();
+            NonTerminal nt_ISNULL_FUNCTION = new NonTerminal("ISNULL_FUNCTION", typeof(IsNullFunction));
+            nt_ISNULL_FUNCTION.AstConfig.NodeType = null;
+            nt_ISNULL_FUNCTION.AstConfig.DefaultNodeCreator = () => new IsNullFunction();
 
             /* EXPRESIONES LÓGICAS */
             this.logicExpression.Rule = this.logicExpression + terminalAnd + this.logicExpression
@@ -385,6 +397,7 @@ namespace Integra.Space.Language.Grammars
 
             /* PROJECTION VALUES */
             this.projectionValue.Rule = nt_PROJECTION_FUNCTIONS
+                                        | nt_ISNULL_FUNCTION
                                         | nt_GROUP_KEY_VALUE
                                         | nt_ARITHMETIC_EXPRESSION;
             /* **************************** */
@@ -405,6 +418,7 @@ namespace Integra.Space.Language.Grammars
                                 | terminalDateTimeValue
                                 | nt_EXPLICIT_CAST
                                 | nt_STRING_FUNCTIONS
+                                | nt_ISNULL_FUNCTION
                                 | terminalParentesisIz + this.values + terminalParentesisDer;
 
             nt_EXPLICIT_CAST.Rule = terminalParentesisIz + terminalType + terminalParentesisDer + this.values;
@@ -415,7 +429,8 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* CONSTANTES */            
             this.numericValues.Rule = terminalNumero
-                                        | nt_DATE_FUNCTIONS;
+                                        | nt_DATE_FUNCTIONS
+                                        | nt_MATH_FUNCTIONS;
 
             this.otherValues.Rule = terminalBool
                                 | terminalNull
@@ -430,7 +445,7 @@ namespace Integra.Space.Language.Grammars
                                     | terminalDay + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer
                                     | terminalHour + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer
                                     | terminalMinute + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer
-                                    | terminalSecond + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer
+                                    | terminalSecond + terminalParentesisIz + nt_ARITHMETIC_EXPRESSION + terminalParentesisDer
                                     | terminalMillisecond + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer;
             /* **************************** */
             /* FUNCIONES DE LA PROYECCION */
@@ -444,6 +459,12 @@ namespace Integra.Space.Language.Grammars
                                         | terminalRight + terminalParentesisIz + this.values + terminalComa + terminalNumero + terminalParentesisDer
                                         | terminalUpper + terminalParentesisIz + this.values + terminalParentesisDer
                                         | terminalLower + terminalParentesisIz + this.values + terminalParentesisDer;
+            /* **************************** */
+            /* FUNCIONES MATEMÁTICAS */
+            nt_MATH_FUNCTIONS.Rule = terminalAbs + terminalParentesisIz + nt_ARITHMETIC_EXPRESSION + terminalParentesisDer;
+            /* **************************** */
+            /* FUNCIONES FUNCIONES DEL OBJETO */
+            nt_ISNULL_FUNCTION.Rule = terminalIsnull + terminalParentesisIz + this.values  + terminalComa + this.values + terminalParentesisDer;
             /* **************************** */
             /* VALORES DE LOS OBJETOS */
             nt_OBJECT_VALUE.Rule = nt_OBJECT;
@@ -460,7 +481,9 @@ namespace Integra.Space.Language.Grammars
             /* VALORES DEL EVENTO */
             nt_EVENT_PROPERTIES.Rule = nt_EVENT_PROPERTIES + terminalPunto + terminalId
                                         | nt_EVENT + terminalPunto + terminalAdapter
-                                        | nt_EVENT + terminalPunto + terminalAgent;
+                                        | nt_EVENT + terminalPunto + terminalAgent
+                                        | nt_EVENT + terminalPunto + terminalSystemTimestamp
+                                        | nt_EVENT + terminalPunto + terminalSourceTimestamp;
             /* **************************** */
             /* EVENTO */
             nt_EVENT.Rule = terminalId + terminalPunto + terminalArroba + terminalEvent

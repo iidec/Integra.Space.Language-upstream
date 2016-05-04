@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CE1" xml:space="preserve">
-    <value>CE1: Invalid execution tree, the node type does not exist.</value>
+    <value>CE1: Invalid execution tree, the node type does not exist. Actual node type {0}</value>
     <comment>Método CreateStringLowerFunction</comment>
   </data>
   <data name="CE10" xml:space="preserve">
@@ -152,7 +152,7 @@
     <value>CE19: Error in 'where' function.</value>
   </data>
   <data name="CE2" xml:space="preserve">
-    <value>CE2: The stack of variables is empty.</value>
+    <value>CE2: Invalid parameter.</value>
   </data>
   <data name="CE20" xml:space="preserve">
     <value>CE20: Error in 'select' function.</value>
@@ -295,8 +295,53 @@
   <data name="CE63" xml:space="preserve">
     <value>CE63: Error with the enumerable join.</value>
   </data>
+  <data name="CE64" xml:space="preserve">
+    <value>CE64: Error in observable switch.</value>
+  </data>
+  <data name="CE65" xml:space="preserve">
+    <value>CE65: Compilation context scheduler factory is null.</value>
+  </data>
+  <data name="CE66" xml:space="preserve">
+    <value>CE66: Observer type is not defined.</value>
+  </data>
+  <data name="CE67" xml:space="preserve">
+    <value>CE67: Error with ObserveOn expression.</value>
+  </data>
+  <data name="CE68" xml:space="preserve">
+    <value>CE68: Error with ObserveOn expression.</value>
+  </data>
+  <data name="CE69" xml:space="preserve">
+    <value>CE69: Error in observable concat.</value>
+  </data>
   <data name="CE7" xml:space="preserve">
     <value>CE7: Value type of function 'upper' must be string.</value>
+  </data>
+  <data name="CE71" xml:space="preserve">
+    <value>CE71: Value type of function 'abs' must be numeric.</value>
+  </data>
+  <data name="CE72" xml:space="preserve">
+    <value>CE72: Error in publish</value>
+  </data>
+  <data name="CE73" xml:space="preserve">
+    <value>CE73: Error in observable join</value>
+  </data>
+  <data name="CE74" xml:space="preserve">
+    <value>CE74: Can't use constants at the conditions of the ON statement.</value>
+  </data>
+  <data name="CE75" xml:space="preserve">
+    <value>CE75: You can only use the equality comparer at the conditions of the ON statement. Found {0}.</value>
+  </data>
+  <data name="CE76" xml:space="preserve">
+    <value>CE76: You can only use logical conjunction at the conditions of the ON statement. Found {0}.</value>
+  </data>
+  <data name="CE77" xml:space="preserve">
+    <value>CE77: Invalid parameter {0}.</value>
+  </data>
+  <data name="CE78" xml:space="preserve">
+    <value>CE78: Invalid types the 'isnull' function. Left type {0}, right type {1}</value>
+  </data>
+  <data name="CE79" xml:space="preserve">
+    <value>CE79: Error at the 'isnull' function.</value>
   </data>
   <data name="CE8" xml:space="preserve">
     <value>CE8: Error in 'upper' function.</value>

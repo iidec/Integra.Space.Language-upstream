@@ -8,7 +8,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Right extracted data class
     /// </summary>
-    public class RightExtractedDataComparer : RightExtractedData
+    internal class RightExtractedDataComparer : RightExtractedData
     {
         /// <inheritdoc />
         public override bool Equals(object obj)

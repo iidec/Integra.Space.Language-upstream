@@ -126,12 +126,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             {
                 PlanNode subsAndCreate = this.AddSubscribeAndCreate(fromAux);
 
-                PlanNode switchNode = new PlanNode();
-                switchNode.NodeType = PlanNodeTypeEnum.ObservableSwitch;
-                switchNode.Children = new List<PlanNode>();
-                switchNode.Children.Add(subsAndCreate);
+                PlanNode concatNode = new PlanNode();
+                concatNode.NodeType = PlanNodeTypeEnum.ObservableConcat;
+                concatNode.Children = new List<PlanNode>();
+                concatNode.Children.Add(subsAndCreate);
 
-                sources = switchNode;
+                sources = concatNode;
             }
 
             if (childrenCount == 3)

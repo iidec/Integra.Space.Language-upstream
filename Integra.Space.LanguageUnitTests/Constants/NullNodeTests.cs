@@ -14,7 +14,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
             ExpressionParser parser = new ExpressionParser("null");
             PlanNode plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<object> result = te.Compile<object>(plan);
 
             Assert.AreEqual<object>(null, result(), "El plan obtenido difiere del plan esperado.");

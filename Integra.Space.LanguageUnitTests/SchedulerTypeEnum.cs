@@ -53,6 +53,11 @@ namespace Integra.Space.LanguageUnitTests
         /// <summary>
         /// ThreadPoolScheduler 10
         /// </summary>
-        ThreadPoolScheduler = 10
+        ThreadPoolScheduler = 10,
+
+        /// <summary>
+        /// TestScheduler 11
+        /// </summary>
+        TestScheduler = 11
     }
 }

@@ -52,12 +52,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// timeout node
         /// </summary>
         private AstNodeBase timeout;
-
-        /// <summary>
-        /// event life time node
-        /// </summary>
-        private AstNodeBase eventLifeTime;
-
+        
         /// <summary>
         /// result plan
         /// </summary>
@@ -78,7 +73,6 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.whereWith = AddChild(NodeUseType.Parameter, "whereWith", ChildrenNodes[4]) as AstNodeBase;
             this.on = AddChild(NodeUseType.Parameter, "on", ChildrenNodes[5]) as AstNodeBase;
             this.timeout = AddChild(NodeUseType.Parameter, "timeout", ChildrenNodes[6]) as AstNodeBase;
-            this.eventLifeTime = AddChild(NodeUseType.Parameter, "eventLifeTime", ChildrenNodes[7]) as AstNodeBase;
 
             this.result = new PlanNode();
         }
@@ -99,7 +93,6 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             PlanNode whereWithAux = (PlanNode)this.whereWith.Evaluate(thread);
             PlanNode onAux = (PlanNode)this.on.Evaluate(thread);
             PlanNode timeoutAux = (PlanNode)this.timeout.Evaluate(thread);
-            PlanNode eventLifeTimeAux = (PlanNode)this.eventLifeTime.Evaluate(thread);
             this.EndEvaluate(thread);
 
             if (joinTypeAux != null)
@@ -158,13 +151,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             onAux.NodeType = PlanNodeTypeEnum.On;
             this.result.Children.Add(onAux);
             this.result.Children.Add(timeoutAux);
-
-            if (eventLifeTimeAux != null)
-            {
-                this.result.Children.Add(eventLifeTimeAux);
-                this.result.NodeText = string.Format("{0} {1} ", this.result.NodeText, eventLifeTimeAux.NodeText);
-            }
-
+            
             return this.result;
         }
 
@@ -197,6 +184,52 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         }
 
         /// <summary>
+        /// Get the plan node for the where statement that optimize the buffers send to the observable join.
+        /// </summary>
+        /// <param name="child">Child for this branch.</param>
+        /// <returns>Where branch statement that optimize the buffers send to the observable join.</returns>
+        private PlanNode GetWhereForOptimization(PlanNode child)
+        {
+            PlanNode newScope = new PlanNode();
+            newScope.NodeType = PlanNodeTypeEnum.NewScope;
+            newScope.Children = new List<PlanNode>();
+            newScope.Children.Add(child);
+
+            PlanNode where = new PlanNode();
+            where.NodeType = PlanNodeTypeEnum.ObservableWhere;
+            where.Children = new List<PlanNode>();
+
+            PlanNode getParam = new PlanNode();
+            getParam.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            getParam.Properties.Add("ParameterPosition", 0);
+
+            PlanNode getProperty = new PlanNode();
+            getProperty.NodeType = PlanNodeTypeEnum.Property;
+            getProperty.Properties.Add("Property", "Count");
+            getProperty.Properties.Add("FromInterface", "ICollection`1");
+            getProperty.Children = new List<PlanNode>();
+            getProperty.Children.Add(getParam);
+
+            PlanNode greaterThan = new PlanNode();
+            greaterThan.NodeType = PlanNodeTypeEnum.GreaterThan;
+            greaterThan.Children = new List<PlanNode>();
+
+            PlanNode constant = new PlanNode();
+            constant.NodeType = PlanNodeTypeEnum.Constant;
+            constant.Properties.Add("Value", 0);
+            constant.Properties.Add("DataType", typeof(int));
+            constant.Properties.Add("IsConstant", true);
+
+            greaterThan.Children.Add(getProperty);
+            greaterThan.Children.Add(constant);
+            
+            where.Children.Add(newScope);
+            where.Children.Add(greaterThan);
+
+            return where;
+        }
+
+        /// <summary>
         /// Creates the nods for publish and ref-count.
         /// </summary>
         /// <param name="child">Child for this branch.</param>
@@ -206,7 +239,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             PlanNode publish = new PlanNode();
             publish.NodeType = PlanNodeTypeEnum.ObservablePublish;
             publish.Children = new List<PlanNode>();
-            publish.Children.Add(this.GetApplyWindow(child));
+            publish.Children.Add(this.GetWhereForOptimization(this.GetApplyWindow(child)));
 
             PlanNode refCount = new PlanNode();
             refCount.NodeType = PlanNodeTypeEnum.ObservableRefCount;
@@ -245,7 +278,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
             PlanNode windowSize = new PlanNode();
             windowSize.NodeType = PlanNodeTypeEnum.Constant;
-            windowSize.Properties.Add("Value", System.TimeSpan.FromMilliseconds(500));
+            windowSize.Properties.Add("Value", System.TimeSpan.FromMilliseconds(int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"])));
             windowSize.Properties.Add("DataType", typeof(System.TimeSpan).ToString());
 
             planTuple1.Children.Add(alias1);

@@ -45,9 +45,14 @@ namespace Integra.Space
         private int refcount = 0;
 
         /// <summary>
-        /// Indicates whether the event matched with another event
+        /// Reception date and time.
         /// </summary>
-        private bool matched;
+        private DateTime systemTimestamp;
+
+        /// <summary>
+        /// Creation date and time.
+        /// </summary>
+        private DateTime sourceTimestamp;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventObject"/> class.
@@ -57,7 +62,6 @@ namespace Integra.Space
         {
             this.queries = queries;
             this.refcount = queries.Count();
-            this.matched = false;
         }
 
         /// <summary>
@@ -119,21 +123,37 @@ namespace Integra.Space
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the event matched with another event
+        /// Gets or sets the reception date and time of the event.
         /// </summary>
-        public bool Matched
+        public DateTime SystemTimestamp
         {
             get
             {
-                return this.matched;
+                return this.systemTimestamp;
             }
 
             set
             {
-                this.matched = value;
+                this.systemTimestamp = value;
             }
         }
-        
+
+        /// <summary>
+        /// Gets or sets the creation date and time of the event.
+        /// </summary>
+        public DateTime SourceTimestamp
+        {
+            get
+            {
+                return this.sourceTimestamp;
+            }
+
+            set
+            {
+                this.sourceTimestamp = value;
+            }
+        }
+
         /// <summary>
         /// Increment the reference counter
         /// </summary>

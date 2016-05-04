@@ -175,11 +175,11 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
-                return this.variables.Values.First();
+                return this.variables[0];
             }
             catch (System.Exception e)
             {
-                throw new Exceptions.CompilationException("No parameters defined.");
+                throw new Exceptions.CompilationException("No parameter defined.");
             }
         }
 
@@ -205,7 +205,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (System.Exception e)
             {
-                throw new Exceptions.CompilationException("No parameters defined.");
+                throw new Exceptions.CompilationException(string.Format("No parameter at the specified index {0}.", index));
             }
         }
 

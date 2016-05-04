@@ -61,7 +61,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CE1: Invalid execution tree, the node type does not exist..
+        ///   Looks up a localized string similar to CE1: Invalid execution tree, the node type does not exist. Actual node type {0}.
         /// </summary>
         internal static string CE1 {
             get {
@@ -160,7 +160,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CE2: The stack of variables is empty..
+        ///   Looks up a localized string similar to CE2: Invalid parameter..
         /// </summary>
         internal static string CE2 {
             get {
@@ -592,11 +592,146 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CE64: Error in observable switch..
+        /// </summary>
+        internal static string CE64 {
+            get {
+                return ResourceManager.GetString("CE64", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE65: Compilation context scheduler factory is null..
+        /// </summary>
+        internal static string CE65 {
+            get {
+                return ResourceManager.GetString("CE65", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE66: Observer type is not defined..
+        /// </summary>
+        internal static string CE66 {
+            get {
+                return ResourceManager.GetString("CE66", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE67: Error with ObserveOn expression..
+        /// </summary>
+        internal static string CE67 {
+            get {
+                return ResourceManager.GetString("CE67", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE68: Error with ObserveOn expression..
+        /// </summary>
+        internal static string CE68 {
+            get {
+                return ResourceManager.GetString("CE68", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE69: Error in observable concat..
+        /// </summary>
+        internal static string CE69 {
+            get {
+                return ResourceManager.GetString("CE69", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CE7: Value type of function &apos;upper&apos; must be string..
         /// </summary>
         internal static string CE7 {
             get {
                 return ResourceManager.GetString("CE7", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE71: Value type of function &apos;abs&apos; must be numeric..
+        /// </summary>
+        internal static string CE71 {
+            get {
+                return ResourceManager.GetString("CE71", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE72: Error in publish.
+        /// </summary>
+        internal static string CE72 {
+            get {
+                return ResourceManager.GetString("CE72", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE73: Error in observable join.
+        /// </summary>
+        internal static string CE73 {
+            get {
+                return ResourceManager.GetString("CE73", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE74: Can&apos;t use constants at the conditions of the ON statement..
+        /// </summary>
+        internal static string CE74 {
+            get {
+                return ResourceManager.GetString("CE74", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE75: You can only use the equality comparer at the conditions of the ON statement. Found {0}..
+        /// </summary>
+        internal static string CE75 {
+            get {
+                return ResourceManager.GetString("CE75", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE76: You can only use logical conjunction at the conditions of the ON statement. Found {0}..
+        /// </summary>
+        internal static string CE76 {
+            get {
+                return ResourceManager.GetString("CE76", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE77: Invalid parameter {0}..
+        /// </summary>
+        internal static string CE77 {
+            get {
+                return ResourceManager.GetString("CE77", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE78: Invalid types the &apos;isnull&apos; function. Left type {0}, right type {1}.
+        /// </summary>
+        internal static string CE78 {
+            get {
+                return ResourceManager.GetString("CE78", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE79: Error at the &apos;isnull&apos; function..
+        /// </summary>
+        internal static string CE79 {
+            get {
+                return ResourceManager.GetString("CE79", resourceCulture);
             }
         }
         

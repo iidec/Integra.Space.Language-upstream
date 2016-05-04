@@ -65,15 +65,6 @@ namespace Integra.Space.Language.Runtime
         /// <returns>New type.</returns>
         public static Type CompileExtractedEventDataSpecificTypeForJoin(List<FieldNode> listOfFields, bool isSecondSource)
         {
-            /*if (isSecondSource)
-            {
-                return typeof(RightExtractedData);
-            }
-            else
-            {
-                return typeof(LeftExtractedData);
-            }*/
-
             TypeBuilder tb = CreateTypeBuilder("EXTRACTED", listOfFields, typeof(ExtractedEventData), false, false, null, false, null);
             Type objectType = tb.CreateType();
             return objectType;
@@ -90,15 +81,6 @@ namespace Integra.Space.Language.Runtime
         /// <returns>New type.</returns>
         public static Type CompileExtractedEventDataComparerTypeForJoin(List<FieldNode> listOfFields, Type parentType, Type typeOfTheOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
         {
-            /*if (isSecondSource)
-            {
-                return typeof(RightExtractedDataComparer);
-            }
-            else
-            {
-                return typeof(LeftExtractedDataComparer);
-            }*/
-            
             TypeBuilder tb = CreateTypeBuilder("COMPARER", listOfFields, parentType, true, true, typeOfTheOtherSource, isSecondSource, onCondition);
             Type objectType = tb.CreateType();
             return objectType;
@@ -177,7 +159,7 @@ namespace Integra.Space.Language.Runtime
 
             if (overrideEquals)
             {
-                CreateEqualsMethod(tb, parentType, typeOtherSource, isSecondSource, onCondition);
+                CreateEqualsMethod(tb, listOfFields, parentType, typeOtherSource, isSecondSource, onCondition);
             }
 
             return tb;
@@ -293,6 +275,87 @@ namespace Integra.Space.Language.Runtime
         /// <param name="tb">Type builder.</param>
         /// <param name="fieldList">List of fields.</param>
         /// <param name="parentType">Parent type to get the properties.</param>
+        /// <returns>CompareSameObject method builder.</returns>
+        private static MethodBuilder CreateCompareSameObjectMethod(TypeBuilder tb, List<FieldNode> fieldList, Type parentType)
+        {
+            // defino el cuerpo que sobreescribirá al cuerpo del método Serialize
+            MethodBuilder compareSameTypeMethod = tb.DefineMethod("CompareSameType", MethodAttributes.Public | MethodAttributes.Static, typeof(bool), new Type[] { parentType, parentType });
+
+            // defino el cuerpo del metodo Serialize
+            ILGenerator compareSameTypeIL = compareSameTypeMethod.GetILGenerator();
+
+            compareSameTypeIL.Emit(OpCodes.Nop);
+            Label pushFalse = compareSameTypeIL.DefineLabel();
+
+            /*MethodInfo writeLineMethodInfo = typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) });
+            compareSameTypeIL.Emit(OpCodes.Ldstr, "-----> Llamó al Compare same!! ");
+            compareSameTypeIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
+
+            bool first = true;
+
+            foreach (FieldNode t in fieldList)
+            {
+                for (int i = 0; i < t.IncidenciasEnOnCondition; i++)
+                {
+                    if (first)
+                    {
+                        compareSameTypeIL.Emit(OpCodes.Ldarg_0); // push this
+                        compareSameTypeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
+
+                        compareSameTypeIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                        compareSameTypeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
+
+                        compareSameTypeIL.Emit(OpCodes.Ceq);
+                        compareSameTypeIL.Emit(OpCodes.Brfalse, pushFalse);
+
+                        first = false;
+                    }
+                    else
+                    {
+                        compareSameTypeIL.Emit(OpCodes.Ldarg_0); // push this
+                        compareSameTypeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
+
+                        compareSameTypeIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                        compareSameTypeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
+
+                        compareSameTypeIL.Emit(OpCodes.Ceq);
+                        compareSameTypeIL.Emit(OpCodes.Brfalse, pushFalse);
+                    }
+                }
+            }
+
+            /*MethodInfo getTypeMethodInfo = typeof(object).GetMethod("GetType");
+            MethodInfo writeMethodInfo = typeof(Console).GetMethod("Write", new Type[] { typeof(object) });
+            MethodInfo writeLineMethodInfo = typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) });
+
+            compareSameTypeIL.Emit(OpCodes.Ldstr, "-----> [CST] Type ");
+            compareSameTypeIL.Emit(OpCodes.Call, writeLineMethodInfo);
+            compareSameTypeIL.Emit(OpCodes.Ldarg_0); // push the first parameter
+            compareSameTypeIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+            compareSameTypeIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
+            compareSameTypeIL.Emit(OpCodes.Ldstr, "-----> [CST] Parameter Type ");
+            compareSameTypeIL.Emit(OpCodes.Call, writeLineMethodInfo);
+            compareSameTypeIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+            compareSameTypeIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+            compareSameTypeIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
+
+            compareSameTypeIL.Emit(OpCodes.Ldc_I4_1);
+            compareSameTypeIL.Emit(OpCodes.Ret);
+
+            compareSameTypeIL.MarkLabel(pushFalse);
+            compareSameTypeIL.Emit(OpCodes.Ldc_I4_0);
+            compareSameTypeIL.Emit(OpCodes.Ret);
+
+            return compareSameTypeMethod;
+        }
+
+        /// <summary>
+        /// Create serialize method.
+        /// </summary>
+        /// <param name="tb">Type builder.</param>
+        /// <param name="fieldList">List of fields.</param>
+        /// <param name="parentType">Parent type to get the properties.</param>
         private static void CreateGetHashCodeMethod(TypeBuilder tb, List<FieldNode> fieldList, Type parentType)
         {
             // obtengo el método Serialize del padre
@@ -308,6 +371,10 @@ namespace Integra.Space.Language.Runtime
             MethodInfo getHashCodeMethodOfField = typeof(object).GetMethod("GetHashCode");
             bool first = true;
 
+            /*MethodInfo writeLineMethodInfo = typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) });
+            getHashCodeIL.Emit(OpCodes.Ldstr, "-----> Llamó al Hashcode!! ");
+            getHashCodeIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
+
             foreach (FieldNode t in fieldList)
             {
                 if (first)
@@ -321,14 +388,23 @@ namespace Integra.Space.Language.Runtime
                     getHashCodeIL.Emit(OpCodes.Ldc_I4, 16777619);
                     getHashCodeIL.Emit(OpCodes.Mul);
 
-                    getHashCodeIL.Emit(OpCodes.Ldarg_0); // <-- esto faltaba ¬¬
+                    getHashCodeIL.Emit(OpCodes.Ldarg_0);
 
-                    // getHashCodeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
                     getHashCodeIL.Emit(OpCodes.Call, parentType.GetMethod("get_" + t.FieldName));
                     getHashCodeIL.Emit(OpCodes.Callvirt, getHashCodeMethodOfField);
                     getHashCodeIL.Emit(OpCodes.Xor);
                 }
             }
+
+            /*MethodInfo getTypeMethodInfo = typeof(object).GetMethod("GetType");
+            MethodInfo writeMethodInfo = typeof(Console).GetMethod("Write", new Type[] { typeof(object) });
+            MethodInfo writeLineMethodInfo = typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) });
+
+            getHashCodeIL.Emit(OpCodes.Ldstr, "-----> [GH] Value ");
+            getHashCodeIL.Emit(OpCodes.Call, writeLineMethodInfo);            
+            getHashCodeIL.Emit(OpCodes.Ldarg_0); // push the first parameter
+            getHashCodeIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+            getHashCodeIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
 
             getHashCodeIL.Emit(OpCodes.Ret);
         }
@@ -337,11 +413,12 @@ namespace Integra.Space.Language.Runtime
         /// Doc goes here.
         /// </summary>
         /// <param name="tb">Type builder</param>
+        /// <param name="fieldList">List of fields.</param>
         /// <param name="parentType">Parent type.</param>
         /// <param name="typeOtherSource">Type of the other source.</param>
         /// <param name="isSecondSource">Is left source flag.</param>
         /// <param name="onCondition">Lambda expression of the on condition.</param>
-        private static void CreateEqualsMethod(TypeBuilder tb, Type parentType, Type typeOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
+        private static void CreateEqualsMethod(TypeBuilder tb, List<FieldNode> fieldList, Type parentType, Type typeOtherSource, bool isSecondSource, System.Linq.Expressions.LambdaExpression onCondition)
         {
             // obtengo el método Serialize del padre
             MethodInfo parentEquals = parentType.GetMethod("Equals", new Type[] { typeof(object) });
@@ -352,12 +429,54 @@ namespace Integra.Space.Language.Runtime
 
             ILGenerator equalsIL = equalsMethod.GetILGenerator();
             equalsIL.Emit(OpCodes.Nop);
-            MethodBuilder evaluateOnCondition = null;
+
+            Label sameObjectComparer = equalsIL.DefineLabel();
+            Label endOfMethod = equalsIL.DefineLabel();
+
             MethodInfo getTypeMethodInfo = typeof(object).GetMethod("GetType");
+            MethodInfo getBaseTypeMethodInfo = typeof(Type).GetProperty("BaseType").GetGetMethod();
+
+            // coloco en la pila de evaluación el tipo de la clase padre
+            MethodInfo getTypeFromHandleMethod = typeof(Type).GetMethod("GetTypeFromHandle");
+            equalsIL.Emit(OpCodes.Ldtoken, parentType);
+            equalsIL.Emit(OpCodes.Call, getTypeFromHandleMethod);
+
+            // obtengo el tipo de la clase actual
+            equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+            equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+            equalsIL.Emit(OpCodes.Callvirt, getBaseTypeMethodInfo);
+
+            // llamo el metodo Inequality de la clase Type
+            MethodInfo inequalityMethod = typeof(Type).GetMethod("op_Inequality");
+            equalsIL.Emit(OpCodes.Call, inequalityMethod);
+
+            // si son iguales salta a la etiqueta especificada
+            equalsIL.Emit(OpCodes.Brfalse, sameObjectComparer);
+
+            MethodBuilder evaluateOnCondition = null;
+            MethodInfo writeMethodInfo = typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) });
             MethodInfo writeLineMethodInfo = typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) });
+
+            /*equalsIL.Emit(OpCodes.Ldstr, "-----> Llamó al equals!! ");
+            equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
 
             if (!isSecondSource)
             {
+                /*equalsIL.Emit(OpCodes.Ldstr, "-----> [EQ] Izquierda ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
+                equalsIL.Emit(OpCodes.Ldstr, "-----> [EQ] Type ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+                equalsIL.Emit(OpCodes.Ldarg_0); // push the first parameter
+                equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
+                equalsIL.Emit(OpCodes.Ldstr, "-----> [EQ] Argument Type ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
+
                 equalsIL.Emit(OpCodes.Ldarg_0); // push "this"
                 equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
                 equalsIL.Emit(OpCodes.Castclass, typeOtherSource);
@@ -367,9 +486,20 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                /*equalsIL.Emit(OpCodes.Ldstr, "----->[EQ] Derecha ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
+                equalsIL.Emit(OpCodes.Ldstr, "-----> [EQ] Type ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+                equalsIL.Emit(OpCodes.Ldarg_0); // push the first parameter
                 equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
                 equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+
+                equalsIL.Emit(OpCodes.Ldstr, "-----> [EQ] Argument Type ");
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);
+                equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
+                equalsIL.Emit(OpCodes.Callvirt, getTypeMethodInfo);
+                equalsIL.Emit(OpCodes.Call, writeLineMethodInfo);*/
 
                 equalsIL.Emit(OpCodes.Ldarg_1); // push the first parameter
                 equalsIL.Emit(OpCodes.Castclass, typeOtherSource);
@@ -380,6 +510,16 @@ namespace Integra.Space.Language.Runtime
             }
 
             equalsIL.Emit(OpCodes.Call, evaluateOnCondition);
+            equalsIL.Emit(OpCodes.Br_S, endOfMethod);
+
+            MethodBuilder sameObjectComparerMethodBuilder = CreateCompareSameObjectMethod(tb, fieldList, parentType);
+            equalsIL.MarkLabel(sameObjectComparer);
+
+            equalsIL.Emit(OpCodes.Ldarg_0);
+            equalsIL.Emit(OpCodes.Ldarg_1);
+            equalsIL.Emit(OpCodes.Call, sameObjectComparerMethodBuilder);
+
+            equalsIL.MarkLabel(endOfMethod);
             equalsIL.Emit(OpCodes.Ret);
         }
 
@@ -405,10 +545,18 @@ namespace Integra.Space.Language.Runtime
                 case TypeCode.Single:
                 case TypeCode.Double:
                 case TypeCode.Decimal:
+                case TypeCode.DateTime:
                     return typeof(Nullable<>).MakeGenericType(type);
+                default:
+                    try
+                    {
+                        return typeof(Nullable<>).MakeGenericType(type);
+                    }
+                    catch (Exception e)
+                    {
+                        return type;
+                    }
             }
-
-            return type;
         }
     }
 }

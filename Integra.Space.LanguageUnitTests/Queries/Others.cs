@@ -11,7 +11,7 @@ using System.Linq;
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
-    public class UnitTest1
+    public class Others
     {
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosProyeccionMixta()
@@ -21,18 +21,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new
@@ -67,18 +66,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new
@@ -113,18 +111,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new
@@ -159,18 +156,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty });
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new
@@ -209,18 +205,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             );
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new
@@ -249,17 +244,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
             EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Message.Body.#43 as campo1");
             List<PlanNode> plan = parser.Evaluate();
 
-            ObservableConstructor te = new ObservableConstructor();
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => result(input.AsQbservable())
                 .Select(x =>
                     (object)(new

@@ -39,6 +39,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Integra.Common, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Integra.Common.Debug.2.1.0.0\lib\net45\Integra.Common.dll</HintPath>
       <Private>True</Private>
@@ -55,12 +63,15 @@
       <HintPath>..\packages\Irony.Interpreter.0.9.1\lib\net40\Irony.Interpreter.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Reactive.Testing, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Rx-Testing.2.2.5\lib\net45\Microsoft.Reactive.Testing.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
@@ -81,6 +92,8 @@
       <HintPath>..\packages\Rx-Providers.2.2.5\lib\net45\System.Reactive.Providers.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <Choose>
@@ -104,25 +117,71 @@
     <Compile Include="Constants\NullNodeTests.cs" />
     <Compile Include="Constants\NumberNodeTests.cs" />
     <Compile Include="Constants\StringNodeTests.cs" />
+    <Compile Include="Database\ActualResult.cs">
+      <DependentUpon>SpaceTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Database\Event.cs">
+      <DependentUpon>SpaceTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Database\ExpectedResult.cs">
+      <DependentUpon>SpaceTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Database\SpaceTests.Context.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpaceTests.Context.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Database\SpaceTests.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpaceTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Database\SpaceTests.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SpaceTests.edmx</DependentUpon>
+    </Compile>
+    <Compile Include="Database\Test.cs">
+      <DependentUpon>SpaceTests.tt</DependentUpon>
+    </Compile>
+    <Compile Include="FakeEvents\FakeEv.cs" />
+    <Compile Include="FakeEvents\FakeEventData.cs" />
+    <Compile Include="FakeEvents\FakeEventDataSpecificLeft.cs" />
+    <Compile Include="FakeEvents\FakeEventDataSpecificLeftComparer.cs" />
+    <Compile Include="FakeEvents\FakeEventDataSpecificRight.cs" />
+    <Compile Include="FakeEvents\FakeEventDataSpecificRightComparer.cs" />
+    <Compile Include="Helpers\JoinTypeEnum.cs" />
+    <Compile Include="Helpers\LoadTestsHelper.cs" />
     <Compile Include="Operations\ArithmeticExpressionNodeTests.cs" />
     <Compile Include="Operations\ComparativeExpressionNodeTests.cs" />
     <Compile Include="Operations\LogicExpressionNodeTests.cs" />
     <Compile Include="Operations\UnaryArithmeticExpressionNodeTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Queries\UnitTest1.cs" />
-    <Compile Include="Queries\JoinTests.cs" />
+    <Compile Include="Queries\Join\RightJoinTests.cs" />
+    <Compile Include="Queries\Join\LeftJoinTests.cs" />
+    <Compile Include="Queries\Join\InnerJoinTests.cs" />
+    <Compile Include="Queries\Join\CrossJoinTests.cs" />
+    <Compile Include="Queries\Others.cs" />
     <Compile Include="Queries\UserQueryNodeTests.cs" />
     <Compile Include="SchedulerTypeEnum.cs" />
     <Compile Include="TestObjects.cs" />
     <Compile Include="Events\EventValuesNodeTests.cs" />
     <Compile Include="DefaultSchedulerFactory.cs" />
-    <Compile Include="TypeBuilder\EventResultABC.cs" />
-    <Compile Include="TypeBuilder\QueryResultABC.cs" />
-    <Compile Include="TypeBuilder\QueryResultWriter.cs" />
-    <Compile Include="TypeBuilder\UnitTest1.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <EntityDeploy Include="Database\SpaceTests.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>SpaceTests.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="Database\SpaceTests.edmx.diagram">
+      <DependentUpon>SpaceTests.edmx</DependentUpon>
+    </None>
+    <None Include="LoadTests\LoadTest1.loadtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +189,21 @@
       <Project>{6d4d259b-281f-454f-9b47-4ce2d108ba6a}</Project>
       <Name>Integra.Space.Language</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Database\SpaceTests.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SpaceTests.edmx</DependentUpon>
+      <LastGenOutput>SpaceTests.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="Database\SpaceTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>SpaceTests.edmx</DependentUpon>
+      <LastGenOutput>SpaceTests.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

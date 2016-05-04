@@ -474,7 +474,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 PlanNode r = (PlanNode)this.rightNode.Evaluate(thread);
                 this.EndEvaluate(thread);
 
-                this.result.NodeText = this.operationNode + " " + r.NodeText;
+                this.result.NodeText = this.operationNode + "(" + r.NodeText + ")";
                 this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrensForResult(r, thread);
                 this.ValidateTypesForOperation(r, this.operationNode, thread);

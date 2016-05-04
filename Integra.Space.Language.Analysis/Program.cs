@@ -113,8 +113,8 @@ namespace Integra.Space.Language.Analysis
 
 
                         eql = "cross " +
-                                "JOIN SpaceObservable1 as t1 " +
-                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#0.#0 == \"0110\"
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#0.#0 == \"0100\"" +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
                                                                   //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
                                 "ON t1.@event.Message.#0.#0 != t2.@event.Message.#1.#43 " +
                                 "TIMEOUT '00:00:01' " +
@@ -138,7 +138,7 @@ namespace Integra.Space.Language.Analysis
 
                     Integra.Space.Language.Metadata.MetadataGenerator mg = new Integra.Space.Language.Metadata.MetadataGenerator();
                     SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parser.ParseTree.Root);
-                    Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
+                    //Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
                     Console.WriteLine("Metadata created.");
                     Console.WriteLine("Transforming plan...");
@@ -154,14 +154,6 @@ namespace Integra.Space.Language.Analysis
                     string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
                     TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
                     tgg.GenerateGraph(executionPlanNode);
-
-                    /*PlanNode timespanValue = new PlanNode();
-                    timespanValue.NodeType = PlanNodeTypeEnum.Constant;
-                    timespanValue.Properties.Add("Value", TimeSpan.FromSeconds(1));
-                    timespanValue.Properties.Add("DataType", typeof(TimeSpan).ToString());
-                    timespanValue.Properties.Add("IsConstant", true);
-                    InternalPlanNodes ipn = new InternalPlanNodes();
-                    tgg.GenerateGraph(ipn.DurationWithSendingResults("left", timespanValue, string.Empty));*/
 
                     Console.WriteLine("Graph created.");
                     Console.WriteLine("Opening graph...");

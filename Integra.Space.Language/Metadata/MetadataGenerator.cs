@@ -53,7 +53,7 @@ namespace Integra.Space.Language.Metadata
             objectPrpertiesUsed.ChildNodes = new List<SpaceMetadataTreeNode>();
             root.ChildNodes.Add(objectPrpertiesUsed);
 
-            this.GetObjectPropertiesUsedInTheBranch(parseTreeNode, objectPrpertiesUsed, root, false);
+            this.GetObjectPropertiesUsedInTheBranch(parseTreeNode, objectPrpertiesUsed, root, false, false);
 
             // se obtiene la ventana de la consulta
             SpaceParseTreeNode applyWindow = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.APPLY_WINDOW).SingleOrDefault();
@@ -125,7 +125,7 @@ namespace Integra.Space.Language.Metadata
                     metadataOn.ChildNodes = new List<SpaceMetadataTreeNode>();
                     metadataJoin.ChildNodes.Add(metadataOn);
 
-                    this.GetObjectPropertiesUsedInTheBranch(on, metadataOn, root, true);
+                    this.GetObjectPropertiesUsedInTheBranch(on, metadataOn, root, true, true);
                 }
 
                 // se obtiene el timeout del join
@@ -190,7 +190,8 @@ namespace Integra.Space.Language.Metadata
         /// <param name="parentNodeForProperties">Metadata node where the properties will be placed as child nodes.</param>
         /// <param name="root">Metadata root node</param>
         /// <param name="getByUses">Indicates whether the properties will obtained by usage or by occurrence.</param>
-        private void GetObjectPropertiesUsedInTheBranch(SpaceParseTreeNode branch, SpaceMetadataTreeNode parentNodeForProperties, SpaceMetadataTreeNode root, bool getByUses)
+        /// <param name="isForOnCondition">Indicates that the branch is on condition.</param>
+        private void GetObjectPropertiesUsedInTheBranch(SpaceParseTreeNode branch, SpaceMetadataTreeNode parentNodeForProperties, SpaceMetadataTreeNode root, bool getByUses, bool isForOnCondition)
         {
             IEnumerable<IGrouping<string, SpaceParseTreeNode>> objects = branch.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT, SpaceParseTreeNodeTypeEnum.EVENT_PROPERTY_VALUE)
                         .GroupBy(x =>
@@ -207,7 +208,7 @@ namespace Integra.Space.Language.Metadata
                             }
                         });
 
-            if (objects.Count() == 0)
+            if (isForOnCondition == true && objects.Count() == 0)
             {
                 throw new CompilationException("No events found in the on condition.");
             }

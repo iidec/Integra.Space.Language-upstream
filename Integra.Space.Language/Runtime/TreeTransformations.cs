@@ -48,7 +48,7 @@ namespace Integra.Space.Language.Runtime
                 this.ReplaceEventsByLocalObject(objects);
             }
 
-            PlanNode join = this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.CrossJoin, PlanNodeTypeEnum.InnerJoin, PlanNodeTypeEnum.LeftJoin, PlanNodeTypeEnum.RightJoin).FirstOrDefault();
+            /*PlanNode join = this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.CrossJoin, PlanNodeTypeEnum.InnerJoin, PlanNodeTypeEnum.LeftJoin, PlanNodeTypeEnum.RightJoin).FirstOrDefault();
 
             if (join != null)
             {
@@ -60,7 +60,7 @@ namespace Integra.Space.Language.Runtime
                         ffl.Properties["ParameterPosition"] = 0;
                     }
                 }
-            }
+            }*/
         }
 
         /// <summary>
@@ -83,7 +83,11 @@ namespace Integra.Space.Language.Runtime
                     column.Children = new List<PlanNode>();
 
                     PlanNode fromForLambda = new PlanNode();
-                    fromForLambda.Properties.Add("ParameterPosition", position);
+                    fromForLambda.Line = column.Line;
+                    fromForLambda.Column = column.Column;
+                    fromForLambda.NodeText = column.NodeText;
+                    fromForLambda.Properties.Add("sourceName", @object.Key);
+                    fromForLambda.Properties.Add("ParameterType", this.dictionaryOfTypes[@object.Key]);
                     fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
                     column.Children.Add(fromForLambda);
                 }
@@ -106,10 +110,11 @@ namespace Integra.Space.Language.Runtime
                 fieldList = new List<FieldNode>();
                 foreach (PlanNode @object in grupo.Distinct(new PropertyNameComparer()))
                 {
-                    fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), typeof(object), 0));
+                    fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), this.ConvertToNullable(Type.GetType(@object.Properties["DataType"].ToString())), 0));
                 }
 
                 Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList, isSecondSource); // typeof(ExtractedEventData); // LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
+                
                 isSecondSource = true;
                 this.dictionaryOfTypes.Add(grupo.Key, newType);
             }
@@ -156,14 +161,19 @@ namespace Integra.Space.Language.Runtime
                     projection.Properties["ParentType"] = this.dictionaryOfTypes[@object.Key];
                     projection.Properties.Add("OtherSourceType", this.dictionaryOfTypes.Where(x => x.Key != @object.Key).FirstOrDefault().Value);
 
-                    IGrouping<string, PlanNode> aux = objectsInOnCondition.First(x => x.Key == @object.Key);
-                    foreach (PlanNode objectInOn in aux)
+                    IGrouping<string, PlanNode> aux = objectsInOnCondition.FirstOrDefault(x => x.Key == @object.Key);
+
+                    // en el observable constructor se valida que todos los valores puestos en el oncondition no son constantes
+                    if (aux != null)
                     {
-                        foreach (PlanNode column in replicas)
+                        foreach (PlanNode objectInOn in aux)
                         {
-                            if (objectInOn.Properties["PropertyName"].Equals(column.Properties["PropertyName"]))
+                            foreach (PlanNode column in replicas)
                             {
-                                column.Properties["IncidenciasEnOn"] = int.Parse(column.Properties["IncidenciasEnOn"].ToString()) + 1;
+                                if (objectInOn.Properties["PropertyName"].Equals(column.Properties["PropertyName"]))
+                                {
+                                    column.Properties["IncidenciasEnOn"] = int.Parse(column.Properties["IncidenciasEnOn"].ToString()) + 1;
+                                }
                             }
                         }
                     }
@@ -350,6 +360,30 @@ namespace Integra.Space.Language.Runtime
                         throw new Exceptions.CompilationException(string.Format("Invalid source {0}.", source));
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Try to convert the no null-able type to a null-able type
+        /// </summary>
+        /// <param name="tipo">Type to convert</param>
+        /// <returns>Converted type</returns>
+        private Type ConvertToNullable(Type tipo)
+        {
+            if (tipo.IsValueType)
+            {
+                if (tipo.IsGenericType && tipo.GetGenericTypeDefinition() == typeof(Nullable<>))
+                {
+                    return tipo;
+                }
+                else
+                {
+                    return typeof(Nullable<>).MakeGenericType(tipo);
+                }
+            }
+            else
+            {
+                return tipo;
             }
         }
 

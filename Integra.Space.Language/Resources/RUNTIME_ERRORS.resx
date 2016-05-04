@@ -308,6 +308,15 @@
   <data name="RE61" xml:space="preserve">
     <value>RE61: Error in ToObservable.</value>
   </data>
+  <data name="RE62" xml:space="preserve">
+    <value>RE62: Error in observable concat.</value>
+  </data>
+  <data name="RE63" xml:space="preserve">
+    <value>RE63: Error calling the SetTimeout method of a ExtractedEventData object.</value>
+  </data>
+  <data name="RE64" xml:space="preserve">
+    <value>RE64: Error in 'abs' function.</value>
+  </data>
   <data name="RE7" xml:space="preserve">
     <value />
   </data>

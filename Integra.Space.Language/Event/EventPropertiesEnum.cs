@@ -29,9 +29,14 @@ namespace Integra.Space
         Message = 30,
 
         /// <summary>
-        /// Adapter or agent timestamp property
+        /// System timestamp property
         /// </summary>
-        Timestamp = 40,
+        SystemTimestamp = 40,
+
+        /// <summary>
+        /// Source timestamp property
+        /// </summary>
+        SourceTimestamp = 41,
 
         /// <summary>
         /// Adapter machine name property

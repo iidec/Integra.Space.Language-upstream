@@ -11,32 +11,50 @@ namespace Integra.Space
     public class ExtractedEventData
     {
         /// <summary>
-        /// Indicates whether the event matched with another event.
+        /// Object to lock the change of the event state.
         /// </summary>
-        private bool matched;
-
+        private static object lockState = new object();
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedEventData"/> class.
         /// </summary>
         public ExtractedEventData()
         {
-            this.matched = false;
+            this.State = ExtractedEventDataStateEnum.Created;
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the event matched with another event.
+        /// Gets the actual state of the event
         /// </summary>
-        public bool Matched
+        public ExtractedEventDataStateEnum State
         {
-            get
+            get;
+            private set;
+        }
+
+        /// <summary>
+        /// Set the state of the event.
+        /// </summary>
+        /// <param name="state">State to set.</param>
+        /// <returns>Return a value indicating whether the event state changed.</returns>
+        public bool SetState(ExtractedEventDataStateEnum state)
+        {
+            lock (lockState)
             {
-                return this.matched;
+                if (state == ExtractedEventDataStateEnum.Matched && (this.State == ExtractedEventDataStateEnum.Created || this.State == ExtractedEventDataStateEnum.Matched))
+                {
+                    this.State = state;
+                    return true;
+                }
+
+                if (state == ExtractedEventDataStateEnum.Expired && this.State == ExtractedEventDataStateEnum.Created)
+                {
+                    this.State = state;
+                    return true;
+                }
             }
 
-            set
-            {
-                this.matched = value;
-            }
-        }
+            return false;
+        }        
     }
 }

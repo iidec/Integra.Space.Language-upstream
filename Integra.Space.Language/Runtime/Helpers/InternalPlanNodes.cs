@@ -22,12 +22,11 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Duration with sending results plan.</returns>
         public PlanNode DurationWithSendingResults(PlanNode timespanValue, int parameterPosition, PlanNodeTypeEnum projectionType)
         {
-            /* INICIA NODOS NECESARIOS LEFT DURATION */
             /******************************************************************************************************************************************/
             PlanNode never = new PlanNode();
             never.NodeType = PlanNodeTypeEnum.ObservableNever;
             never.Children = new List<PlanNode>();
-
+                        
             PlanNode timeout = new PlanNode();
             timeout.NodeType = PlanNodeTypeEnum.ObservableTimeout;
             timeout.Properties.Add("ReturnObservable", false);
@@ -39,16 +38,22 @@ namespace Integra.Space.Language.Runtime
             fromForLambdaLeftWhere.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
             fromForLambdaLeftWhere.Properties.Add("ParameterPosition", parameterPosition);
 
-            PlanNode getMatchedProperty = new PlanNode();
-            getMatchedProperty.NodeType = PlanNodeTypeEnum.Property;
-            getMatchedProperty.Properties.Add("Property", "Matched");
-            getMatchedProperty.Children = new List<PlanNode>();
-            getMatchedProperty.Children.Add(fromForLambdaLeftWhere);
+            PlanNode getStateProperty = new PlanNode();
+            getStateProperty.NodeType = PlanNodeTypeEnum.Property;
+            getStateProperty.Properties.Add("Property", "State");
+            getStateProperty.Children = new List<PlanNode>();
+            getStateProperty.Children.Add(fromForLambdaLeftWhere);
 
-            PlanNode negate = new PlanNode();
-            negate.NodeType = PlanNodeTypeEnum.Not;
-            negate.Children = new List<PlanNode>();
-            negate.Children.Add(getMatchedProperty);
+            PlanNode constantExpiredState = new PlanNode();
+            constantExpiredState.NodeType = PlanNodeTypeEnum.Constant;
+            constantExpiredState.Properties.Add("Value", ExtractedEventDataStateEnum.Expired);
+            constantExpiredState.Properties.Add("DataType", typeof(ExtractedEventDataStateEnum));
+
+            PlanNode equalNode = new PlanNode();
+            equalNode.NodeType = PlanNodeTypeEnum.Equal;
+            equalNode.Children = new List<PlanNode>();
+            equalNode.Children.Add(getStateProperty);
+            equalNode.Children.Add(constantExpiredState);
             /******************************************************************************************************************************************/
             PlanNode fromForLambdaLeft1 = new PlanNode();
             fromForLambdaLeft1.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
@@ -72,7 +77,7 @@ namespace Integra.Space.Language.Runtime
             leftWhere.NodeType = PlanNodeTypeEnum.EnumerableWhere;
             leftWhere.Children = new List<PlanNode>();
             leftWhere.Children.Add(newScopeLeftWhere);
-            leftWhere.Children.Add(negate);
+            leftWhere.Children.Add(equalNode);
             /******************************************************************************************************************************************/
             PlanNode newScopenumerableLeftSelect = new PlanNode();
             newScopenumerableLeftSelect.NodeType = PlanNodeTypeEnum.NewScope;
@@ -115,10 +120,11 @@ namespace Integra.Space.Language.Runtime
             PlanNode catchNode = new PlanNode();
             catchNode.NodeType = PlanNodeTypeEnum.ObservableCatch;
             catchNode.Children = new System.Collections.Generic.List<PlanNode>();
+            catchNode.Properties.Add("ProjectionType", projectionType);
+            catchNode.Properties.Add("HasBody", true);
             catchNode.Children.Add(newScope1);
             catchNode.Children.Add(toObservable);
             /******************************************************************************************************************************************/
-            /* TERMINA NODOS NECESARIOS LEFT DURATION */
 
             return catchNode;
         }
@@ -127,20 +133,35 @@ namespace Integra.Space.Language.Runtime
         /// Gets the execution plan for the duration of each event at the Observable.Join without sending the result timeout to the observer.
         /// </summary>
         /// <param name="timespanValue">Timespan value to timeout.</param>
+        /// <param name="projectionType">Projection type.</param>
         /// <returns>Duration with sending results plan.</returns>
-        public PlanNode DurationWithoutSendingResults(PlanNode timespanValue)
+        public PlanNode DurationWithoutSendingResults(PlanNode timespanValue, PlanNodeTypeEnum projectionType)
         {
             PlanNode never = new PlanNode();
             never.NodeType = PlanNodeTypeEnum.ObservableNever;
 
             PlanNode timeout = new PlanNode();
             timeout.NodeType = PlanNodeTypeEnum.ObservableTimeout;
-            timeout.Properties.Add("ReturnObservable", true);
+            timeout.Properties.Add("ReturnObservable", false);
             timeout.Children = new System.Collections.Generic.List<PlanNode>();
             timeout.Children.Add(never);
             timeout.Children.Add(timespanValue);
+            /******************************************************************************************************************************************/
+            PlanNode newScope1 = new PlanNode();
+            newScope1.NodeType = PlanNodeTypeEnum.NewScope;
+            newScope1.Properties.Add("ScopeParameters", new ScopeParameter[] { new ScopeParameter(2, typeof(TimeoutException)) });
+            newScope1.Children = new List<PlanNode>();
+            newScope1.Children.Add(timeout);
 
-            return timeout;
+            PlanNode catchNode = new PlanNode();
+            catchNode.NodeType = PlanNodeTypeEnum.ObservableCatch;
+            catchNode.Children = new System.Collections.Generic.List<PlanNode>();
+            catchNode.Properties.Add("ProjectionType", projectionType);
+            catchNode.Properties.Add("HasBody", false);
+            catchNode.Children.Add(newScope1);
+            /******************************************************************************************************************************************/
+
+            return catchNode;
         }
     }
 }

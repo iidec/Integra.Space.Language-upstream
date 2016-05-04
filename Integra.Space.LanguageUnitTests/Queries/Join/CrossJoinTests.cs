@@ -1,0 +1,1788 @@
+﻿using ET_Test;
+using Integra.Space.Language;
+using Integra.Space.Language.Runtime;
+using Integra.Space.LanguageUnitTests.Helpers;
+using Microsoft.Reactive.Testing;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reactive;
+using System.Reactive.Concurrency;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+
+namespace Integra.Space.LanguageUnitTests.Queries
+{
+    [TestClass]
+    public class CrossJoinTests : ReactiveTest
+    {
+        #region On condition true
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_1()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(new TimeSpan(40000001).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_2()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(30000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_3()
+        {
+            string eql = "cross " +
+                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                 "WITH SpaceObservable1 as t2 " +
+                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                 "TIMEOUT '00:00:02' " +
+                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(30000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_4()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:20' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+               () =>
+               {
+                   return result(input1, input2)
+                   .Select(x =>
+                   {
+                       var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                       var b1 = a.GetType().GetProperty("c1");
+                       var b2 = a.GetType().GetProperty("c2");
+                       var c = b1.GetValue(a);
+                       return (object)(new
+                       {
+                           c1 = b1.GetValue(a),
+                           c2 = b2.GetValue(a)
+                       });
+                   });
+               }
+               , TimeSpan.FromSeconds(1).Ticks
+               , TimeSpan.FromSeconds(1).Ticks
+               , TimeSpan.FromSeconds(15).Ticks
+               );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(30000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_5()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " +
+                                "WITH SpaceObservable1 as t2 " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1.AsObservable(), input2.AsObservable())
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(40000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinMultipleEventsTest_OnTrue()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:01' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(12).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            var m = results.Messages;
+
+            ReactiveAssert.AreElementsEqual(input1.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(input2.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(40000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(60000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(80000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(100000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(130000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinMultipleEventsTest_OnTrue_2()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:01' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            var m = results.Messages;
+
+            ReactiveAssert.AreElementsEqual(input1.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(input2.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(40000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000002).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000003).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000004).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000005).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000006).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000007).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000008).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000009).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000010).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000011).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000012).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000013).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000014).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000015).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(40000016).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnTrue_6()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(new TimeSpan(40000001).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })))
+                }, results.Messages);
+        }
+
+        #endregion On condition true
+
+        #region On condition false
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_1()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(50000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(60000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_2()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(40000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(50000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_3()
+        {
+            string eql = "cross " +
+                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                 "WITH SpaceObservable1 as t2 " +
+                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                 "TIMEOUT '00:00:02' " +
+                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(40000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(50000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_4()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:01' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+               () =>
+               {
+                   return result(input1, input2)
+                   .Select(x =>
+                   {
+                       var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                       var b1 = a.GetType().GetProperty("c1");
+                       var b2 = a.GetType().GetProperty("c2");
+                       var c = b1.GetValue(a);
+                       return (object)(new
+                       {
+                           c1 = b1.GetValue(a),
+                           c2 = b2.GetValue(a)
+                       });
+                   });
+               }
+               , TimeSpan.FromSeconds(1).Ticks
+               , TimeSpan.FromSeconds(1).Ticks
+               , TimeSpan.FromSeconds(15).Ticks
+               );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(30000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(40000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_5()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " +
+                                "WITH SpaceObservable1 as t2 " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1.AsObservable(), input2.AsObservable())
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(50000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(60000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinMultipleEventsTest_OnFalse()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "TIMEOUT '00:00:01' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest1())
+                , OnNext(TimeSpan.FromSeconds(12).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest2())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            var m = results.Messages;
+
+            ReactiveAssert.AreElementsEqual(input1.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(input2.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(50000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(50000003).Ticks,(object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(70000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(70000003).Ticks,(object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(90000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(90000003).Ticks,(object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(110000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null })),
+                    OnNext(new TimeSpan(110000003).Ticks,(object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(130000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OnFalse_6()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+                );
+
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+                );
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var c = b1.GetValue(a);
+                        return (object)(new
+                        {
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a)
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    OnNext(new TimeSpan(50000001).Ticks, (object)(new { c1 = (object)null, c2 = (object)"9999941616073663_2" })),
+                    OnNext(new TimeSpan(60000001).Ticks, (object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
+                }, results.Messages);
+        }
+
+        #endregion On condition false
+
+        #region Errors
+
+        #region Constants in on condition
+
+        [TestMethod]
+        public void CrossJoinTest_ConstantInOnCondition_1()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON \"constant\" == t1.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 173, "\"constant\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió una constante en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_ConstantInOnCondition_2()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == \"constant\" " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 201, "\"constant\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un valor no constante en la condición del primer WHERE.");
+        }
+
+        #endregion Constants in on condition
+
+        #region Invalid comparative operator
+
+        [TestMethod]
+        public void CrossJoinTest_NotEqualThanInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 != t2.@event.Message.#1.#32";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("not equal operator")));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_LessThanInOnCondition()
+        {
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 < t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, "t1.@event.Message.#1.#32 < t2.@event.Message.#1.#32", Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("less than operator")));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_LessThanOrEqualsInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 <= t2.@event.Message.#1.#32";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("less than or equal operator")));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_GreaterThanOrEqualsInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 >= t2.@event.Message.#1.#32";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("greater than or equal operator")));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_GreaterThanInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 > t2.@event.Message.#1.#32";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("greater than operator")));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_LikeInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 like \"491381\"";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 203, "\"491381\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_OrInOnCondition()
+        {
+            string condition = "t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 or t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON " + condition + " " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 226, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE76("logical disjunction")), e.InnerException.Message);
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_NotInOnCondition()
+        {
+            string condition = "not(t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35)";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                $"ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and {condition} " +
+                                "TIMEOUT '00:00:02' " +
+                                //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 230, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE76("logical negation")), e.InnerException.Message);
+                return;
+            }
+
+            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_MixedSources_1()
+        {
+            string instruction = "t2.@event.Message.#1.#2";
+            string eql = "cross " +
+                                $"JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == {instruction} " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 89, instruction, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t2")), e.InnerException.InnerException.Message);
+                return;
+            }
+
+            Assert.Fail("Error: fuente invalida permitida en la condición WHERE de la primera fuente.");
+        }
+
+        [TestMethod]
+        public void CrossJoinTest_MixedSources_2()
+        {
+            string instruction = "t1.@event.Message.#1.#2";
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                $"WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == {instruction} " +
+                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "TIMEOUT '00:00:02' " +
+                                "SELECT t1.@event.Message.#1.#2 as c1"; // , t2.@event.Message.#1.#2 as c2 
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+
+            try
+            {
+                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            }
+            catch (Exception e)
+            {
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 171, instruction, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t1")), e.InnerException.InnerException.Message);
+                return;
+            }
+
+            Assert.Fail("Error: fuente invalida permitida en la condición WHERE de la segunda fuente.");
+        }
+
+        #endregion Invalid comparative operator
+
+        #endregion Errors
+
+        #region Custom load tests
+
+        [TestMethod]
+        public void CustomLoadTest1()
+        {
+            #region Compiler
+
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
+                                "TIMEOUT '00:00:04' " +
+                                "WHERE  isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') <= '00:00:01' " +
+                                "SELECT  isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') as o1, " +
+                                        "1 as o2, " +
+                                        "isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)null, (DateTime?)'01/01/2016') as o3, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') as ts1, " +
+                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') as ts2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            #endregion Compiler
+
+            decimal tolerance = 0.5M;
+            int eventNumber = 10;
+            int limiteSuperiorOcurrenciaEventos = 20000;
+            int timeoutPercentage = 0;
+            int timeout = 4000;
+            int whereDifference = 1000;
+
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage);
+            Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
+
+            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
+            Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
+            Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
+            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
+
+            #region Prints
+
+            int countLeft = 0;
+            int countRight = 0;
+            rqCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            System.Diagnostics.Debug.WriteLine("----------------------------------");
+
+            rsCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            #endregion Prints
+
+            List<Recorded<Notification<EventObject>>> rq = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rqCreated)
+            {
+                rq.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rq.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Solicitudes repetidas.");
+            }
+
+            List<Recorded<Notification<EventObject>>> rs = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rsCreated)
+            {
+                rs.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rs.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Respuestas repetidas.");
+            }
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(rq.ToArray());
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(rs.ToArray());
+
+            long maxTimeLeft = rqCreated.Max(x => x.Item2);
+            long maxTimeRight = rsCreated.Max(x => x.Item2);
+            long maxTime = maxTimeLeft > maxTimeRight ? maxTimeLeft : maxTimeRight;
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var b3 = a.GetType().GetProperty("c3");
+                        var b4 = a.GetType().GetProperty("c4");
+                        var b5 = a.GetType().GetProperty("ts1");
+                        var b6 = a.GetType().GetProperty("ts2");
+                        var b7 = a.GetType().GetProperty("o1");
+                        var b8 = a.GetType().GetProperty("o2");
+                        var b9 = a.GetType().GetProperty("o3");
+                        return (object)(new
+                        {
+                            o1 = b7.GetValue(a),
+                            o2 = b8.GetValue(a),
+                            o3 = b9.GetValue(a),
+                            ts1 = b5.GetValue(a),
+                            ts2 = b6.GetValue(a),
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a),
+                            c3 = b3.GetValue(a),
+                            c4 = b4.GetValue(a)
+                        });
+                    });
+                }
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                );
+
+            Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
+                .Select<Recorded<Notification<object>>, Tuple<string, string, string, string, string, string, TimeSpan>>(x =>
+                { 
+                    dynamic rAux = ((dynamic)x.Value.Value);
+                    return Tuple.Create<string, string, string, string, string, string, TimeSpan>(rAux.c1, rAux.c2, ((DateTime?)rAux.ts1).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.c3, rAux.c4, ((DateTime?)rAux.ts2).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.o1);
+                })
+                .ToArray();
+
+            //helper.UpdateExpectedEventsMatchedFlag(actualResults);
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> differences = new List<Tuple<string, string, string, string, bool>>();
+            actualResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
+                
+                if (aux != null)
+                {
+                    expectedResultsUpdated.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    differences.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
+                }
+            });
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> differences2 = new List<Tuple<string, string, string, string, bool>>();
+            expectedResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated2.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    differences2.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
+                }
+            });
+
+            decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
+
+            if(expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
+            {
+                Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
+            }
+
+            if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
+            {
+                if (exactitudAlcanzada > tolerance)
+                {
+                    Assert.Fail("Tolerancia no alcanzada.");
+                }
+                else
+                {
+                    Assert.Inconclusive("Number of expected results is differ from number of actual results.");
+                }
+            }
+        }
+
+        #endregion Custom load tests
+
+        [TestMethod]
+        public void OtherTestWithJoin_1()
+        {
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            int countRq = 0;
+            int countRs = 0;
+
+            ITestableObservable<FakeEv> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRq++, MessageType = "0100", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRq++, MessageType = "0100", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRq++, MessageType = "0100", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRq++, MessageType = "0100", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                );
+
+            ITestableObservable<FakeEv> input2 = dsf.TestScheduler.CreateHotObservable(
+                 OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRs++, MessageType = "0110", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRs++, MessageType = "0110", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRs++, MessageType = "0110", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new FakeEv() { Timestamp = DateTime.Now, Id = countRs++, MessageType = "0110", Pan = "1", TransactionAmount = 1000m, Comercio = "Shell El RodeoGUATEMALA    GT", Ref = "1" })
+                );
+
+            var rq = input1
+                    .Where(fe => fe.MessageType == "0100")
+                    .Select(x => new FakeEventDataSpecificLeftComparer() { Pan = x.Pan, Ref = x.Ref, Timestamp = x.Timestamp })
+                    .Buffer(TimeSpan.FromMilliseconds(1000), 50, dsf.TestScheduler)
+                    .Where(x => x.Count > 0)
+                    .Publish()
+                    .RefCount()
+                    ;
+
+            var rs = input2
+                .Where(fe => fe.MessageType == "0110")
+                .Select(x => new FakeEventDataSpecificRightComparer() { Pan = x.Pan, Ref = x.Ref, Timestamp = x.Timestamp })
+                .Buffer(TimeSpan.FromMilliseconds(1000), 50, dsf.TestScheduler)
+                .Where(x => x.Count > 0)
+                .Publish()
+                .RefCount()
+                ;
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return Observable.Create<IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>>(o =>
+                    {
+                        return JoinQuery(o, rq, rs, dsf.TestScheduler);
+                    })
+                    //.ObserveOn(dsf.TestScheduler)
+                    //.SubscribeOn(dsf.TestScheduler)
+                    //.Switch()
+                    //.Count()
+                    .Concat()
+                    .Select(x =>
+                    {
+                        return (object)(new
+                        {
+                            c1 = x.Item1 != null ? (object)x.Item1.Pan : (object)null,
+                            c2 = x.Item2 != null ? (object)x.Item2.Ref : (object)null
+                        });
+                    });
+                }
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(1).Ticks
+                , TimeSpan.FromSeconds(15).Ticks
+                );
+
+            var m = results.Messages;
+
+            ReactiveAssert.AreElementsEqual(input1.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(input2.Subscriptions, new Subscription[] {
+                    new Subscription(TimeSpan.FromSeconds(1).Ticks, TimeSpan.FromSeconds(15).Ticks)
+                });
+
+            ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(new TimeSpan(50000001).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"1", c2 = (object)"1" }))),
+                    new Recorded<Notification<object>>(new TimeSpan(60000004).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"2", c2 = (object)"2" }))),
+                    new Recorded<Notification<object>>(new TimeSpan(80000004).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"3", c2 = (object)"3" }))),
+                    new Recorded<Notification<object>>(new TimeSpan(100000005).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"4", c2 = (object)"4" }))),
+                    new Recorded<Notification<object>>(new TimeSpan(140000001).Ticks, Notification.CreateOnNext((object)(new { c1 = (object)"5", c2 = (object)null })))
+                }, results.Messages);
+        }
+
+        [TestMethod]
+        public void OtherTestWithJoin_2()
+        {
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            int eventNumber = 10;
+
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, 4000, 1000, 20000, 100);
+            Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
+
+            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
+            Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
+            Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
+            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
+
+            #region Prints
+
+            int countLeft = 0;
+            int countRight = 0;
+            rqCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            System.Diagnostics.Debug.WriteLine("----------------------------------");
+
+            rsCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            #endregion Prints
+
+            List<Recorded<Notification<EventObject>>> rqAux = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rqCreated)
+            {
+                rqAux.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rqAux.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Solicitudes repetidas.");
+            }
+
+            List<Recorded<Notification<EventObject>>> rsAux = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rsCreated)
+            {
+                rsAux.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rsAux.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Respuestas repetidas.");
+            }
+
+            long maxTimeLeft = rqCreated.Max(x => x.Item2);
+            long maxTimeRight = rsCreated.Max(x => x.Item2);
+            long maxTime = maxTimeLeft > maxTimeRight ? maxTimeLeft : maxTimeRight;
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(rqAux.ToArray());
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(rsAux.ToArray());
+
+            var rq = input1
+                    .Where(fe => fe.Message[0][0].Value.ToString() == "0100")
+                .Select(x => new FakeEventDataSpecificLeftComparer() { Pan = x.Message[1][0].Value.ToString(), Ref = x.Message[1][1].Value.ToString() })
+                    .Buffer(TimeSpan.FromMilliseconds(1000), 500, dsf.TestScheduler)
+                    .Where(x => x.Count > 0)
+                    .Publish()
+                    .RefCount()
+                    ;
+
+            var rs = input2
+                .Where(fe => fe.Message[0][0].Value.ToString() == "0110")
+                .Select(x => new FakeEventDataSpecificRightComparer() { Pan = x.Message[1][0].Value.ToString(), Ref = x.Message[1][1].Value.ToString() })
+                .Buffer(TimeSpan.FromMilliseconds(1000), 500, dsf.TestScheduler)
+                .Where(x => x.Count > 0)
+                .Publish()
+                .RefCount()
+                ;
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return Observable.Create<IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>>(o =>
+                    {
+                        return JoinQuery(o, rq, rs, dsf.TestScheduler);
+                    })
+                    .Concat()
+                    .Select(x =>
+                    {
+                        return (object)(new
+                        {
+                            c1 = x.Item1 != null ? (object)x.Item1.Pan : (object)null,
+                            c2 = x.Item1 != null ? (object)x.Item1.Ref : (object)null,
+                            c3 = x.Item2 != null ? (object)x.Item2.Ref : (object)null,
+                            c4 = x.Item2 != null ? (object)x.Item2.Ref : (object)null
+                        });
+                    });
+                }
+                , 0
+                , 0
+                , maxTime + TimeSpan.FromMinutes(1).Ticks
+                );
+
+            var m = results.Messages;
+
+            Tuple<string, string, string, string>[] actualResults = results.Messages
+                .Select<Recorded<Notification<object>>, Tuple<string, string, string, string>>(x =>
+                {
+                    dynamic rAux = ((dynamic)x.Value.Value);
+                    return Tuple.Create<string, string, string, string>(rAux.c1, rAux.c2, rAux.c3, rAux.c4);
+                })
+                .ToArray();
+
+            //helper.UpdateExpectedEventsMatchedFlag(actualResults);
+
+            actualResults.ForEach(x =>
+            {
+                // expectedResults.Where(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item3 && y.Item4 == x.Item4).ToList().ForEach(y => y.Item5 = true);
+            });
+
+            if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
+            {
+                Assert.Fail("Expected results are diferent from actual results.");
+            }
+        }
+
+        private IDisposable JoinQuery(
+            IObserver<IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>> o
+            , IObservable<IList<FakeEventDataSpecificLeftComparer>> requestSource, IObservable<IList<FakeEventDataSpecificRightComparer>> responseSource, TestScheduler scheduler)
+        {
+            TimeSpan timeout = TimeSpan.FromSeconds(1);
+
+            return Observable.Join<IList<FakeEventDataSpecificLeftComparer>, IList<FakeEventDataSpecificRightComparer>, Unit, Unit, IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>>(
+                requestSource,
+                responseSource,
+                l =>
+                {
+                    return
+                        Observable.Never<Unit>()
+                        .Timeout(timeout, scheduler)
+                        .Catch<Unit, TimeoutException>(e =>
+                        {
+                            l.ToList().ForEach(x => x.SetState(FakeEventDataStateEnum.Expired));
+                            o.OnNext(l
+                                .Where(x => { return x.State == FakeEventDataStateEnum.Expired; })
+                                .Select(x => { return Tuple.Create<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>(x, null); })
+                                .ToObservable(scheduler));
+
+                            return Observable.Empty<Unit>(scheduler);
+                        });
+                },
+                r =>
+                {
+                    return
+                        Observable.Never<Unit>()
+                        .Timeout(timeout, scheduler)
+                        .Catch<Unit, TimeoutException>(e =>
+                        {
+                            r.ToList().ForEach(x => x.SetState(FakeEventDataStateEnum.Expired));
+                            o.OnNext(r
+                                .Where(x => { return x.State == FakeEventDataStateEnum.Expired; })
+                                .Select(x => { return Tuple.Create<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>(null, x); })
+                                .ToObservable(scheduler));
+                            return Observable.Empty<Unit>(scheduler);
+                        });
+                },
+                (l, r) =>
+                {
+                    IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>> abcx = l
+                           .Join<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer, FakeEventData, Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>(
+                                    r,
+                                    x => { return x; },
+                                    x => { return x; },
+                                    (w, z) =>
+                                    {
+                                        if (w.SetState(FakeEventDataStateEnum.Matched))
+                                        {
+                                            if (z.SetState(FakeEventDataStateEnum.Matched))
+                                            {
+                                                return Tuple.Create(w, z);
+                                            }
+                                        }
+
+                                        return null;
+                                    }
+                                    )
+                           .Where(
+                           u =>
+                           {
+                               return u != null;
+                           })
+                           .ToObservable(scheduler);
+
+                    return abcx;
+                })
+                .Subscribe<IObservable<Tuple<FakeEventDataSpecificLeftComparer, FakeEventDataSpecificRightComparer>>>(result =>
+                {
+                    o.OnNext(result);
+                }
+                , () =>
+                {
+                    o.OnCompleted();
+                })
+                ;
+        }
+    }
+}

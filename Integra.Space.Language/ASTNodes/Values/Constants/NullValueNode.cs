@@ -36,6 +36,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.NodeType = PlanNodeTypeEnum.Constant;
             this.result.Properties.Add("Value", null);
             this.result.Properties.Add("IsConstant", true);
+            this.result.Properties.Add("DataType", typeof(object));
         }
 
         /// <summary>

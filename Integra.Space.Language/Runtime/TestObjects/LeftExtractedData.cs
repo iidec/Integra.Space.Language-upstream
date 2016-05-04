@@ -8,7 +8,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Left extracted data class
     /// </summary>
-    public class LeftExtractedData : ExtractedEventData
+    internal class LeftExtractedData : ExtractedEventData
     {
         /// <summary>
         /// Doc goes here
