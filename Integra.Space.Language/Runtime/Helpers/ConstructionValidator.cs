@@ -57,7 +57,7 @@ namespace Integra.Space.Language.Runtime
 
             if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
             {
-                if (TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) < TimeSpan.FromSeconds(1) || TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
+                if (TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) < TimeSpan.FromSeconds(0) || TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
                 {
                     throw new CompilationException("Error al compilar, el tamaño de la ventana debe ser mayor o igual a 1 y menor o igual a " + ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString() + ".");
                 }
@@ -77,7 +77,7 @@ namespace Integra.Space.Language.Runtime
                 throw new CompilationException("Error al compilar, el tamaño de la ventana debe ser un espacio de tiempo ('TimeSpan') y no una fecha.");
             }
 
-            if (((dynamic)Expression.Lambda(bufferTimeAndSize).Compile().DynamicInvoke()).TimeSpanValue < TimeSpan.FromSeconds(1) || ((dynamic)Expression.Lambda(bufferTimeAndSize).Compile().DynamicInvoke()).TimeSpanValue > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
+            if (((dynamic)Expression.Lambda(bufferTimeAndSize).Compile().DynamicInvoke()).TimeSpanValue < TimeSpan.FromSeconds(0) || ((dynamic)Expression.Lambda(bufferTimeAndSize).Compile().DynamicInvoke()).TimeSpanValue > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
             {
                 throw new CompilationException("Error al compilar, el tamaño de la ventana debe ser mayor o igual a 1 y menor o igual a " + ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString() + ".");
             }

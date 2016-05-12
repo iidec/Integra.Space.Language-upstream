@@ -155,7 +155,7 @@
     <value>CE2: Invalid parameter.</value>
   </data>
   <data name="CE20" xml:space="preserve">
-    <value>CE20: Error in 'select' function.</value>
+    <value>CE20: Error in 'select for result' function.</value>
   </data>
   <data name="CE21" xml:space="preserve">
     <value>CE21: Error in 'select' function.</value>
@@ -345,6 +345,21 @@
   </data>
   <data name="CE8" xml:space="preserve">
     <value>CE8: Error in 'upper' function.</value>
+  </data>
+  <data name="CE81" xml:space="preserve">
+    <value>CE81: Error in observable create.</value>
+  </data>
+  <data name="CE82" xml:space="preserve">
+    <value>CE82: Error in subscription.</value>
+  </data>
+  <data name="CE83" xml:space="preserve">
+    <value>CE83: Error in observable timeout.</value>
+  </data>
+  <data name="CE84" xml:space="preserve">
+    <value>CE84: Error in observable catch.</value>
+  </data>
+  <data name="CE85" xml:space="preserve">
+    <value>CE85: Error in select for observable group by.</value>
   </data>
   <data name="CE9" xml:space="preserve">
     <value>CE9: Value type of function 'lower' must be string.</value>

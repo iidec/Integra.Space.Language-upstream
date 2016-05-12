@@ -169,7 +169,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CE20: Error in &apos;select&apos; function..
+        ///   Looks up a localized string similar to CE20: Error in &apos;select for result&apos; function..
         /// </summary>
         internal static string CE20 {
             get {
@@ -741,6 +741,51 @@ namespace Integra.Space.Language {
         internal static string CE8 {
             get {
                 return ResourceManager.GetString("CE8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE81: Error in observable create..
+        /// </summary>
+        internal static string CE81 {
+            get {
+                return ResourceManager.GetString("CE81", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE82: Error in subscription..
+        /// </summary>
+        internal static string CE82 {
+            get {
+                return ResourceManager.GetString("CE82", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE83: Error in observable timeout..
+        /// </summary>
+        internal static string CE83 {
+            get {
+                return ResourceManager.GetString("CE83", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE84: Error in observable catch..
+        /// </summary>
+        internal static string CE84 {
+            get {
+                return ResourceManager.GetString("CE84", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to CE85: Error in select for observable group by..
+        /// </summary>
+        internal static string CE85 {
+            get {
+                return ResourceManager.GetString("CE85", resourceCulture);
             }
         }
         

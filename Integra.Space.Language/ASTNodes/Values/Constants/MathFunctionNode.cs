@@ -63,7 +63,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(auxValue);
             this.result.NodeText = string.Format("{0}({1})", this.function, auxValue.NodeText);
-            this.result.Properties.Add("DataType", typeof(int));
+            this.result.Properties.Add("DataType", auxValue.Properties["DataType"]);
             this.result.NodeType = PlanNodeTypeEnum.MathFunctionWithOneParameter;
             this.result.Properties.Add("IsConstant", bool.Parse(auxValue.Properties["IsConstant"].ToString()));
 

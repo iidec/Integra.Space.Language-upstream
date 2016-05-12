@@ -530,33 +530,38 @@ namespace Integra.Space.Language.Runtime
         /// <returns>true if is numeric type</returns>
         private static Type ToPrimitiveNullable(Type type)
         {
-            switch (Type.GetTypeCode(type))
+            if (Nullable.GetUnderlyingType(type) != null)
             {
-                case TypeCode.Boolean:
-                case TypeCode.Char:
-                case TypeCode.SByte:
-                case TypeCode.Byte:
-                case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
-                case TypeCode.UInt16:
-                case TypeCode.UInt32:
-                case TypeCode.UInt64:
-                case TypeCode.Single:
-                case TypeCode.Double:
-                case TypeCode.Decimal:
-                case TypeCode.DateTime:
-                    return typeof(Nullable<>).MakeGenericType(type);
-                default:
-                    try
-                    {
-                        return typeof(Nullable<>).MakeGenericType(type);
-                    }
-                    catch (Exception e)
-                    {
-                        return type;
-                    }
+                return type;
             }
+            else
+            {
+                if (type.Equals(typeof(TimeSpan)))
+                {
+                    return typeof(Nullable<>).MakeGenericType(type);
+                }
+
+                switch (Type.GetTypeCode(type))
+                {
+                    case TypeCode.Boolean:
+                    case TypeCode.Char:
+                    case TypeCode.SByte:
+                    case TypeCode.Byte:
+                    case TypeCode.Int16:
+                    case TypeCode.Int32:
+                    case TypeCode.Int64:
+                    case TypeCode.UInt16:
+                    case TypeCode.UInt32:
+                    case TypeCode.UInt64:
+                    case TypeCode.Single:
+                    case TypeCode.Double:
+                    case TypeCode.Decimal:
+                    case TypeCode.DateTime:
+                        return typeof(Nullable<>).MakeGenericType(type);
+                    default:
+                        return type;
+                }
+            }          
         }
     }
 }

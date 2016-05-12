@@ -6,6 +6,7 @@ using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -1309,12 +1310,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
                                 "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
                                 "TIMEOUT '00:00:04' " +
-                                "WHERE  isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') <= '00:00:01' " +
-                                "SELECT  isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') as o1, " +
+                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') <= '00:00:01' " +
+                                "SELECT  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
                                         "1 as o2, " +
-                                        "isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') - isnull((DateTime?)null, (DateTime?)'01/01/2016') as o3, " +
-                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull((DateTime?)t1.@event.SourceTimestamp, (DateTime?)'01/01/2016') as ts1, " +
-                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull((DateTime?)t2.@event.SourceTimestamp, (DateTime?)'01/01/2017') as ts2 ";
+                                        "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SourceTimestamp, '01/01/2016') as ts1, " +
+                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
 
             EQLPublicParser parser = new EQLPublicParser(eql);
             PlanNode plan = parser.Evaluate().First();
@@ -1327,13 +1328,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10;
-            int limiteSuperiorOcurrenciaEventos = 20000;
+            int eventNumber = 10000;
+            int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 0;
             int timeout = 4000;
             int whereDifference = 1000;
+            bool evaluateMatchedEvents = true;
 
-            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage);
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
             Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
 
             //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
@@ -1428,7 +1430,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
                 .Select<Recorded<Notification<object>>, Tuple<string, string, string, string, string, string, TimeSpan>>(x =>
-                { 
+                {
                     dynamic rAux = ((dynamic)x.Value.Value);
                     return Tuple.Create<string, string, string, string, string, string, TimeSpan>(rAux.c1, rAux.c2, ((DateTime?)rAux.ts1).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.c3, rAux.c4, ((DateTime?)rAux.ts2).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.o1);
                 })
@@ -1441,7 +1443,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             actualResults.ForEach(x =>
             {
                 Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
-                
+
                 if (aux != null)
                 {
                     expectedResultsUpdated.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
@@ -1470,14 +1472,639 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
 
-            if(expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
+            if (expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
             {
                 Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
             }
 
             if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
             {
-                if (exactitudAlcanzada > tolerance)
+                if (exactitudAlcanzada == 100)
+                {
+                    return;
+                }
+                if (exactitudAlcanzada < (100 - tolerance))
+                {
+                    Assert.Fail("Tolerancia no alcanzada.");
+                }
+                else
+                {
+                    Assert.Inconclusive("Number of expected results is differ from number of actual results.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void CustomLoadTest2()
+        {
+            #region Compiler
+
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
+                                "TIMEOUT '00:00:04' " +
+                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') > '00:00:01' " +
+                                "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
+                                        "1 as o2, " +
+                                        "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SourceTimestamp, '01/01/2016') as ts1, " +
+                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            #endregion Compiler
+
+            decimal tolerance = 0.5M;
+            int eventNumber = 10000;
+            int limiteSuperiorOcurrenciaEventos = 10000;
+            int timeoutPercentage = 100;
+            int timeout = 4000;
+            int whereDifference = 1000;
+            bool evaluateMatchedEvents = false;
+
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
+            Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
+
+            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
+            Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
+            Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
+            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
+
+            #region Prints
+
+            int countLeft = 0;
+            int countRight = 0;
+            rqCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            System.Diagnostics.Debug.WriteLine("----------------------------------");
+
+            rsCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            #endregion Prints
+
+            List<Recorded<Notification<EventObject>>> rq = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rqCreated)
+            {
+                rq.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rq.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Solicitudes repetidas.");
+            }
+
+            List<Recorded<Notification<EventObject>>> rs = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rsCreated)
+            {
+                rs.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rs.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Respuestas repetidas.");
+            }
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(rq.ToArray());
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(rs.ToArray());
+
+            long maxTimeLeft = rqCreated.Max(x => x.Item2);
+            long maxTimeRight = rsCreated.Max(x => x.Item2);
+            long maxTime = maxTimeLeft > maxTimeRight ? maxTimeLeft : maxTimeRight;
+
+            Stopwatch swJoin = Stopwatch.StartNew();
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var b3 = a.GetType().GetProperty("c3");
+                        var b4 = a.GetType().GetProperty("c4");
+                        var b5 = a.GetType().GetProperty("ts1");
+                        var b6 = a.GetType().GetProperty("ts2");
+                        var b7 = a.GetType().GetProperty("o1");
+                        var b8 = a.GetType().GetProperty("o2");
+                        var b9 = a.GetType().GetProperty("o3");
+                        return (object)(new
+                        {
+                            o1 = b7.GetValue(a),
+                            o2 = b8.GetValue(a),
+                            o3 = b9.GetValue(a),
+                            ts1 = b5.GetValue(a),
+                            ts2 = b6.GetValue(a),
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a),
+                            c3 = b3.GetValue(a),
+                            c4 = b4.GetValue(a)
+                        });
+                    });
+                }
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                );
+
+            swJoin.Stop();
+            TimeSpan tiempoDelJoin = swJoin.Elapsed;
+
+            Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
+                .Select<Recorded<Notification<object>>, Tuple<string, string, string, string, string, string, TimeSpan>>(x =>
+                {
+                    dynamic rAux = ((dynamic)x.Value.Value);
+                    return Tuple.Create<string, string, string, string, string, string, TimeSpan>(rAux.c1, rAux.c2, ((DateTime?)rAux.ts1).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.c3, rAux.c4, ((DateTime?)rAux.ts2).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.o1);
+                })
+                .ToArray();
+
+            //helper.UpdateExpectedEventsMatchedFlag(actualResults);
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
+            actualResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciasActualResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item4, x.Item5, false));
+                }
+            });
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
+            expectedResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated2.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciaExpectedResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
+                }
+            });
+
+            decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
+
+            if (expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
+            {
+                Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
+            }
+
+            string report = $"Resultados actuales: {actualResults.Count()} eventos \n" +
+                                $"Resultados esperados: {expectedResults.Count()} eventos \n" +
+                                $"Coincidencias: {expectedResultsUpdated.Count()} eventos \n" +
+                                $"Diferencias entre resultados esperados y actuales: {diferenciaExpectedResults.Count} eventos \n" +
+                                $"Diferencias entre resultados actuales y esperados: {diferenciasActualResults.Count} eventos \n" +
+                                $"Exactitud alcanzada: {exactitudAlcanzada} % \n" +
+                                $"Duración de la prueba: {tiempoDelJoin}";
+
+            if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
+            {
+                if (exactitudAlcanzada == 100)
+                {
+                    return;
+                }
+                if (exactitudAlcanzada < (100 - tolerance))
+                {
+                    Assert.Fail("Tolerancia no alcanzada.\n" + report);
+                }
+                else
+                {
+                    Assert.Inconclusive("Number of expected results is differ from number of actual results.\n" + report);
+                }
+            }
+        }
+        
+        [TestMethod]
+        public void CustomLoadTest3()
+        {
+            #region Compiler
+
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
+                                "TIMEOUT '00:00:04' " +
+                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') > '00:00:01' " +
+                                "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
+                                        "1 as o2, " +
+                                        "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SourceTimestamp, '01/01/2016') as ts1, " +
+                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            #endregion Compiler
+
+            decimal tolerance = 0.5M;
+            int eventNumber = 10000;
+            int limiteSuperiorOcurrenciaEventos = 10000;
+            int timeoutPercentage = 15;
+            int timeout = 4000;
+            int whereDifference = 1000;
+            bool evaluateMatchedEvents = false;
+
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
+            Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
+
+            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
+            Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
+            Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
+            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
+
+            #region Prints
+
+            int countLeft = 0;
+            int countRight = 0;
+            rqCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            System.Diagnostics.Debug.WriteLine("----------------------------------");
+
+            rsCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            #endregion Prints
+
+            List<Recorded<Notification<EventObject>>> rq = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rqCreated)
+            {
+                rq.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rq.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Solicitudes repetidas.");
+            }
+
+            List<Recorded<Notification<EventObject>>> rs = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rsCreated)
+            {
+                rs.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rs.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Respuestas repetidas.");
+            }
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(rq.ToArray());
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(rs.ToArray());
+
+            long maxTimeLeft = rqCreated.Max(x => x.Item2);
+            long maxTimeRight = rsCreated.Max(x => x.Item2);
+            long maxTime = maxTimeLeft > maxTimeRight ? maxTimeLeft : maxTimeRight;
+
+            Stopwatch swJoin = Stopwatch.StartNew();
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var b3 = a.GetType().GetProperty("c3");
+                        var b4 = a.GetType().GetProperty("c4");
+                        var b5 = a.GetType().GetProperty("ts1");
+                        var b6 = a.GetType().GetProperty("ts2");
+                        var b7 = a.GetType().GetProperty("o1");
+                        var b8 = a.GetType().GetProperty("o2");
+                        var b9 = a.GetType().GetProperty("o3");
+                        return (object)(new
+                        {
+                            o1 = b7.GetValue(a),
+                            o2 = b8.GetValue(a),
+                            o3 = b9.GetValue(a),
+                            ts1 = b5.GetValue(a),
+                            ts2 = b6.GetValue(a),
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a),
+                            c3 = b3.GetValue(a),
+                            c4 = b4.GetValue(a)
+                        });
+                    });
+                }
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                );
+
+            swJoin.Stop();
+            TimeSpan tiempoDelJoin = swJoin.Elapsed;
+
+            Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
+                .Select<Recorded<Notification<object>>, Tuple<string, string, string, string, string, string, TimeSpan>>(x =>
+                {
+                    dynamic rAux = ((dynamic)x.Value.Value);
+                    return Tuple.Create<string, string, string, string, string, string, TimeSpan>(rAux.c1, rAux.c2, ((DateTime?)rAux.ts1).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.c3, rAux.c4, ((DateTime?)rAux.ts2).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.o1);
+                })
+                .ToArray();
+
+            //helper.UpdateExpectedEventsMatchedFlag(actualResults);
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
+            actualResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciasActualResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item4, x.Item5, false));
+                }
+            });
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
+            expectedResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated2.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciaExpectedResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
+                }
+            });
+
+            decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
+
+            if (expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
+            {
+                Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
+            }
+
+            string report = $"Resultados actuales: {actualResults.Count()} eventos \n" +
+                                $"Resultados esperados: {expectedResults.Count()} eventos \n" +
+                                $"Coincidencias: {expectedResultsUpdated.Count()} eventos \n" +
+                                $"Diferencias entre resultados esperados y actuales: {diferenciaExpectedResults.Count} eventos \n" +
+                                $"Diferencias entre resultados actuales y esperados: {diferenciasActualResults.Count} eventos \n" +
+                                $"Exactitud alcanzada: {exactitudAlcanzada} % \n" +
+                                $"Duración de la prueba: {tiempoDelJoin}";
+
+            if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
+            {
+                if (exactitudAlcanzada == 100)
+                {
+                    return;
+                }
+                if (exactitudAlcanzada < (100 - tolerance))
+                {
+                    Assert.Fail("Tolerancia no alcanzada.");
+                }
+                else
+                {
+                    Assert.Inconclusive("Number of expected results is differ from number of actual results.");
+                }
+            }
+        }
+
+        [TestMethod]
+        public void CustomLoadTest4()
+        {
+            #region Compiler
+
+            string eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
+                                "TIMEOUT '00:00:04' " +
+                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') <= '00:00:01' " +
+                                "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
+                                        "1 as o2, " +
+                                        "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SourceTimestamp, '01/01/2016') as ts1, " +
+                                        "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
+
+            EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
+
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+
+            #endregion Compiler
+
+            decimal tolerance = 0.5M;
+            int eventNumber = 10000;
+            int limiteSuperiorOcurrenciaEventos = 10000;
+            int timeoutPercentage = 15;
+            int timeout = 4000;
+            int whereDifference = 1000;
+            bool evaluateMatchedEvents = true;
+
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
+            Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
+
+            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
+            Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
+            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
+            Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
+            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
+
+            #region Prints
+
+            int countLeft = 0;
+            int countRight = 0;
+            rqCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            System.Diagnostics.Debug.WriteLine("----------------------------------");
+
+            rsCreated.ForEach(x =>
+            {
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+            });
+
+            #endregion Prints
+
+            List<Recorded<Notification<EventObject>>> rq = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rqCreated)
+            {
+                rq.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rq.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Solicitudes repetidas.");
+            }
+
+            List<Recorded<Notification<EventObject>>> rs = new List<Recorded<Notification<EventObject>>>();
+            foreach (Tuple<EventObject, long> t in rsCreated)
+            {
+                rs.Add(OnNext<EventObject>(t.Item2, t.Item1));
+            }
+
+            if (rs.Distinct().Count() < eventNumber)
+            {
+                throw new Exception("Respuestas repetidas.");
+            }
+
+            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(rq.ToArray());
+            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(rs.ToArray());
+
+            long maxTimeLeft = rqCreated.Max(x => x.Item2);
+            long maxTimeRight = rsCreated.Max(x => x.Item2);
+            long maxTime = maxTimeLeft > maxTimeRight ? maxTimeLeft : maxTimeRight;
+
+            Stopwatch swJoin = Stopwatch.StartNew();
+
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () =>
+                {
+                    return result(input1, input2)
+                    .Select(x =>
+                    {
+                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                        var b1 = a.GetType().GetProperty("c1");
+                        var b2 = a.GetType().GetProperty("c2");
+                        var b3 = a.GetType().GetProperty("c3");
+                        var b4 = a.GetType().GetProperty("c4");
+                        var b5 = a.GetType().GetProperty("ts1");
+                        var b6 = a.GetType().GetProperty("ts2");
+                        var b7 = a.GetType().GetProperty("o1");
+                        var b8 = a.GetType().GetProperty("o2");
+                        var b9 = a.GetType().GetProperty("o3");
+                        return (object)(new
+                        {
+                            o1 = b7.GetValue(a),
+                            o2 = b8.GetValue(a),
+                            o3 = b9.GetValue(a),
+                            ts1 = b5.GetValue(a),
+                            ts2 = b6.GetValue(a),
+                            c1 = b1.GetValue(a),
+                            c2 = b2.GetValue(a),
+                            c3 = b3.GetValue(a),
+                            c4 = b4.GetValue(a)
+                        });
+                    });
+                }
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
+                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                );
+
+            swJoin.Stop();
+            TimeSpan tiempoDelJoin = swJoin.Elapsed;
+
+            Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
+                .Select<Recorded<Notification<object>>, Tuple<string, string, string, string, string, string, TimeSpan>>(x =>
+                {
+                    dynamic rAux = ((dynamic)x.Value.Value);
+                    return Tuple.Create<string, string, string, string, string, string, TimeSpan>(rAux.c1, rAux.c2, ((DateTime?)rAux.ts1).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.c3, rAux.c4, ((DateTime?)rAux.ts2).Value.ToString("yyyy/MM/dd hh:mm:ss.ffff"), rAux.o1);
+                })
+                .ToArray();
+
+            //helper.UpdateExpectedEventsMatchedFlag(actualResults);
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
+            actualResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciasActualResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item4, x.Item5, false));
+                }
+            });
+
+            List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
+            List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
+            expectedResults.ForEach(x =>
+            {
+                Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
+
+                if (aux != null)
+                {
+                    expectedResultsUpdated2.Add(Tuple.Create(aux.Item1, aux.Item2, aux.Item3, aux.Item4, true));
+                }
+                else
+                {
+                    diferenciaExpectedResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
+                }
+            });
+
+            decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
+
+            if (expectedResultsUpdated.Count != expectedResultsUpdated2.Count)
+            {
+                Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
+            }
+
+            string report = $"Resultados actuales: {actualResults.Count()} eventos \n" +
+                                $"Resultados esperados: {expectedResults.Count()} eventos \n" +
+                                $"Coincidencias: {expectedResultsUpdated.Count()} eventos \n" +
+                                $"Diferencias entre resultados esperados y actuales: {diferenciaExpectedResults.Count} eventos \n" +
+                                $"Diferencias entre resultados actuales y esperados: {diferenciasActualResults.Count} eventos \n" +
+                                $"Exactitud alcanzada: {exactitudAlcanzada} % \n" +
+                                $"Duración de la prueba: {tiempoDelJoin}";
+
+            if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
+            {
+                if (exactitudAlcanzada == 100)
+                {
+                    return;
+                }
+                if (exactitudAlcanzada < (100 - tolerance))
                 {
                     Assert.Fail("Tolerancia no alcanzada.");
                 }
@@ -1582,7 +2209,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             int eventNumber = 10;
 
-            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, 4000, 1000, 20000, 100);
+            LoadTestsHelper helper = new LoadTestsHelper(eventNumber, 4000, 1000, 20000, 100, true);
             Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
 
             //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");

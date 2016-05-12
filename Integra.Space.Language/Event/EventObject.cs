@@ -182,7 +182,7 @@ namespace Integra.Space
                 if (System.Threading.Interlocked.Decrement(ref this.refcount) == 0)
                 {
                     this.message.Dispose();
-                    this.queries = null;
+                    this.queries.ToArray().Clear();
                 }
             }
         }

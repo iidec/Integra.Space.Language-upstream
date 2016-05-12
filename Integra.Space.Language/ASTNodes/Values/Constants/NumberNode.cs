@@ -34,7 +34,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.NodeText = treeNode.Token.Text;
             this.result.NodeType = PlanNodeTypeEnum.Constant;
             this.result.Properties.Add("Value", treeNode.Token.Value);
-            this.result.Properties.Add("DataType", treeNode.Token.Value.GetType().ToString());
+            this.result.Properties.Add("DataType", treeNode.Token.Value.GetType());
             this.result.Properties.Add("IsConstant", true);
         }
 

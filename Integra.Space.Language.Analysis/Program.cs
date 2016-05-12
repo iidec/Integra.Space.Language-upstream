@@ -16,7 +16,7 @@ namespace Integra.Space.Language.Analysis
         static void Main(string[] args)
         {
             string finish = "";
-
+            
             Console.WriteLine("[1] for graph, [2] for generate metadata");
             string option = Console.ReadLine();
             //option = "2";
@@ -31,6 +31,10 @@ namespace Integra.Space.Language.Analysis
                         CreateDirectory();
                         Console.WriteLine("Write a EQL command or press enter");
                         Console.WriteLine();
+
+                        int bufSize = 1024;
+                        Stream inStream = Console.OpenStandardInput(bufSize);
+                        Console.SetIn(new StreamReader(inStream, Console.InputEncoding, false, bufSize));
                         string eql = Console.ReadLine();
                         Console.WriteLine("Creating execution plan...");
 

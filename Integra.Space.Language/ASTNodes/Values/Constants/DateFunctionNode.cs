@@ -64,7 +64,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(auxDate);
             this.result.NodeText = string.Format("{0}({1})", this.function, auxDate.NodeText);
-            this.result.Properties.Add("DataType", typeof(int));
+            this.result.Properties.Add("DataType", typeof(int?));
             this.result.NodeType = PlanNodeTypeEnum.DateTimeFunction;
             this.result.Properties.Add("IsConstant", bool.Parse(auxDate.Properties["IsConstant"].ToString()));
 

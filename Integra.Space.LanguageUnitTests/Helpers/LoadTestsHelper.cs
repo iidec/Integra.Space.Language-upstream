@@ -20,6 +20,8 @@ namespace Integra.Space.LanguageUnitTests.Helpers
         private const long MAX_TIMEOUT = 100000000; // TimeSpan.FromSeconds(10).Ticks;
         private long maxLimitTimeTest;
         private long timeout;
+        private bool evaluateMatchedEvents;
+        private List<Tuple<string, string, string, string, bool>> expectedResults;
 
         #region Randoms
 
@@ -51,7 +53,7 @@ namespace Integra.Space.LanguageUnitTests.Helpers
         /// <param name="eventLifeTime">Timeout in events in milliseconds.</param>
         /// <param name="maxLimitTimeTest">Limit maximum test duration in milliseconds.</param>
         /// <param name="porcentajeTimeouts">Timeouts percentage.</param>
-        public LoadTestsHelper(int cantEventos, int eventLifeTime, int timeout, int maxLimitTimeTest, int porcentajeTimeouts)
+        public LoadTestsHelper(int cantEventos, int eventLifeTime, int timeout, int maxLimitTimeTest, int porcentajeTimeouts, bool evaluateMatchedEvents)
         {
             Contract.Requires(cantEventos > 0);
             Contract.Requires(eventLifeTime > 0 && eventLifeTime <= MAX_TIMEOUT && eventLifeTime < maxLimitTimeTest);
@@ -64,6 +66,8 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             this.timeout = TimeSpan.FromMilliseconds(timeout).Ticks;
             this.maxLimitTimeTest = TimeSpan.FromMilliseconds(maxLimitTimeTest - eventLifeTime).Ticks;
             this.porcentajeTimeouts = porcentajeTimeouts;
+            this.evaluateMatchedEvents = evaluateMatchedEvents;
+            this.expectedResults = new List<Tuple<string, string, string, string, bool>>();
         }
 
         #region Private methods
@@ -95,7 +99,7 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             long lowerLimit = TimeSpan.FromMilliseconds(1000).Ticks;
             List<Tuple<EventObject, long>> rq = new List<Tuple<EventObject, long>>();
             List<Tuple<EventObject, long>> rs = new List<Tuple<EventObject, long>>();
-            List<Tuple<string, string, string, string, bool>> expectedResults = new List<Tuple<string, string, string, string, bool>>();
+            //List<Tuple<string, string, string, string, bool>> expectedResults = new List<Tuple<string, string, string, string, bool>>();
             Random rand = new Random();
 
             for (int i = 0; i < matches; i++)
@@ -105,21 +109,23 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 long timeToAdd = this.LongRandom(0, this.maxLimitTimeTest, rand);
 
                 // requests
-                long relativeTimeRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
+                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
+                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
                 rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, rqSystemTimestamp), relativeTimeRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                long relativeTimeRs = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
+                long relativeSystemTimestampRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
+                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
                 rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, rsSystemTimestamp), relativeTimeRs));
 
-                if (Math.Abs(relativeTimeRs - relativeTimeRq) >= this.timeout)
+                if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) >= this.timeout)
                 {
                     throw new Exception("Diferencia inválida en eventos que deben coincidir.");
                 }
 
-                expectedResults.Add(Tuple.Create(tarjeta, referencia, tarjeta, referencia, false));
+                this.AddToExpectedResults(true, tarjeta, referencia, tarjeta, referencia);
             }
 
             for (int i = 0; i < timeouts; i++)
@@ -129,57 +135,69 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 long timeToAdd = this.LongRandom(0, this.maxLimitTimeTest, rand);
 
                 // requests
-                long relativeTimeRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
+                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
+                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
                 rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, auxNowRq), relativeTimeRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(this.timeout + this.timeout, this.timeout + this.timeout + MAX_TIMEOUT, rand) + timeToAdd;
+                long relativeTimeRs = this.LongRandom(this.timeout + 100 /* mas 100 milisegundos */, this.eventLifeTime + MAX_TIMEOUT, rand) + timeToAdd;
+                long relativeSystemTimestampRs = this.LongRandom(relativeSystemTimestampRq + this.timeout + TimeSpan.FromMilliseconds(100).Ticks /* mas 100 milisegundos */, relativeSystemTimestampRq + this.timeout + MAX_TIMEOUT, rand) + timeToAdd;
 
-                //relativeTimeRs = relativeTimeRs > this.maxLimitTimeTest ? relativeTimeRs - (relativeTimeRs - this.maxLimitTimeTest) : relativeTimeRs;
-
-                if (relativeTimeRs - relativeTimeRq < 0 || Math.Abs(relativeTimeRs - relativeTimeRq) <= this.timeout)
-                {
-                    throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
-                }
-
-                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
                 rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, auxNowRs), relativeTimeRs));
 
-                if (auxNowRs - auxNowRq < TimeSpan.FromSeconds(0) || auxNowRs - auxNowRq <= TimeSpan.FromTicks(this.timeout))
+                if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) <= this.timeout)
                 {
                     throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
                 }
 
-                if (auxNowRs.Subtract(auxNowRq) <= TimeSpan.FromTicks(this.eventLifeTime))
+                //if (auxNowRs.Subtract(auxNowRq) < TimeSpan.FromSeconds(0) || auxNowRs.Subtract(auxNowRq) <= TimeSpan.FromTicks(this.timeout))
+                //{
+                //    throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
+                //}
+
+                if (relativeTimeRs - relativeTimeRq <= this.eventLifeTime)
                 {
-                    expectedResults.Add(Tuple.Create(tarjeta, referencia, tarjeta, referencia, false));
+
+                    this.AddToExpectedResults(false, tarjeta, referencia, tarjeta, referencia);
                 }
                 else
                 {
                     if (joinType.Equals(JoinTypeEnum.Cross))
                     {
-                        expectedResults.Add(Tuple.Create<string, string, string, string, bool>(tarjeta, referencia, null, null, false));
-                        expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, tarjeta, referencia, false));
+                        // expectedResults.Add(Tuple.Create<string, string, string, string, bool>(tarjeta, referencia, null, null, false));
+                        this.AddToExpectedResults(false, tarjeta, referencia, null, null);
+                        //expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, tarjeta, referencia, false));
+                        this.AddToExpectedResults(false, null, null, tarjeta, referencia);
                     }
                     else if (joinType.Equals(JoinTypeEnum.Inner))
                     {
-                        expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, null, null, false));
+                        //expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, null, null, false));
+                        this.AddToExpectedResults(false, null, null, null, null);
                     }
                     else if (joinType.Equals(JoinTypeEnum.Left))
                     {
-                        expectedResults.Add(Tuple.Create<string, string, string, string, bool>(tarjeta, referencia, null, null, false));
+                        //expectedResults.Add(Tuple.Create<string, string, string, string, bool>(tarjeta, referencia, null, null, false));
+                        this.AddToExpectedResults(false, tarjeta, referencia, null, null);
                     }
                     else if (joinType.Equals(JoinTypeEnum.Right))
                     {
-                        expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, tarjeta, referencia, false));
+                        //expectedResults.Add(Tuple.Create<string, string, string, string, bool>(null, null, tarjeta, referencia, false));
+                        this.AddToExpectedResults(false, null, null, tarjeta, referencia);
                     }
                 }
-
-                Thread.Sleep(10);
             }
 
             return Tuple.Create(rq.ToArray(), rs.ToArray(), expectedResults.ToArray());
+        }
+
+        private void AddToExpectedResults(bool fromMatched, string l1, string l2, string r1, string r2)
+        {
+            if (this.evaluateMatchedEvents == fromMatched)
+            {
+                this.expectedResults.Add(Tuple.Create<string, string, string, string, bool>(l1, l2, r1, r2, false));
+            }
         }
 
         private string GenerateVisaRetrievalReferenceNumber(DateTime date)

@@ -20,9 +20,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(2014, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(2014, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -36,9 +36,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(1, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(1, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -52,9 +52,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(2, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(2, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -67,9 +67,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(1, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(1, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -82,9 +82,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(10, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(10, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -97,9 +97,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(10, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(10, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -112,9 +112,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(2, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(2, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -127,9 +127,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(11, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(11, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -142,9 +142,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(10, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(10, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -157,9 +157,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(12, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(12, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -172,9 +172,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(12, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(12, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -187,9 +187,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(30, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(30, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -202,9 +202,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(100, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(100, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -217,9 +217,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(100, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(100, result(), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>
@@ -232,9 +232,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int?> result = te.Compile<int?>(plan);
 
-            Assert.AreEqual<int>(600, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(600, result(), "El plan obtenido difiere del plan esperado.");
         }
     }
 }

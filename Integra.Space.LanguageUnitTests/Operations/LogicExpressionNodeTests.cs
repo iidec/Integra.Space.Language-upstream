@@ -249,14 +249,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.GetType().GetProperty("resultado").GetValue(x).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(x.GetType().GetProperty("resultado").GetValue(x).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -280,15 +280,15 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(100, Notification.CreateOnNext<bool?>(true)),
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -312,15 +312,15 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(100, Notification.CreateOnNext<bool?>(true)),
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -344,15 +344,15 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(100, Notification.CreateOnNext<bool?>(true)),
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -376,14 +376,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -407,15 +407,15 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(100, Notification.CreateOnNext<bool?>(true)),
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -439,14 +439,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -470,15 +470,15 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(100, Notification.CreateOnNext<bool?>(true)),
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -502,14 +502,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -533,14 +533,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
@@ -564,14 +564,14 @@ namespace Integra.Space.LanguageUnitTests.Operations
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
+            ITestableObserver<bool?> results = scheduler.Start(
+                () => result(input.AsQbservable()).Select(x => (bool?)bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool?>>[] {
+                    new Recorded<Notification<bool?>>(200, Notification.CreateOnCompleted<bool?>())
                 });
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
