@@ -142,19 +142,19 @@
     <comment>CreateEnumerableSum</comment>
   </data>
   <data name="RE15" xml:space="preserve">
-    <value>RE15: Error with 'apply window of' function.</value>
+    <value>RE15: Error with 'observable buffer' function.</value>
     <comment>CreateObservableBuffer</comment>
   </data>
   <data name="RE16" xml:space="preserve">
-    <value>RE16: Error with 'top' function.</value>
+    <value>RE16: Error with 'take' function.</value>
     <comment>CreateObservableTake</comment>
   </data>
   <data name="RE17" xml:space="preserve">
-    <value>RE17: Error with 'top' function.</value>
+    <value>RE17: Error with 'enumerable take' function.</value>
     <comment>CreateEnumerableTake</comment>
   </data>
   <data name="RE18" xml:space="preserve">
-    <value>RE18: Error with observable buffer with time and size</value>
+    <value>RE18: Error with observable buffer with time and size.</value>
     <comment>CreateObservableBufferTimeAndSize</comment>
   </data>
   <data name="RE19" xml:space="preserve">
@@ -170,15 +170,15 @@
     <comment>CreateSelectForEnumerableGroupBy</comment>
   </data>
   <data name="RE21" xml:space="preserve">
-    <value>RE21: Error with 'select' function.</value>
+    <value>RE21: Error with 'select for observable buffer or source' function where right expression is a lambda expression.</value>
     <comment> CreateSelectForObservableBufferOrSource creando un lambda en la proyección</comment>
   </data>
   <data name="RE22" xml:space="preserve">
-    <value>RE22: Error with 'select' function.</value>
+    <value>RE22: Error with 'select for observable buffer or source' function where right expression is not a lambda expression.</value>
     <comment>CreateSelectForObservableBufferOrSource con una expresion en la proyección </comment>
   </data>
   <data name="RE23" xml:space="preserve">
-    <value>RE23: Error with 'select' function.</value>
+    <value>RE23: Error with 'enumerable select' function.</value>
     <comment>CreateSelectForEnumerable</comment>
   </data>
   <data name="RE24" xml:space="preserve">
@@ -317,11 +317,59 @@
   <data name="RE64" xml:space="preserve">
     <value>RE64: Error in 'abs' function.</value>
   </data>
+  <data name="RE65" xml:space="preserve">
+    <value>RE65: Error with observable never.</value>
+  </data>
+  <data name="RE66" xml:space="preserve">
+    <value>RE66: Error with observable empty.</value>
+  </data>
+  <data name="RE67" xml:space="preserve">
+    <value>RE67: Error with observable timeout.</value>
+  </data>
+  <data name="RE68" xml:space="preserve">
+    <value>RE68: Error in observable catch.</value>
+  </data>
+  <data name="RE69" xml:space="preserve">
+    <value>RE69: Error in enumerable join.</value>
+  </data>
   <data name="RE7" xml:space="preserve">
     <value />
   </data>
+  <data name="RE70" xml:space="preserve">
+    <value>RE70: Error in observable join.</value>
+  </data>
+  <data name="RE71" xml:space="preserve">
+    <value>RE71: Error in observable plublish.</value>
+  </data>
+  <data name="RE72" xml:space="preserve">
+    <value>RE72: Error in observable refcount.</value>
+  </data>
+  <data name="RE73" xml:space="preserve">
+    <value>RE73: Error in observable create.</value>
+  </data>
+  <data name="RE74" xml:space="preserve">
+    <value>RE74: Error in observable subscribe.</value>
+  </data>
+  <data name="RE75" xml:space="preserve">
+    <value>RE75: Error in ObserveOn.</value>
+  </data>
+  <data name="RE76" xml:space="preserve">
+    <value>RE76: Error in SubscribeOn.</value>
+  </data>
+  <data name="RE77" xml:space="preserve">
+    <value>RE77: Error with select for query result.</value>
+  </data>
+  <data name="RE78" xml:space="preserve">
+    <value>RE78: Error calling Lock method of the event.</value>
+  </data>
+  <data name="RE79" xml:space="preserve">
+    <value>RE79: Error with enumerable where.</value>
+  </data>
   <data name="RE8" xml:space="preserve">
     <value />
+  </data>
+  <data name="RE80" xml:space="preserve">
+    <value>RE80: Error with join projection.</value>
   </data>
   <data name="RE9" xml:space="preserve">
     <value />

@@ -1322,13 +1322,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf, DebugMode = false });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 10;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 0;
             int timeout = 4000;
@@ -1502,7 +1502,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             string eql = "cross " +
                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
-                                "ON t1.@event.Message.#1.#0 == t2.@event.Message.#1.#0 and t1.@event.Message.#1.#1 == t2.@event.Message.#1.#1 " +
+                                "ON (string)t1.@event.Message.#1.#0 == (string)t2.@event.Message.#1.#0 and (string)t1.@event.Message.#1.#1 == (string)t2.@event.Message.#1.#1 " +
                                 "TIMEOUT '00:00:04' " +
                                 "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') > '00:00:01' " +
                                 "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
@@ -1516,18 +1516,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
+            bool printLog = false;
+            bool debugMode = false;
+
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 10;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 100;
             int timeout = 4000;
             int whereDifference = 1000;
             bool evaluateMatchedEvents = false;
+
+            string premisas = $"PrintLog: {printLog} \nDebugMode: {debugMode} \nTolerancia: {tolerance} \nNumero de eventos: {eventNumber} eventos \nLimite superior ocurrencia de eventos: {limiteSuperiorOcurrenciaEventos} ms " +
+                                $"\nPorcentaje de timeouts: {timeoutPercentage} % \nTimeout: {timeout} ms \nTimestamp condición en where: {whereDifference} ms \nEvaluar eventos coincidentes: {evaluateMatchedEvents}";
 
             LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
             Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
@@ -1621,7 +1627,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 }
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
-                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                , maxTime + TimeSpan.FromSeconds(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
                 );
 
             swJoin.Stop();
@@ -1676,13 +1682,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
             }
 
-            string report = $"Resultados actuales: {actualResults.Count()} eventos \n" +
+            string report = $"{premisas} " +
+                                $"\n\nDuración de la prueba: {tiempoDelJoin} \n" +
+                                $"Resultados actuales: {actualResults.Count()} eventos \n" +
                                 $"Resultados esperados: {expectedResults.Count()} eventos \n" +
                                 $"Coincidencias: {expectedResultsUpdated.Count()} eventos \n" +
                                 $"Diferencias entre resultados esperados y actuales: {diferenciaExpectedResults.Count} eventos \n" +
                                 $"Diferencias entre resultados actuales y esperados: {diferenciasActualResults.Count} eventos \n" +
-                                $"Exactitud alcanzada: {exactitudAlcanzada} % \n" +
-                                $"Duración de la prueba: {tiempoDelJoin}";
+                                $"Exactitud alcanzada: {exactitudAlcanzada} % \n";
 
             if (expectedResults.Where(x => x.Item5 == false).Count() > 0)
             {
@@ -1729,7 +1736,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 10;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 15;
             int timeout = 4000;
@@ -1936,7 +1943,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 10;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 15;
             int timeout = 4000;
@@ -2117,7 +2124,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
         #endregion Custom load tests
 
-        [TestMethod]
+        //[TestMethod]
         public void OtherTestWithJoin_1()
         {
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();

@@ -115,7 +115,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE15: Error with &apos;apply window of&apos; function..
+        ///   Looks up a localized string similar to RE15: Error with &apos;observable buffer&apos; function..
         /// </summary>
         internal static string RE15 {
             get {
@@ -124,7 +124,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE16: Error with &apos;top&apos; function..
+        ///   Looks up a localized string similar to RE16: Error with &apos;take&apos; function..
         /// </summary>
         internal static string RE16 {
             get {
@@ -133,7 +133,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE17: Error with &apos;top&apos; function..
+        ///   Looks up a localized string similar to RE17: Error with &apos;enumerable take&apos; function..
         /// </summary>
         internal static string RE17 {
             get {
@@ -142,7 +142,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE18: Error with observable buffer with time and size.
+        ///   Looks up a localized string similar to RE18: Error with observable buffer with time and size..
         /// </summary>
         internal static string RE18 {
             get {
@@ -178,7 +178,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE21: Error with &apos;select&apos; function..
+        ///   Looks up a localized string similar to RE21: Error with &apos;select for observable buffer or source&apos; function where right expression is a lambda expression..
         /// </summary>
         internal static string RE21 {
             get {
@@ -187,7 +187,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE22: Error with &apos;select&apos; function..
+        ///   Looks up a localized string similar to RE22: Error with &apos;select for observable buffer or source&apos; function where right expression is not a lambda expression..
         /// </summary>
         internal static string RE22 {
             get {
@@ -196,7 +196,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE23: Error with &apos;select&apos; function..
+        ///   Looks up a localized string similar to RE23: Error with &apos;enumerable select&apos; function..
         /// </summary>
         internal static string RE23 {
             get {
@@ -601,6 +601,51 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE65: Error with observable never..
+        /// </summary>
+        internal static string RE65 {
+            get {
+                return ResourceManager.GetString("RE65", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE66: Error with observable empty..
+        /// </summary>
+        internal static string RE66 {
+            get {
+                return ResourceManager.GetString("RE66", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE67: Error with observable timeout..
+        /// </summary>
+        internal static string RE67 {
+            get {
+                return ResourceManager.GetString("RE67", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE68: Error in observable catch..
+        /// </summary>
+        internal static string RE68 {
+            get {
+                return ResourceManager.GetString("RE68", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE69: Error in enumerable join..
+        /// </summary>
+        internal static string RE69 {
+            get {
+                return ResourceManager.GetString("RE69", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE7 {
@@ -610,11 +655,110 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE70: Error in observable join..
+        /// </summary>
+        internal static string RE70 {
+            get {
+                return ResourceManager.GetString("RE70", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE71: Error in observable plublish..
+        /// </summary>
+        internal static string RE71 {
+            get {
+                return ResourceManager.GetString("RE71", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE72: Error in observable refcount..
+        /// </summary>
+        internal static string RE72 {
+            get {
+                return ResourceManager.GetString("RE72", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE73: Error in observable create..
+        /// </summary>
+        internal static string RE73 {
+            get {
+                return ResourceManager.GetString("RE73", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE74: Error in observable subscribe..
+        /// </summary>
+        internal static string RE74 {
+            get {
+                return ResourceManager.GetString("RE74", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE75: Error in ObserveOn..
+        /// </summary>
+        internal static string RE75 {
+            get {
+                return ResourceManager.GetString("RE75", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE76: Error in SubscribeOn..
+        /// </summary>
+        internal static string RE76 {
+            get {
+                return ResourceManager.GetString("RE76", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE77: Error with select for query result..
+        /// </summary>
+        internal static string RE77 {
+            get {
+                return ResourceManager.GetString("RE77", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE78: Error calling Lock method of the event..
+        /// </summary>
+        internal static string RE78 {
+            get {
+                return ResourceManager.GetString("RE78", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE79: Error with enumerable where..
+        /// </summary>
+        internal static string RE79 {
+            get {
+                return ResourceManager.GetString("RE79", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE8 {
             get {
                 return ResourceManager.GetString("RE8", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RE80: Error with join projection..
+        /// </summary>
+        internal static string RE80 {
+            get {
+                return ResourceManager.GetString("RE80", resourceCulture);
             }
         }
         

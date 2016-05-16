@@ -23,9 +23,30 @@ namespace Integra.Space.Language.Runtime
         private System.Type observerType;
 
         /// <summary>
+        /// Indicates whether the compilation must be in debug mode.
+        /// </summary>
+        private bool debugMode = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether the print log is activated.
         /// </summary>
         public bool PrintLog { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the compilation will be in debug mode.
+        /// </summary>
+        public bool DebugMode
+        {
+            get
+            {
+                return this.debugMode;
+            }
+
+            set
+            {
+                this.debugMode = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the query name.
