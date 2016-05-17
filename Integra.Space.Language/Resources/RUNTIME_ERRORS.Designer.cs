@@ -763,6 +763,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE81: Error with &apos;isnull&apos; function..
+        /// </summary>
+        internal static string RE81 {
+            get {
+                return ResourceManager.GetString("RE81", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE9 {

@@ -1525,7 +1525,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10;
+            int eventNumber = 10000;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 100;
             int timeout = 4000;
