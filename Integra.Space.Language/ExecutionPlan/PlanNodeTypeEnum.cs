@@ -745,7 +745,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Enumerable to observable type
         /// </summary>
-        EnumerableToObservable = 625,
+        EnumerableToObservable = 627,
 
         /// <summary>
         /// New Scope type

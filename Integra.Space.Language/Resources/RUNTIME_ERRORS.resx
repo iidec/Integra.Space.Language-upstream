@@ -162,11 +162,11 @@
     <comment>CreateObservableWhere</comment>
   </data>
   <data name="RE2" xml:space="preserve">
-    <value>RE2: Error with 'select' function.</value>
+    <value>RE2: Error with 'select for observable group by' function.</value>
     <comment>CreateSelectForObservableGroupBy</comment>
   </data>
   <data name="RE20" xml:space="preserve">
-    <value>RE20: Error with 'select' function.</value>
+    <value>RE20: Error with 'select for enumerable group by' function.</value>
     <comment>CreateSelectForEnumerableGroupBy</comment>
   </data>
   <data name="RE21" xml:space="preserve">

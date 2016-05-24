@@ -1513,27 +1513,30 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             EQLPublicParser parser = new EQLPublicParser(eql);
             PlanNode plan = parser.Evaluate().First();
-
+            
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             bool printLog = false;
             bool debugMode = false;
+            bool measureElapsedTime = false;
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 100;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 100;
             int timeout = 4000;
             int whereDifference = 1000;
             bool evaluateMatchedEvents = false;
 
-            string premisas = $"PrintLog: {printLog} \nDebugMode: {debugMode} \nTolerancia: {tolerance} \nNumero de eventos: {eventNumber} eventos \nLimite superior ocurrencia de eventos: {limiteSuperiorOcurrenciaEventos} ms " +
-                                $"\nPorcentaje de timeouts: {timeoutPercentage} % \nTimeout: {timeout} ms \nTimestamp condición en where: {whereDifference} ms \nEvaluar eventos coincidentes: {evaluateMatchedEvents}";
+            string premisas = $"PrintLog: {printLog} \nDebugMode: {debugMode} \nMeasureElapsedTime: {measureElapsedTime} \nTolerancia: {tolerance} \nNumero de eventos: {eventNumber} eventos \nLimite superior ocurrencia de eventos: {limiteSuperiorOcurrenciaEventos} ms " +
+                                $"\nPorcentaje de timeouts: {timeoutPercentage} % \nTimeout: {timeout} ms \nTimestamp condición en where: {whereDifference} ms \nEvaluar eventos coincidentes: {evaluateMatchedEvents} " +
+                                $"\nBuffer actual: {System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]} " +
+                                $"\nTamaño máximo del buffer: {System.Configuration.ConfigurationManager.AppSettings["MaxWindowSize"]}";
 
             LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
             Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);

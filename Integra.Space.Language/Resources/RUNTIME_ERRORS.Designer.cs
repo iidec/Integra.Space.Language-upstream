@@ -160,7 +160,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE2: Error with &apos;select&apos; function..
+        ///   Looks up a localized string similar to RE2: Error with &apos;select for observable group by&apos; function..
         /// </summary>
         internal static string RE2 {
             get {
@@ -169,7 +169,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to RE20: Error with &apos;select&apos; function..
+        ///   Looks up a localized string similar to RE20: Error with &apos;select for enumerable group by&apos; function..
         /// </summary>
         internal static string RE20 {
             get {

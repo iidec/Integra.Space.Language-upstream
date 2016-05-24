@@ -33,6 +33,11 @@ namespace Integra.Space.Language.Runtime
         public bool PrintLog { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether to measure the elapsed time of the compiled functions.
+        /// </summary>
+        public bool MeasureElapsedTime { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the compilation will be in debug mode.
         /// </summary>
         public bool DebugMode
