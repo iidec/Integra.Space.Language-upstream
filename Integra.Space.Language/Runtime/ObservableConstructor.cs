@@ -83,6 +83,11 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         private bool isInConditionOn;
 
+        /// <summary>
+        /// Dictionary of lag variables for join query.
+        /// </summary>
+        private Dictionary<int, ParameterExpression> lagVariables;
+
         #endregion Field definitions
 
         #region Constructors
@@ -106,6 +111,7 @@ namespace Integra.Space.Language.Runtime
             this.projectionWithDispose = false;
             this.isInConditionOn = false;
             this.IsSecondSource = false;
+            this.lagVariables = new Dictionary<int, ParameterExpression>();
         }
 
         #endregion Constructors
@@ -565,6 +571,9 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.IsNullFunction:
                     expResult = this.CreateIsNullFunction(actualNode, leftNode, rightNode);
                     break;
+                case PlanNodeTypeEnum.BufferSizeForJoin:
+                    expResult = this.CreateBufferSizeForJoin(actualNode, leftNode);
+                    break;
                 /********************************************************************************************************************************************************************************************************************/
                 case PlanNodeTypeEnum.Cast:
                     return this.GenerateCast(actualNode, leftNode);
@@ -907,222 +916,46 @@ namespace Integra.Space.Language.Runtime
 
         #endregion compiler aux functions
 
-        #region Observable Create and Subscription
-
-        /// <summary>
-        /// Creates the Observable.Create to return.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming observable.</param>
-        /// <returns>Result expression of the Observable.Create.</returns>
-        private Expression CreateObservableCreate(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(this.observer.Type.GetGenericArguments()[0]), "FinalResultObservable");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                // creo la funcion Func<EventObject, "tipo creado en tiempo de ejecución"> del cual se creará el lambda
-                var delegateType = typeof(Func<,>).MakeGenericType(this.observer.Type, typeof(IDisposable));
-
-                LambdaExpression lambdaOfTheSubscribe = Expression.Lambda(delegateType, incomingObservable, this.observer);
-
-                MethodInfo methodCreate = typeof(System.Reactive.Linq.Observable).GetMethods()
-                                            .Where(x => x.Name == "Create" && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType.ToString().Equals("System.Func`2[System.IObserver`1[TResult],System.IDisposable]"))
-                                            .Single().MakeGenericMethod(this.observer.Type.GetGenericArguments()[0]);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodCreate, lambdaOfTheSubscribe), new List<Expression>(), result, true, "Start of the observable create.", "End of the observable create.", RUNTIME_ERRORS.RE73);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable create."))),
-                                    Expression.Assign(result, Expression.Call(methodCreate, lambdaOfTheSubscribe)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable create.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression; // this.CreateObserveOn(actualNode, tryCatchExpr);
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE81, actualNode.NodeText), e);
-            }
-        }
-
-        /// <summary>
-        /// Creates the subscription to the observable and send the result through the observer.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming observable.</param>
-        /// <returns>IDisposable expression</returns>
-        private Expression CreateSubscription(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                ParameterExpression result = Expression.Variable(typeof(IDisposable), "ResultDisposable");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                if (this.observer == null)
-                {
-                    // this.observer = Expression.Parameter(this.context.ObserverType.GetObserverType().MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ObserverDePrueba");
-                    this.CreateObserver(incomingObservable.Type.GetGenericArguments()[0]);
-                }
-
-                MethodInfo onCompletedMethod = this.observer.Type.GetMethod("OnCompleted");
-
-                // creo el Action del cual se creará el lambda
-                LambdaExpression lambdaOfTheOnCompleted = Expression.Lambda(typeof(Action), Expression.Call(this.observer, onCompletedMethod));
-
-                MethodInfo onNextMethod = this.observer.Type.GetMethod("OnNext");
-
-                // creo el Action<"tipo creado en tiempo de ejecución"> del cual se creará el lambda
-                Type delegateType = typeof(Action<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]);
-
-                // creo el lambda que será retornado como hijo derecho del nodo padre, por ejemplo un nodo select
-                LambdaExpression lambdaOfTheOnNext = Expression.Lambda(delegateType, Expression.Call(this.observer, onNextMethod, this.actualScope.GetFirstParameter()), new ParameterExpression[] { this.actualScope.GetFirstParameter() });
-
-                // sacamos el parámetro de la pila
-                this.PopScope();
-
-                MethodInfo subscribeMethod = typeof(ObservableExtensions).GetMethods()
-                                                .Where(m => { return m.Name == "Subscribe" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Action`1[T]") && m.GetParameters()[2].ParameterType.ToString().Equals("System.Action"); })
-                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted), new List<Expression>(), result, true, "Start of subscribe.", "End of subscribe.", RUNTIME_ERRORS.RE74);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
-                                    Expression.Assign(result, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression;
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE82, actualNode.NodeText), e);
-            }
-        }
-
-        /// <summary>
-        /// Creates the ObserverOn expression.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming expression.</param>
-        /// <returns>ObserveOn expression.</returns>
-        private Expression CreateObserveOn(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ResultObserveOn");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                MethodInfo observeOnMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
-                                                .Where(m => { return m.Name == "ObserveOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
-                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(observeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of ObserveOn.", "End of ObserveOn.", RUNTIME_ERRORS.RE75);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
-                                    Expression.Assign(result, Expression.Call(observeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler()))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression;
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE67, actualNode.NodeText), e);
-            }
-        }
-
-        /// <summary>
-        /// Creates the SubscribeOn expression.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming expression.</param>
-        /// <returns>SubscribeOn expression.</returns>
-        private Expression CreateSubscribeOn(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ResultSubscribeOn");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                MethodInfo subscribeOnMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
-                                                .Where(m => { return m.Name == "SubscribeOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
-                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of SubscribeOn.", "End of Subscribe.", RUNTIME_ERRORS.RE76);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
-                                    Expression.Assign(result, Expression.Call(subscribeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler()))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression;
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE67, actualNode.NodeText), e);
-            }
-        }
-
-        #endregion Observable Create and Subscription
-
         #region Join
+
+        /// <summary>
+        /// Creates the buffer size for sources of join queries.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="bufferSizeOfJoinSources">Buffer size of join sources specified in the configuration file.</param>
+        /// <returns>A expression to invoke to define the boundaries of the produced buffers.</returns>
+        private Expression CreateBufferSizeForJoin(PlanNode actualNode, Expression bufferSizeOfJoinSources)
+        {
+            ParameterExpression result = Expression.Variable(typeof(IObservable<long>), "BufferSizeForJoin");
+
+            MethodInfo methodTimer = typeof(Observable).GetMethods()
+                                            .Where(m => m.Name == "Timer" && m.GetParameters().Length == 2 && m.GetParameters()[0].ParameterType == typeof(TimeSpan) && m.GetParameters()[1].ParameterType == typeof(System.Reactive.Concurrency.IScheduler))
+                                            .Single();
+
+            ParameterExpression lagVariable = null;
+            string source = string.Empty;
+            if (this.IsSecondSource)
+            {
+                lagVariable = this.lagVariables[1];
+                source = "right source";
+            }
+            else
+            {
+                lagVariable = this.lagVariables[0];
+                source = "left source";
+            }
+
+            // ConstantExpression bufferSizeOfJoinSources = Expression.Constant(double.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]), typeof(double));
+            Expression sum = Expression.Add(lagVariable, bufferSizeOfJoinSources);
+            Expression bufferTime = Expression.Call(typeof(TimeSpan).GetMethod("FromMilliseconds"), sum);
+            Expression timer = Expression.Call(methodTimer, bufferTime, Expression.Constant(this.context.Scheduler.GetScheduler()));
+
+            Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, timer, new List<Expression>(), result, true, string.Format("Start of the observable timer at {0}.", source), string.Format("End of the observable timer at {0}.", source), RUNTIME_ERRORS.RE82);
+
+            LambdaExpression funcBufferSize = Expression.Lambda<Func<IObservable<long>>>(resultExpression);
+
+            return funcBufferSize;
+        }
 
         /// <summary>
         /// Creates an Observable.Never[Unit]() expression.
@@ -1390,7 +1223,11 @@ namespace Integra.Space.Language.Runtime
             ParameterExpression obvJoinResult = Expression.Variable(typeof(IObservable<>).MakeGenericType(lambdaEnumerableJoin.ReturnType), "ObservableJoinResult");
             ParameterExpression paramException2 = Expression.Variable(typeof(Exception), "ObservableJoinException");
 
-            Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), new List<Expression>(), obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
+            List<Expression> actionsBeforeMainAction = new List<Expression>();
+            actionsBeforeMainAction.Add(Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)));
+            actionsBeforeMainAction.Add(Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)));
+
+            Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult, this.lagVariables[0], this.lagVariables[1] }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), actionsBeforeMainAction, obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
             /*Expression tryCatchExprObvJoin =
                 Expression.Block(
                     new[] { obvJoinResult },
@@ -1462,15 +1299,26 @@ namespace Integra.Space.Language.Runtime
 
                 MethodInfo setStateMethod = typeof(ExtractedEventData).GetMethod("SetState");
                 ParameterExpression paramToReturnInSelector = Expression.Variable(methodCreate.ReturnType, "ValueToReturnInSelector");
+
+                ParameterExpression nowVariable = Expression.Variable(typeof(DateTime), "NowVariable");
+                Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
+                Expression getLagIzq = Expression.Assign(this.lagVariables[0], Expression.Property(Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorLeftParam, "SystemTimestamp")), "TotalMilliseconds"));
+                Expression getLagDer = Expression.Assign(this.lagVariables[1], Expression.Property(Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorRightParam, "SystemTimestamp")), "TotalMilliseconds"));
+
                 Expression enumerableSelector = Expression.Block(
-                    new[] { paramToReturnInSelector },
-                    /*Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("********************************************* ")),*/
+                    new[] { paramToReturnInSelector },                    
                     Expression.Assign(paramToReturnInSelector, Expression.Constant(null, methodCreate.ReturnType)),
                     Expression.IfThen(
                         Expression.Call(enumerableSelectorLeftParam, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Matched, typeof(ExtractedEventDataStateEnum))),
                         Expression.IfThen(
                             Expression.Call(enumerableSelectorRightParam, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Matched, typeof(ExtractedEventDataStateEnum))),
-                            Expression.Assign(paramToReturnInSelector, Expression.Call(methodCreate, enumerableSelectorLeftParam, enumerableSelectorRightParam))
+                            Expression.Block(
+                                new[] { this.lagVariables[0], this.lagVariables[1], nowVariable },
+                                Expression.Assign(nowVariable, now),
+                                getLagIzq,
+                                getLagDer,
+                                Expression.Assign(paramToReturnInSelector, Expression.Call(methodCreate, enumerableSelectorLeftParam, enumerableSelectorRightParam))
+                            )
                         )
                     ),
                     paramToReturnInSelector
@@ -1544,6 +1392,10 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
+                // create the lag varaibles
+                this.lagVariables.Add(0, Expression.Variable(typeof(double), "lagIzq"));
+                this.lagVariables.Add(1, Expression.Variable(typeof(double), "lagDer"));
+
                 // on condition
                 this.OnNode = actualNode.Children[1];
 
@@ -1618,119 +1470,6 @@ namespace Integra.Space.Language.Runtime
         }
 
         #endregion Join
-
-        #region Publish and RefCount
-
-        /// <summary>
-        /// Creates the expression for Observable.Publish.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming observable.</param>
-        /// <returns>Expression result of type IConnectableObservable[InOb].</returns>
-        private Expression CreatePublish(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                Type incomingType = incomingObservable.Type.GetGenericArguments()[0];
-                ParameterExpression result = Expression.Variable(typeof(System.Reactive.Subjects.IConnectableObservable<>).MakeGenericType(incomingType), "PublishResult");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                MethodInfo publishMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
-                                                .Where(m => m.Name == "Publish" && m.GetParameters().Length == 1)
-                                                .Single().MakeGenericMethod(incomingType);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(publishMethod, incomingObservable), new List<Expression>(), result, true, "Start of the observable publish.", "End of the observable publish.", RUNTIME_ERRORS.RE71);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable publish."))),
-                                    Expression.Assign(result, Expression.Call(publishMethod, incomingObservable)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable publish.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE71, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression;
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE72, actualNode.NodeText), e);
-            }
-        }
-
-        /// <summary>
-        /// Creates the expression for Observable.Publish.
-        /// </summary>
-        /// <param name="actualNode">Actual plan node.</param>
-        /// <param name="incomingObservable">Incoming observable.</param>
-        /// <returns>Expression result of type IConnectableObservable[InOb].</returns>
-        private Expression CreateRefCount(PlanNode actualNode, Expression incomingObservable)
-        {
-            try
-            {
-                Type incomingType = incomingObservable.Type.GetGenericArguments()[0];
-                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingType), "RefCountResult");
-                ParameterExpression paramException = Expression.Variable(typeof(Exception));
-
-                MethodInfo refCountMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
-                                                .Where(m => m.Name == "RefCount" && m.GetParameters().Length == 1)
-                                                .Single().MakeGenericMethod(incomingType);
-
-                string sourceName = string.Empty;
-                if (this.IsSecondSource)
-                {
-                    sourceName = "---> RIGHTSOURCE ";
-                }
-                else
-                {
-                    sourceName = "---> LEFTSOURCE ";
-                }
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(refCountMethod, incomingObservable), new List<Expression>(), result, true, string.Format("{0}. Start of the observable RefCount", sourceName), string.Format("{0}. End of the observable RefCount", sourceName), RUNTIME_ERRORS.RE72);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(sourceName + "Start of the observable RefCount"))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant(sourceName + " Incomming type for refCount."))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(incomingObservable.Type, typeof(object)))),
-                                    Expression.Assign(result, Expression.Call(refCountMethod, incomingObservable)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant(sourceName + " Result type of refCount."))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(result.Type, typeof(object)))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("----------------------"))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(sourceName + "End of the observable RefCount")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE72, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
-                return resultExpression;
-            }
-            catch (Exception e)
-            {
-                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE63, actualNode.NodeText), e);
-            }
-        }
-
-        #endregion Publish and RefCount
 
         #region Creates the query result
 
@@ -2505,6 +2244,334 @@ namespace Integra.Space.Language.Runtime
 
         #region Observable extensions
 
+        #region Publish and RefCount
+
+        /// <summary>
+        /// Creates the expression for Observable.Publish.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <returns>Expression result of type IConnectableObservable[InOb].</returns>
+        private Expression CreatePublish(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                Type incomingType = incomingObservable.Type.GetGenericArguments()[0];
+                ParameterExpression result = Expression.Variable(typeof(System.Reactive.Subjects.IConnectableObservable<>).MakeGenericType(incomingType), "PublishResult");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                MethodInfo publishMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                                .Where(m => m.Name == "Publish" && m.GetParameters().Length == 1)
+                                                .Single().MakeGenericMethod(incomingType);
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(publishMethod, incomingObservable), new List<Expression>(), result, true, "Start of the observable publish.", "End of the observable publish.", RUNTIME_ERRORS.RE71);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable publish."))),
+                                    Expression.Assign(result, Expression.Call(publishMethod, incomingObservable)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable publish.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE71, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE72, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Creates the expression for Observable.Publish.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <returns>Expression result of type IConnectableObservable[InOb].</returns>
+        private Expression CreateRefCount(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                Type incomingType = incomingObservable.Type.GetGenericArguments()[0];
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingType), "RefCountResult");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                MethodInfo refCountMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                                .Where(m => m.Name == "RefCount" && m.GetParameters().Length == 1)
+                                                .Single().MakeGenericMethod(incomingType);
+
+                string sourceName = string.Empty;
+                if (this.IsSecondSource)
+                {
+                    sourceName = "---> RIGHTSOURCE ";
+                }
+                else
+                {
+                    sourceName = "---> LEFTSOURCE ";
+                }
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(refCountMethod, incomingObservable), new List<Expression>(), result, true, string.Format("{0}. Start of the observable RefCount", sourceName), string.Format("{0}. End of the observable RefCount", sourceName), RUNTIME_ERRORS.RE72);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(sourceName + "Start of the observable RefCount"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant(sourceName + " Incomming type for refCount."))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(incomingObservable.Type, typeof(object)))),
+                                    Expression.Assign(result, Expression.Call(refCountMethod, incomingObservable)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant(sourceName + " Result type of refCount."))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(result.Type, typeof(object)))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(Console).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("----------------------"))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(sourceName + "End of the observable RefCount")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE72, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE63, actualNode.NodeText), e);
+            }
+        }
+
+        #endregion Publish and RefCount
+
+        #region Observable Create and Subscription
+
+        /// <summary>
+        /// Creates the Observable.Create to return.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <returns>Result expression of the Observable.Create.</returns>
+        private Expression CreateObservableCreate(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(this.observer.Type.GetGenericArguments()[0]), "FinalResultObservable");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                // creo la funcion Func<EventObject, "tipo creado en tiempo de ejecución"> del cual se creará el lambda
+                var delegateType = typeof(Func<,>).MakeGenericType(this.observer.Type, typeof(IDisposable));
+
+                LambdaExpression lambdaOfTheSubscribe = Expression.Lambda(delegateType, incomingObservable, this.observer);
+
+                MethodInfo methodCreate = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                            .Where(x => x.Name == "Create" && x.GetParameters().Length == 1 && x.GetParameters()[0].ParameterType.ToString().Equals("System.Func`2[System.IObserver`1[TResult],System.IDisposable]"))
+                                            .Single().MakeGenericMethod(this.observer.Type.GetGenericArguments()[0]);
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodCreate, lambdaOfTheSubscribe), new List<Expression>(), result, true, "Start of the observable create.", "End of the observable create.", RUNTIME_ERRORS.RE73);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the observable create."))),
+                                    Expression.Assign(result, Expression.Call(methodCreate, lambdaOfTheSubscribe)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the observable create.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression; // this.CreateObserveOn(actualNode, tryCatchExpr);
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE81, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Creates the subscription to the observable and send the result through the observer.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <returns>IDisposable expression</returns>
+        private Expression CreateSubscription(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IDisposable), "ResultDisposable");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                if (this.observer == null)
+                {
+                    // this.observer = Expression.Parameter(this.context.ObserverType.GetObserverType().MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ObserverDePrueba");
+                    this.CreateObserver(incomingObservable.Type.GetGenericArguments()[0]);
+                }
+
+                MethodInfo onCompletedMethod = this.observer.Type.GetMethod("OnCompleted");
+
+                // creo el Action del cual se creará el lambda
+                LambdaExpression lambdaOfTheOnCompleted = Expression.Lambda(typeof(Action), Expression.Call(this.observer, onCompletedMethod));
+
+                MethodInfo onNextMethod = this.observer.Type.GetMethod("OnNext");
+
+                // creo el Action<"tipo creado en tiempo de ejecución"> del cual se creará el lambda
+                Type delegateType = typeof(Action<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]);
+
+                // creo el lambda que será retornado como hijo derecho del nodo padre, por ejemplo un nodo select
+                LambdaExpression lambdaOfTheOnNext = Expression.Lambda(delegateType, Expression.Call(this.observer, onNextMethod, this.actualScope.GetFirstParameter()), new ParameterExpression[] { this.actualScope.GetFirstParameter() });
+
+                // sacamos el parámetro de la pila
+                this.PopScope();
+
+                MethodInfo subscribeMethod = typeof(ObservableExtensions).GetMethods()
+                                                .Where(m => { return m.Name == "Subscribe" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Action`1[T]") && m.GetParameters()[2].ParameterType.ToString().Equals("System.Action"); })
+                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted), new List<Expression>(), result, true, "Start of subscribe.", "End of subscribe.", RUNTIME_ERRORS.RE74);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
+                                    Expression.Assign(result, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted)),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE82, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Creates the ObserverOn expression.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming expression.</param>
+        /// <returns>ObserveOn expression.</returns>
+        private Expression CreateObserveOn(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ResultObserveOn");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                MethodInfo observeOnMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                                .Where(m => { return m.Name == "ObserveOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
+                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(observeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of ObserveOn.", "End of ObserveOn.", RUNTIME_ERRORS.RE75);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
+                                    Expression.Assign(result, Expression.Call(observeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler()))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE67, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Creates the SubscribeOn expression.
+        /// </summary>
+        /// <param name="actualNode">Actual plan node.</param>
+        /// <param name="incomingObservable">Incoming expression.</param>
+        /// <returns>SubscribeOn expression.</returns>
+        private Expression CreateSubscribeOn(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0]), "ResultSubscribeOn");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+
+                MethodInfo subscribeOnMethod = typeof(System.Reactive.Linq.Observable).GetMethods()
+                                                .Where(m => { return m.Name == "SubscribeOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
+                                                .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
+
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of SubscribeOn.", "End of Subscribe.", RUNTIME_ERRORS.RE76);
+                /*Expression resultExpression =
+                    Expression.Block(
+                        new[] { result },
+                            Expression.TryCatch(
+                                Expression.Block(
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
+                                    Expression.Assign(result, Expression.Call(subscribeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler()))),
+                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
+                                    ),
+                                Expression.Catch(
+                                    paramException,
+                                     Expression.Block(
+                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
+                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
+                                    )
+                                )
+                            ),
+                        result
+                        );*/
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE67, actualNode.NodeText), e);
+            }
+        }
+
+        #endregion Observable Create and Subscription
+
         /// <summary>
         /// Creates a new Observable.Buffer expression.
         /// </summary>
@@ -2526,29 +2593,41 @@ namespace Integra.Space.Language.Runtime
                 System.Reactive.Concurrency.IScheduler scheduler = this.context.Scheduler.GetScheduler();
                 bufferScheduler = Expression.Constant(scheduler);
 
-                MethodInfo methodBuffer = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
+                MethodInfo methodBuffer = null;
+                if (bufferTimeOrSize.Type.IsGenericType)
                 {
-                    if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
+                    methodBuffer = typeof(System.Reactive.Linq.Observable)
+                        .GetMethods()
+                        .Where(m => m.Name == "Buffer" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.IsGenericType && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition().Equals(typeof(Func<>)))
+                        .Single()
+                        .MakeGenericMethod(typeof(I), bufferTimeOrSize.Type.GetGenericArguments()[0].GetGenericArguments()[0]);
+                }
+                else
+                {
+                    methodBuffer = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
                     {
-                        return m.Name == "Buffer" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.Equals(bufferTimeOrSize.Type) && m.GetParameters()[2].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler));
-                    }
-                    else if (bufferTimeOrSize.Type.Equals(typeof(int)))
-                    {
-                        return m.Name == "Buffer" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(bufferTimeOrSize.Type);
-                    }
-                    else
-                    {
-                        return false;
-                    }
-                })
-                .Single().MakeGenericMethod(typeof(I));
+                        if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
+                        {
+                            return m.Name == "Buffer" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.Equals(bufferTimeOrSize.Type) && m.GetParameters()[2].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler));
+                        }
+                        else if (bufferTimeOrSize.Type.Equals(typeof(int)))
+                        {
+                            return m.Name == "Buffer" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(bufferTimeOrSize.Type);
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    })
+                    .Single().MakeGenericMethod(typeof(I));
+                }
 
                 Expression function = Expression.Throw(Expression.New(typeof(Exception).GetConstructor(new Type[] { typeof(string), typeof(RuntimeException) }), Expression.Constant(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, "Invalid 'apply window of'.", actualNode.NodeText), typeof(string)), paramException));
                 if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
                 {
                     function = Expression.Call(methodBuffer, incomingObservable, bufferTimeOrSize, bufferScheduler);
                 }
-                else if (bufferTimeOrSize.Type.Equals(typeof(int)))
+                else if (bufferTimeOrSize.Type.Equals(typeof(int)) || (bufferTimeOrSize.Type.IsGenericType && bufferTimeOrSize.Type.GetGenericTypeDefinition() == typeof(Func<>)))
                 {
                     function = Expression.Call(methodBuffer, incomingObservable, bufferTimeOrSize);
                 }
@@ -4240,6 +4319,7 @@ namespace Integra.Space.Language.Runtime
                 Type leftType = null;
                 Type rightType = null;
                 Expression valueToReturn = null;
+                List<Expression> actionsBeforeMainAction = new List<Expression>();
                 if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinLeftDuration))
                 {
                     leftItem = this.actualScope.GetParameterByIndex(0);
@@ -4249,6 +4329,10 @@ namespace Integra.Space.Language.Runtime
 
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, leftItem, Expression.Constant(null, rightType));
+
+                    Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
+                    Expression getLag = Expression.Assign(this.lagVariables[0], Expression.Property(Expression.Subtract(now, Expression.Property(leftItem, "SystemTimestamp")), "TotalMilliseconds"));
+                    actionsBeforeMainAction.Add(getLag);
                 }
                 else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinRightDuration))
                 {
@@ -4259,8 +4343,13 @@ namespace Integra.Space.Language.Runtime
                     rightType = rightItem.Type;
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(null, leftType), rightItem);
+
+                    Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
+                    Expression getLag = Expression.Assign(this.lagVariables[1], Expression.Property(Expression.Subtract(now, Expression.Property(rightItem, "SystemTimestamp")), "TotalMilliseconds"));
+                    actionsBeforeMainAction.Add(getLag);
                 }
-                else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinResultSelector))
+
+                /*else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinResultSelector))
                 {
                     leftItem = this.actualScope.GetParameterByIndex(0);
                     rightItem = this.actualScope.GetParameterByIndex(1);
@@ -4268,8 +4357,8 @@ namespace Integra.Space.Language.Runtime
                     rightType = rightItem.Type;
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(leftItem, leftType), Expression.Constant(rightItem, rightType));
-                }
-
+                }*/
+                
                 result = Expression.Variable(typeof(Tuple<,>).MakeGenericType(leftType, rightType), "JoinProjection");
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, valueToReturn, new List<Expression>(), result, true, "Start the join projection", "End the join projection", RUNTIME_ERRORS.RE80);
@@ -4730,7 +4819,7 @@ namespace Integra.Space.Language.Runtime
 
                 List<Expression> actionsBeforeMainAction = new List<Expression>();
                 actionsBeforeMainAction.Add(Expression.Assign(param, Expression.Default(param.Type)));
-                actionsBeforeMainAction.Add(Expression.Assign(auxVar, leftNode));                
+                actionsBeforeMainAction.Add(Expression.Assign(auxVar, leftNode));
 
                 Expression mainAction = null;
                 if (tipo.IsGenericType && tipo.GetGenericTypeDefinition().Equals(typeof(Tuple<,>)))

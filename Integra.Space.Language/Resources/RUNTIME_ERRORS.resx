@@ -374,6 +374,9 @@
   <data name="RE81" xml:space="preserve">
     <value>RE81: Error with 'isnull' function.</value>
   </data>
+  <data name="RE82" xml:space="preserve">
+    <value>RE82: Error in observable timer.</value>
+  </data>
   <data name="RE9" xml:space="preserve">
     <value />
   </data>

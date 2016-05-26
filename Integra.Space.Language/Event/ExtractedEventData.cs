@@ -3,6 +3,7 @@
 //     Copyright (c) Ingetra.Vision.EventObject. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+
 namespace Integra.Space
 {
     /// <summary>
@@ -14,12 +15,18 @@ namespace Integra.Space
         /// Object to lock the change of the event state.
         /// </summary>
         private static object lockState = new object();
-        
+
+        /// <summary>
+        /// Reception date and time.
+        /// </summary>
+        private System.DateTime systemTimestamp;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedEventData"/> class.
         /// </summary>
         public ExtractedEventData()
         {
+            this.systemTimestamp = System.DateTime.Now;
             this.State = ExtractedEventDataStateEnum.Created;
         }
 
@@ -30,6 +37,17 @@ namespace Integra.Space
         {
             get;
             private set;
+        }
+
+        /// <summary>
+        /// Gets the reception date and time of the event.
+        /// </summary>
+        public System.DateTime SystemTimestamp
+        {
+            get
+            {
+                return this.systemTimestamp;
+            }
         }
 
         /// <summary>
@@ -55,6 +73,6 @@ namespace Integra.Space
             }
 
             return false;
-        }        
+        }
     }
 }

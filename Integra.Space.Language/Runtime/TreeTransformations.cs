@@ -114,7 +114,7 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList, isSecondSource); // typeof(ExtractedEventData); // LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
-                
+
                 isSecondSource = true;
                 this.dictionaryOfTypes.Add(grupo.Key, newType);
             }
@@ -127,6 +127,7 @@ namespace Integra.Space.Language.Runtime
         private void InsertGenerationOfLocalObjects(IEnumerable<IGrouping<string, PlanNode>> objects)
         {
             List<PlanNode> localObjects = new List<PlanNode>();
+            
             foreach (IGrouping<string, PlanNode> @object in objects)
             {
                 PlanNode newScopeForSelect = new PlanNode();
@@ -149,7 +150,8 @@ namespace Integra.Space.Language.Runtime
 
                 localObjects.Add(selectNode);
 
-                IEnumerable<PlanNode> replicas = this.CreateACopyOfQueryObjectsAccessors(@object.Distinct(new PropertyNameComparer()));
+                // se hace el where para filtrar la propiedad SystemTimestamp ya que la clase ExtractedEventData ya tiene dicha propiedad y solo tiene metodo get
+                IEnumerable<PlanNode> replicas = this.CreateACopyOfQueryObjectsAccessors(@object.Where(x => x.NodeType == PlanNodeTypeEnum.ObjectValue || (x.NodeType == PlanNodeTypeEnum.EventProperty && !x.Properties["Property"].ToString().Equals("SystemTimestamp"))).Distinct(new PropertyNameComparer()));
                 IEnumerable<IGrouping<string, PlanNode>> objectsInOnCondition = this.GetValuesFromEvents(this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.On).FirstOrDefault());
 
                 if (objectsInOnCondition != null && objectsInOnCondition.Count() > 0)
@@ -268,6 +270,7 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Objects grouped by source.</returns>
         private IEnumerable<IGrouping<string, PlanNode>> GetValuesFromEvents(PlanNode branch)
         {
+            // la propiedad SystemTimestamp se filtra porque ExtractedEventData ya la contiene
             IEnumerable<IGrouping<string, PlanNode>> objects = branch.FindNode(PlanNodeTypeEnum.ObjectValue, PlanNodeTypeEnum.EventProperty)
                         .GroupBy(x =>
                         {
@@ -302,7 +305,7 @@ namespace Integra.Space.Language.Runtime
                                 return this.executionPlanRootNode.Children.Where(w => w.NodeType == PlanNodeTypeEnum.ObservableFrom).First().Children.First().Properties["Value"].ToString();
                             }*/
                         });
-
+            
             if (objects.Count() == 0)
             {
                 System.Diagnostics.Debug.WriteLine("No events found in the on condition.");

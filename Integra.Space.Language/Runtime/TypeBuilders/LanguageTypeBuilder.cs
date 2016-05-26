@@ -139,9 +139,16 @@ namespace Integra.Space.Language.Runtime
             // si no es null quiere decir que se esta creando el objeto para comparar llaves en el join
             if (onCondition == null)
             {
+                PropertyInfo[] parentProperties = parentType.GetProperties();
+
                 // The list contains a dynamic object with fields FieldName of type string and FieldType of type Type
                 foreach (var field in listOfFields)
                 {
+                    /*if (!parentProperties.Select(x => x.Name).Contains(field.FieldName))
+                    {
+                        
+                    }*/
+
                     CreateProperty(tb, field, fieldList);
                 }
             }
@@ -561,7 +568,7 @@ namespace Integra.Space.Language.Runtime
                     default:
                         return type;
                 }
-            }          
+            }
         }
     }
 }

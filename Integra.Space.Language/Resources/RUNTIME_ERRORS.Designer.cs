@@ -772,6 +772,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE82: Error in observable timer..
+        /// </summary>
+        internal static string RE82 {
+            get {
+                return ResourceManager.GetString("RE82", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE9 {

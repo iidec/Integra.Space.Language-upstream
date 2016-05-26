@@ -242,7 +242,6 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             return new EventObject(new string[] { string.Empty })
             {
                 SourceTimestamp = systemTimeStamp,
-                SystemTimestamp = systemTimeStamp,
                 Message = new Messaging.Message()
                 {
                     new Messaging.MessagePart(0, "Header")

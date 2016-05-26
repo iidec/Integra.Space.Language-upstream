@@ -1322,7 +1322,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf, DebugMode = false });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf, DebugMode = false, MeasureElapsedTime = false });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
@@ -1352,14 +1352,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             int countRight = 0;
             rqCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
             rsCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             #endregion Prints
@@ -1425,7 +1425,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 }
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
-                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                , maxTime + TimeSpan.FromSeconds(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
                 );
 
             Tuple<string, string, string, string, string, string, TimeSpan>[] actualResults = results.Messages
@@ -1508,12 +1508,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
                                         "1 as o2, " +
                                         "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
-                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SourceTimestamp, '01/01/2016') as ts1, " +
+                                        "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SystemTimestamp, '01/01/2016') as ts1, " +
                                         "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
 
             EQLPublicParser parser = new EQLPublicParser(eql);
             PlanNode plan = parser.Evaluate().First();
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             bool printLog = false;
@@ -1526,7 +1526,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             decimal tolerance = 0.5M;
-            int eventNumber = 100;
+            int eventNumber = 10000;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 100;
             int timeout = 4000;
@@ -1555,14 +1555,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             int countRight = 0;
             rqCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
             rsCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             #endregion Prints
@@ -1710,7 +1710,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 }
             }
         }
-        
+
         [TestMethod]
         public void CustomLoadTest3()
         {
@@ -1733,7 +1733,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf, DebugMode = false, MeasureElapsedTime = false });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
@@ -1763,14 +1763,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             int countRight = 0;
             rqCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
             rsCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             #endregion Prints
@@ -1838,7 +1838,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 }
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
-                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                , maxTime + TimeSpan.FromSeconds(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
                 );
 
             swJoin.Stop();
@@ -1940,7 +1940,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = false, QueryName = string.Empty, Scheduler = dsf, MeasureElapsedTime = false, DebugMode = false });
             Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             #endregion Compiler
@@ -1970,14 +1970,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             int countRight = 0;
             rqCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
             rsCreated.ForEach(x =>
             {
-                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SystemTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
+                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.Message[1][0].Value} - {x.Item1.Message[1][1].Value}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             #endregion Prints
@@ -2045,7 +2045,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 }
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
-                , maxTime + TimeSpan.FromDays(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
+                , maxTime + TimeSpan.FromSeconds(10).Ticks // tienen que ser mayor que el límite máximo definido para el envio de eventos, "maxLimitTimeTest" del constructor de la clase LoadTestsHelper
                 );
 
             swJoin.Stop();

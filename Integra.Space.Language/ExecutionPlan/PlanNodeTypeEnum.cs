@@ -795,6 +795,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Subscription type
         /// </summary>
-        Subscription = 709
+        Subscription = 709,
+
+        /// <summary>
+        /// Buffer size for join type.
+        /// </summary>
+        BufferSizeForJoin = 710
     }
 }

@@ -45,14 +45,14 @@ namespace Integra.Space
         private int refcount = 0;
 
         /// <summary>
-        /// Reception date and time.
-        /// </summary>
-        private DateTime systemTimestamp;
-
-        /// <summary>
         /// Creation date and time.
         /// </summary>
         private DateTime sourceTimestamp;
+
+        /// <summary>
+        /// Reception date and time.
+        /// </summary>
+        private System.DateTime systemTimestamp;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EventObject"/> class.
@@ -123,22 +123,6 @@ namespace Integra.Space
         }
 
         /// <summary>
-        /// Gets or sets the reception date and time of the event.
-        /// </summary>
-        public DateTime SystemTimestamp
-        {
-            get
-            {
-                return this.systemTimestamp;
-            }
-
-            set
-            {
-                this.systemTimestamp = value;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets the creation date and time of the event.
         /// </summary>
         public DateTime SourceTimestamp
@@ -151,6 +135,22 @@ namespace Integra.Space
             set
             {
                 this.sourceTimestamp = value;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the reception date and time of the event.
+        /// </summary>
+        public System.DateTime SystemTimestamp
+        {
+            get
+            {
+                return this.systemTimestamp;
+            }
+
+            set
+            {
+                this.systemTimestamp = value;
             }
         }
 

@@ -256,55 +256,30 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <returns>Apply window execution plan.</returns>
         private PlanNode GetApplyWindow(PlanNode child)
         {
+            // este solo se coloca porque se hace llama a PopScope en la compilación.
+            PlanNode newScope = new PlanNode();
+            newScope.NodeType = PlanNodeTypeEnum.NewScope;
+            newScope.Children = new List<PlanNode>();
+            newScope.Children.Add(child);
+
             PlanNode result = new PlanNode();
-            result.NodeType = PlanNodeTypeEnum.ObservableBufferTimeAndSize;
+            result.NodeType = PlanNodeTypeEnum.ObservableBuffer;
             result.Properties.Add("internallyGenerated", true);
             result.Children = new List<PlanNode>();
-            result.Children.Add(child);
+            result.Children.Add(newScope);
 
-            PlanNode planProjection = new PlanNode();
-            planProjection.NodeType = PlanNodeTypeEnum.ProjectionOfConstants;
-            planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
-            planProjection.Children = new List<PlanNode>();
+            PlanNode bufferSizeForJoin = new PlanNode();
+            bufferSizeForJoin.NodeType = PlanNodeTypeEnum.BufferSizeForJoin;
+            bufferSizeForJoin.Children = new List<PlanNode>();
 
-            PlanNode planTuple1 = new PlanNode();
-            planTuple1.NodeType = PlanNodeTypeEnum.TupleProjection;
-            planTuple1.Children = new List<PlanNode>();
-
-            PlanNode alias1 = new PlanNode();
-            alias1.NodeType = PlanNodeTypeEnum.Constant;
-            alias1.Properties.Add("Value", "TimeSpanValue");
-            alias1.Properties.Add("DataType", typeof(object).ToString());
+            result.Children.Add(bufferSizeForJoin);
 
             PlanNode windowSize = new PlanNode();
             windowSize.NodeType = PlanNodeTypeEnum.Constant;
-            windowSize.Properties.Add("Value", System.TimeSpan.FromMilliseconds(int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"])));
-            windowSize.Properties.Add("DataType", typeof(System.TimeSpan).ToString());
+            windowSize.Properties.Add("Value", double.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]));
+            windowSize.Properties.Add("DataType", typeof(double).ToString());
 
-            planTuple1.Children.Add(alias1);
-            planTuple1.Children.Add(windowSize);
-
-            PlanNode planTuple2 = new PlanNode();
-            planTuple2.NodeType = PlanNodeTypeEnum.TupleProjection;
-            planTuple2.Children = new List<PlanNode>();
-
-            PlanNode alias2 = new PlanNode();
-            alias2.NodeType = PlanNodeTypeEnum.Constant;
-            alias2.Properties.Add("Value", "IntegerValue");
-            alias2.Properties.Add("DataType", typeof(object).ToString());
-
-            PlanNode maxWindowSize = new PlanNode();
-            maxWindowSize.NodeType = PlanNodeTypeEnum.Constant;
-            maxWindowSize.Properties.Add("Value", int.Parse(System.Configuration.ConfigurationManager.AppSettings["MaxWindowSize"]));
-            maxWindowSize.Properties.Add("DataType", typeof(int));
-
-            planTuple2.Children.Add(alias2);
-            planTuple2.Children.Add(maxWindowSize);
-
-            planProjection.Children.Add(planTuple1);
-            planProjection.Children.Add(planTuple2);
-            
-            result.Children.Add(planProjection);
+            bufferSizeForJoin.Children.Add(windowSize);
 
             return result;
         }
