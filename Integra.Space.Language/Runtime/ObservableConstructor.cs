@@ -294,7 +294,13 @@ namespace Integra.Space.Language.Runtime
         public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
         {
             Expression rootExpression = this.GenerateExpressionTree(plan);
-            Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootExpression, this.parameterList.First(), this.parameterList.Last());
+            Expression rootBlock = Expression.Block(
+                                        new[] { this.lagVariables[0], this.lagVariables[1] },
+                                        Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
+                                        Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
+                                        rootExpression
+                                        );
+            Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootBlock, this.parameterList.First(), this.parameterList.Last());
 
             return result;
         }
@@ -1222,12 +1228,8 @@ namespace Integra.Space.Language.Runtime
 
             ParameterExpression obvJoinResult = Expression.Variable(typeof(IObservable<>).MakeGenericType(lambdaEnumerableJoin.ReturnType), "ObservableJoinResult");
             ParameterExpression paramException2 = Expression.Variable(typeof(Exception), "ObservableJoinException");
-
-            List<Expression> actionsBeforeMainAction = new List<Expression>();
-            actionsBeforeMainAction.Add(Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)));
-            actionsBeforeMainAction.Add(Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)));
-
-            Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult, this.lagVariables[0], this.lagVariables[1] }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), actionsBeforeMainAction, obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
+            
+            Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), new List<Expression>(), obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
             /*Expression tryCatchExprObvJoin =
                 Expression.Block(
                     new[] { obvJoinResult },
@@ -1313,7 +1315,7 @@ namespace Integra.Space.Language.Runtime
                         Expression.IfThen(
                             Expression.Call(enumerableSelectorRightParam, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Matched, typeof(ExtractedEventDataStateEnum))),
                             Expression.Block(
-                                new[] { this.lagVariables[0], this.lagVariables[1], nowVariable },
+                                new[] { nowVariable },
                                 Expression.Assign(nowVariable, now),
                                 getLagIzq,
                                 getLagDer,
