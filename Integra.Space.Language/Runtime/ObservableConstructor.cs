@@ -293,7 +293,12 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
         {
+            // create the lag varaibles
+            this.lagVariables.Add(0, Expression.Variable(typeof(double), "lagIzq"));
+            this.lagVariables.Add(1, Expression.Variable(typeof(double), "lagDer"));
+
             Expression rootExpression = this.GenerateExpressionTree(plan);
+
             Expression rootBlock = Expression.Block(
                                         new[] { this.lagVariables[0], this.lagVariables[1] },
                                         Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
@@ -1394,10 +1399,6 @@ namespace Integra.Space.Language.Runtime
         {
             try
             {
-                // create the lag varaibles
-                this.lagVariables.Add(0, Expression.Variable(typeof(double), "lagIzq"));
-                this.lagVariables.Add(1, Expression.Variable(typeof(double), "lagDer"));
-
                 // on condition
                 this.OnNode = actualNode.Children[1];
 
