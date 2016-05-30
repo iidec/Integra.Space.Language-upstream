@@ -1098,14 +1098,17 @@ namespace Integra.Space.Language.Runtime
             {
                 // para settear el atributo timeout a true
                 ParameterExpression sideParam = null;
+                ParameterExpression varLag = null;
 
                 if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinLeftDuration))
                 {
                     sideParam = this.actualScope.ParentScope.GetParameterByIndex(0);
+                    varLag = this.lagVariables[0];
                 }
                 else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinRightDuration))
                 {
                     sideParam = this.actualScope.ParentScope.GetParameterByIndex(1);
+                    varLag = this.lagVariables[1];
                 }
 
                 Expression toList = this.EnumerableToList(actualNode, sideParam);
@@ -1125,8 +1128,17 @@ namespace Integra.Space.Language.Runtime
 
                 MethodInfo setStateMethod = typeof(ExtractedEventData).GetMethod("SetState");
 
+                ParameterExpression nowParam = Expression.Parameter(typeof(DateTime), "NowParameter");
+                Expression now = Expression.Assign(nowParam, Expression.Property(null, typeof(DateTime).GetProperty("Now")));
+                Expression getLag = Expression.Assign(varLag, Expression.Property(Expression.Subtract(nowParam, Expression.Property(singleEvent, "SystemTimestamp")), "TotalMilliseconds"));
+
+                Expression blockExpired = Expression.IfThen(
+                                            Expression.Call(singleEvent, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Expired, typeof(ExtractedEventDataStateEnum))),
+                                            getLag
+                                            );
+
                 Type delegateTypeForSetTimeout = typeof(Action<>).MakeGenericType(toList.Type.GetGenericArguments()[0]);
-                LambdaExpression lambdaSetTimeout = Expression.Lambda(delegateTypeForSetTimeout, Expression.Call(singleEvent, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Expired, typeof(ExtractedEventDataStateEnum))), new ParameterExpression[] { singleEvent });
+                LambdaExpression lambdaSetTimeout = Expression.Lambda(delegateTypeForSetTimeout, blockExpired, new ParameterExpression[] { singleEvent });
 
                 this.PopScope();
 
@@ -1154,6 +1166,8 @@ namespace Integra.Space.Language.Runtime
                 if (bool.Parse(actualNode.Properties["HasBody"].ToString()) == true)
                 {
                     body = Expression.Block(
+                        new[] { nowParam },
+                        now,
                         callToSetTimeoutMethod,
                         Expression.Call(this.observer, onNextMethod, right),
                         this.CreateObservableEmpty(actualNode)
@@ -1162,9 +1176,11 @@ namespace Integra.Space.Language.Runtime
                 else
                 {
                     body = Expression.Block(
-                       callToSetTimeoutMethod,
-                       this.CreateObservableEmpty(actualNode)
-                       );
+                        new[] { nowParam },
+                        now,
+                        callToSetTimeoutMethod,
+                        this.CreateObservableEmpty(actualNode)
+                        );
                 }
 
                 MethodInfo[] catchMethods = typeof(System.Reactive.Linq.Observable).GetMethods().Where(x => x.Name == "Catch" && x.GetParameters().Length == 2).ToArray();
@@ -4322,7 +4338,6 @@ namespace Integra.Space.Language.Runtime
                 Type leftType = null;
                 Type rightType = null;
                 Expression valueToReturn = null;
-                List<Expression> actionsBeforeMainAction = new List<Expression>();
                 if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinLeftDuration))
                 {
                     leftItem = this.actualScope.GetParameterByIndex(0);
@@ -4332,10 +4347,6 @@ namespace Integra.Space.Language.Runtime
 
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, leftItem, Expression.Constant(null, rightType));
-
-                    Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
-                    Expression getLag = Expression.Assign(this.lagVariables[0], Expression.Property(Expression.Subtract(now, Expression.Property(leftItem, "SystemTimestamp")), "TotalMilliseconds"));
-                    actionsBeforeMainAction.Add(getLag);
                 }
                 else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinRightDuration))
                 {
@@ -4346,10 +4357,6 @@ namespace Integra.Space.Language.Runtime
                     rightType = rightItem.Type;
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(null, leftType), rightItem);
-
-                    Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
-                    Expression getLag = Expression.Assign(this.lagVariables[1], Expression.Property(Expression.Subtract(now, Expression.Property(rightItem, "SystemTimestamp")), "TotalMilliseconds"));
-                    actionsBeforeMainAction.Add(getLag);
                 }
 
                 /*else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinResultSelector))
