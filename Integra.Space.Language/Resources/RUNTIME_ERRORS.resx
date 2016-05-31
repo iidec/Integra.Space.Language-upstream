@@ -377,6 +377,9 @@
   <data name="RE82" xml:space="preserve">
     <value>RE82: Error in observable timer.</value>
   </data>
+  <data name="RE83" xml:space="preserve">
+    <value>RE83: Error defining the JoinProcessingTimestamp property at the observable join selector.</value>
+  </data>
   <data name="RE9" xml:space="preserve">
     <value />
   </data>

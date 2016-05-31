@@ -781,6 +781,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to RE83: Error defining the JoinProcessingTimestamp property at the observable join selector..
+        /// </summary>
+        internal static string RE83 {
+            get {
+                return ResourceManager.GetString("RE83", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to .
         /// </summary>
         internal static string RE9 {

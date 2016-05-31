@@ -20,7 +20,7 @@ namespace Integra.Space
         /// Reception date and time.
         /// </summary>
         private System.DateTime systemTimestamp;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ExtractedEventData"/> class.
         /// </summary>
@@ -49,6 +49,11 @@ namespace Integra.Space
                 return this.systemTimestamp;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the date and time before enumerable join processing.
+        /// </summary>
+        public System.DateTime JoinProcessingTimestamp { get; set; }
 
         /// <summary>
         /// Set the state of the event.

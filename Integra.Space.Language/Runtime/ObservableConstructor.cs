@@ -294,8 +294,8 @@ namespace Integra.Space.Language.Runtime
         public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
         {
             // create the lag varaibles
-            this.lagVariables.Add(0, Expression.Variable(typeof(double), "lagIzq"));
-            this.lagVariables.Add(1, Expression.Variable(typeof(double), "lagDer"));
+            this.lagVariables.Add(0, Expression.Variable(typeof(TimeSpan), "lagIzq"));
+            this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
 
             Expression rootExpression = this.GenerateExpressionTree(plan);
 
@@ -958,8 +958,9 @@ namespace Integra.Space.Language.Runtime
 
             // ConstantExpression bufferSizeOfJoinSources = Expression.Constant(double.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]), typeof(double));
             Expression sum = Expression.Add(lagVariable, bufferSizeOfJoinSources);
-            Expression bufferTime = Expression.Call(typeof(TimeSpan).GetMethod("FromMilliseconds"), sum);
-            Expression timer = Expression.Call(methodTimer, bufferTime, Expression.Constant(this.context.Scheduler.GetScheduler()));
+            
+            // Expression bufferTime = Expression.Call(typeof(TimeSpan).GetMethod("FromMilliseconds"), sum);
+            Expression timer = Expression.Call(methodTimer, sum, Expression.Constant(this.context.Scheduler.GetScheduler()));
 
             Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, timer, new List<Expression>(), result, true, string.Format("Start of the observable timer at {0}.", source), string.Format("End of the observable timer at {0}.", source), RUNTIME_ERRORS.RE82);
 
@@ -1098,17 +1099,14 @@ namespace Integra.Space.Language.Runtime
             {
                 // para settear el atributo timeout a true
                 ParameterExpression sideParam = null;
-                ParameterExpression varLag = null;
 
                 if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinLeftDuration))
                 {
                     sideParam = this.actualScope.ParentScope.GetParameterByIndex(0);
-                    varLag = this.lagVariables[0];
                 }
                 else if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinRightDuration))
                 {
                     sideParam = this.actualScope.ParentScope.GetParameterByIndex(1);
-                    varLag = this.lagVariables[1];
                 }
 
                 Expression toList = this.EnumerableToList(actualNode, sideParam);
@@ -1127,18 +1125,9 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression singleEvent = this.actualScope.GetFirstParameter();
 
                 MethodInfo setStateMethod = typeof(ExtractedEventData).GetMethod("SetState");
-
-                ParameterExpression nowParam = Expression.Parameter(typeof(DateTime), "NowParameter");
-                Expression now = Expression.Assign(nowParam, Expression.Property(null, typeof(DateTime).GetProperty("Now")));
-                Expression getLag = Expression.Assign(varLag, Expression.Property(Expression.Subtract(nowParam, Expression.Property(singleEvent, "SystemTimestamp")), "TotalMilliseconds"));
-
-                Expression blockExpired = Expression.IfThen(
-                                            Expression.Call(singleEvent, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Expired, typeof(ExtractedEventDataStateEnum))),
-                                            getLag
-                                            );
-
+                
                 Type delegateTypeForSetTimeout = typeof(Action<>).MakeGenericType(toList.Type.GetGenericArguments()[0]);
-                LambdaExpression lambdaSetTimeout = Expression.Lambda(delegateTypeForSetTimeout, blockExpired, new ParameterExpression[] { singleEvent });
+                LambdaExpression lambdaSetTimeout = Expression.Lambda(delegateTypeForSetTimeout, Expression.Call(singleEvent, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Expired, typeof(ExtractedEventDataStateEnum))), new ParameterExpression[] { singleEvent });
 
                 this.PopScope();
 
@@ -1166,8 +1155,6 @@ namespace Integra.Space.Language.Runtime
                 if (bool.Parse(actualNode.Properties["HasBody"].ToString()) == true)
                 {
                     body = Expression.Block(
-                        new[] { nowParam },
-                        now,
                         callToSetTimeoutMethod,
                         Expression.Call(this.observer, onNextMethod, right),
                         this.CreateObservableEmpty(actualNode)
@@ -1176,8 +1163,6 @@ namespace Integra.Space.Language.Runtime
                 else
                 {
                     body = Expression.Block(
-                        new[] { nowParam },
-                        now,
                         callToSetTimeoutMethod,
                         this.CreateObservableEmpty(actualNode)
                         );
@@ -1325,23 +1310,20 @@ namespace Integra.Space.Language.Runtime
 
                 ParameterExpression nowVariable = Expression.Variable(typeof(DateTime), "NowVariable");
                 Expression now = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
-                Expression getLagIzq = Expression.Assign(this.lagVariables[0], Expression.Property(Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorLeftParam, "SystemTimestamp")), "TotalMilliseconds"));
-                Expression getLagDer = Expression.Assign(this.lagVariables[1], Expression.Property(Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorRightParam, "SystemTimestamp")), "TotalMilliseconds"));
+                Expression getLagIzq = Expression.Assign(this.lagVariables[0], Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorLeftParam, "JoinProcessingTimestamp")));
+                Expression getLagDer = Expression.Assign(this.lagVariables[1], Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorRightParam, "JoinProcessingTimestamp")));
 
                 Expression enumerableSelector = Expression.Block(
-                    new[] { paramToReturnInSelector },                    
+                    new[] { paramToReturnInSelector, nowVariable },                    
                     Expression.Assign(paramToReturnInSelector, Expression.Constant(null, methodCreate.ReturnType)),
+                    Expression.Assign(nowVariable, now),
+                    getLagIzq,
+                    getLagDer,
                     Expression.IfThen(
                         Expression.Call(enumerableSelectorLeftParam, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Matched, typeof(ExtractedEventDataStateEnum))),
                         Expression.IfThen(
                             Expression.Call(enumerableSelectorRightParam, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Matched, typeof(ExtractedEventDataStateEnum))),
-                            Expression.Block(
-                                new[] { nowVariable },
-                                Expression.Assign(nowVariable, now),
-                                getLagIzq,
-                                getLagDer,
-                                Expression.Assign(paramToReturnInSelector, Expression.Call(methodCreate, enumerableSelectorLeftParam, enumerableSelectorRightParam))
-                            )
+                            Expression.Assign(paramToReturnInSelector, Expression.Call(methodCreate, enumerableSelectorLeftParam, enumerableSelectorRightParam))
                         )
                     ),
                     paramToReturnInSelector
@@ -1393,10 +1375,66 @@ namespace Integra.Space.Language.Runtime
                     );
 
                 Expression tryCatchExprJoin = this.CreateEnumerableWhere(actualNode, tryCatchExprEnumJoin, whereBlock);
-
                 Expression tryCatchExprToObservable = this.EnumerableToObservable(actualNode, tryCatchExprJoin);
+                
+                ParameterExpression nowVariableJoinProcessing = Expression.Variable(typeof(DateTime), "NowVariable");
+                Expression nowJoinProcessing = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
 
-                LambdaExpression lambdaEnumerableJoin = Expression.Lambda(typeof(Func<,,>).MakeGenericType(source1Type, source2Type, tryCatchExprToObservable.Type), tryCatchExprToObservable, new ParameterExpression[] { source1, source2 });
+                /*** start left set timestamp before join processing ***/
+
+                Expression leftToList = this.EnumerableToList(actualNode, source1);
+
+                // new scope para el foreach
+                this.CreateNewScope(actualNode, leftToList);
+
+                // obtenemos el metodo foreach
+                MethodInfo leftMethodForEach = typeof(System.Collections.Generic.List<>).MakeGenericType(leftToList.Type.GetGenericArguments()[0]).GetMethods().Where(m =>
+                {
+                    return m.Name == "ForEach" && m.GetParameters().Length == 1;
+                })
+                .Single();
+
+                ParameterExpression leftSingleEvent = this.actualScope.GetFirstParameter();                
+                LambdaExpression leftLambdaSetDateTimeLeftJoinProcessing = Expression.Lambda(typeof(Action<>).MakeGenericType(leftToList.Type.GetGenericArguments()[0]), Expression.Assign(Expression.Property(leftSingleEvent, "JoinProcessingTimestamp"), nowVariableJoinProcessing), new ParameterExpression[] { leftSingleEvent });
+
+                // este pop es del CreateNewScope al inicio de este bloque
+                this.PopScope();
+                Expression leftCallSetDateTimeLeftJoinProcessing = this.GenerateEventBlock(actualNode, new ParameterExpression[] { }, Expression.Call(leftToList, leftMethodForEach, leftLambdaSetDateTimeLeftJoinProcessing), new List<Expression>(), null, false, "Start of the enumerable foreach for set left processing timespan.", "End of the enumerable foreach for set left processing timespan.", RUNTIME_ERRORS.RE83);
+
+                /*** end left set timestamp before join processing ***/
+
+                /*** start right set timestamp before join processing ***/
+
+                Expression rightToList = this.EnumerableToList(actualNode, source2);
+
+                // new scope para el foreach
+                this.CreateNewScope(actualNode, rightToList);
+
+                // obtenemos el metodo foreach
+                MethodInfo rightMethodForEach = typeof(System.Collections.Generic.List<>).MakeGenericType(rightToList.Type.GetGenericArguments()[0]).GetMethods().Where(m =>
+                {
+                    return m.Name == "ForEach" && m.GetParameters().Length == 1;
+                })
+                .Single();
+
+                ParameterExpression rightSingleEvent = this.actualScope.GetFirstParameter();
+                LambdaExpression rightLambdaSetDateTimeLeftJoinProcessing = Expression.Lambda(typeof(Action<>).MakeGenericType(rightToList.Type.GetGenericArguments()[0]), Expression.Assign(Expression.Property(rightSingleEvent, "JoinProcessingTimestamp"), nowVariableJoinProcessing), new ParameterExpression[] { rightSingleEvent });
+
+                // este pop es del CreateNewScope al inicio de este bloque
+                this.PopScope();
+                Expression rightCallSetDateTimeLeftJoinProcessing = this.GenerateEventBlock(actualNode, new ParameterExpression[] { }, Expression.Call(rightToList, rightMethodForEach, rightLambdaSetDateTimeLeftJoinProcessing), new List<Expression>(), null, false, "Start of the enumerable foreach for set right processing timespan.", "End of the enumerable foreach for set right processing timespan.", RUNTIME_ERRORS.RE83);
+
+                /*** end right set timestamp before join processing ***/
+
+                Expression blockJoinSelector = Expression.Block(
+                    new[] { nowVariableJoinProcessing },
+                    Expression.Assign(nowVariableJoinProcessing, nowJoinProcessing),
+                    leftCallSetDateTimeLeftJoinProcessing,
+                    rightCallSetDateTimeLeftJoinProcessing,
+                    tryCatchExprToObservable
+                    );
+
+                LambdaExpression lambdaEnumerableJoin = Expression.Lambda(typeof(Func<,,>).MakeGenericType(source1Type, source2Type, blockJoinSelector.Type), blockJoinSelector, new ParameterExpression[] { source1, source2 });
 
                 return lambdaEnumerableJoin;
             }
