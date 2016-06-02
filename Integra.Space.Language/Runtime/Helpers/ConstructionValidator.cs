@@ -57,7 +57,7 @@ namespace Integra.Space.Language.Runtime
 
             if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
             {
-                if (TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) < TimeSpan.FromSeconds(0) || TimeSpan.Parse(((ConstantExpression)bufferTimeOrSize).Value.ToString()) > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
+                if ((TimeSpan)Expression.Lambda(bufferTimeOrSize).Compile().DynamicInvoke() < TimeSpan.FromSeconds(0) || (TimeSpan)Expression.Lambda(bufferTimeOrSize).Compile().DynamicInvoke() > TimeSpan.FromSeconds(int.Parse(ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString())))
                 {
                     throw new CompilationException("Error al compilar, el tamaño de la ventana debe ser mayor o igual a 1 y menor o igual a " + ConfigurationManager.AppSettings["MaxWindowTimeInSeconds"].ToString() + ".");
                 }

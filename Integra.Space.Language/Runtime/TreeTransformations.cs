@@ -104,7 +104,9 @@ namespace Integra.Space.Language.Runtime
         {
             this.dictionaryOfTypes = new Dictionary<string, Type>();
             List<FieldNode> fieldList;
-            bool isSecondSource = false;
+            int position = 0;
+            ExtractedEventDataTypeBuilder eedtb;
+            Type newType = null;
             foreach (IGrouping<string, PlanNode> grupo in objects)
             {
                 fieldList = new List<FieldNode>();
@@ -112,11 +114,12 @@ namespace Integra.Space.Language.Runtime
                 {
                     fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), this.ConvertToNullable(Type.GetType(@object.Properties["DataType"].ToString())), 0));
                 }
-
-                Type newType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList, isSecondSource); // typeof(ExtractedEventData); // LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(fieldList);
-
-                isSecondSource = true;
+                
+                eedtb = new ExtractedEventDataTypeBuilder(fieldList, position);
+                newType = eedtb.CreateNewType();
+                                
                 this.dictionaryOfTypes.Add(grupo.Key, newType);
+                position++;
             }
         }
 

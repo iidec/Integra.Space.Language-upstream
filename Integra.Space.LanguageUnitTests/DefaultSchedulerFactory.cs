@@ -2,6 +2,8 @@
 using System.Reactive.Concurrency;
 using System.Configuration;
 using Microsoft.Reactive.Testing;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Integra.Space.LanguageUnitTests
 {
@@ -9,6 +11,7 @@ namespace Integra.Space.LanguageUnitTests
     {
         private static DefaultSchedulerFactory factory = new DefaultSchedulerFactory();
         private TestScheduler testScheduler;
+        private Expression testSchedulerExpression;
         
         public DefaultSchedulerFactory()
         {
@@ -39,37 +42,43 @@ namespace Integra.Space.LanguageUnitTests
         {
             return System.Reactive.Concurrency.ThreadPoolScheduler.Instance;
         }
-
+        
         /// <inheritdoc />
-        public IScheduler GetScheduler()
+        public Expression GetScheduler()
         {
             int selectedScheduler = int.Parse(ConfigurationManager.AppSettings["QueryScheduler"]);
 
             switch (selectedScheduler)
             {
                 case (int)SchedulerTypeEnum.CurrentThreadScheduler:
-                    return CurrentThreadScheduler.Instance;
+                    return Expression.Property(null, typeof(CurrentThreadScheduler).GetProperty("Instance"));
                 case (int)SchedulerTypeEnum.DefaultScheduler:
-                    return DefaultScheduler.Instance;
+                    return Expression.Property(null, typeof(DefaultScheduler).GetProperty("Instance"));
                 case (int)SchedulerTypeEnum.EventLoopScheduler:
-                    return new EventLoopScheduler();
+                    return Expression.New(typeof(EventLoopScheduler));
                 case (int)SchedulerTypeEnum.HistoricalScheduler:
-                    return new HistoricalScheduler();
+                    return Expression.New(typeof(HistoricalScheduler));
                 case (int)SchedulerTypeEnum.ImmediateScheduler:
-                    return ImmediateScheduler.Instance;
+                    return Expression.Property(null, typeof(ImmediateScheduler).GetProperty("Instance"));
                 case (int)SchedulerTypeEnum.NewThreadScheduler:
-                    return NewThreadScheduler.Default;
+                    return Expression.Property(null, typeof(NewThreadScheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.Scheduler:
-                    return Scheduler.Default;
+                    return Expression.Property(null, typeof(Scheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.TaskPoolScheduler:
-                    return TaskPoolScheduler.Default;
+                    return Expression.Property(null, typeof(TaskPoolScheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.ThreadPoolScheduler:
-                    return ThreadPoolScheduler.Instance;
+                    return Expression.Property(null, typeof(ThreadPoolScheduler).GetProperty("Instance"));
                 case (int)SchedulerTypeEnum.TestScheduler:
-                    return this.TestScheduler;
+                    this.testSchedulerExpression = Expression.New(typeof(TestScheduler));
+                    return testSchedulerExpression;
                 default:
                     throw new Exception("Undefined or not suported scheduler.");
             }
+        }
+
+        public IScheduler GetTestScheduler()
+        {
+            return this.testScheduler;
         }
     }
 }

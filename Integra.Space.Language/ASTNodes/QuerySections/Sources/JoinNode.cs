@@ -276,8 +276,8 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
             PlanNode windowSize = new PlanNode();
             windowSize.NodeType = PlanNodeTypeEnum.Constant;
-            windowSize.Properties.Add("Value", System.TimeSpan.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]));
-            windowSize.Properties.Add("DataType", typeof(System.TimeSpan).ToString());
+            windowSize.Properties.Add("Value", int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]));
+            windowSize.Properties.Add("DataType", typeof(int).ToString());
 
             bufferSizeForJoin.Children.Add(windowSize);
 

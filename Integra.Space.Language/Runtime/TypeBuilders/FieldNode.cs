@@ -82,5 +82,10 @@ namespace Integra.Space.Language.Runtime
                 return this.incidenciasEnOnCondition;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the field builder of the actual field.
+        /// </summary>
+        public System.Reflection.Emit.FieldBuilder FieldBuilder { get; set; }
     }
 }

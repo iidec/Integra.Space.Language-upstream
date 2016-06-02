@@ -1498,7 +1498,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void CustomLoadTest2()
         {
             #region Compiler
-
+            
             string eql = "cross " +
                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
@@ -1521,7 +1521,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool measureElapsedTime = false;
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            //Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+            Delegate result = te.Compile(plan);
 
             #endregion Compiler
 
@@ -1540,14 +1541,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
             Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
-
-            //helper.CreateTest(new Guid("00000000-0000-0000-0000-000000000000"), "Test1");
+            
             Tuple<EventObject, long>[] rqCreated = ltEvents.Item1;
-            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rqCreated);
             Tuple<EventObject, long>[] rsCreated = ltEvents.Item2;
-            //helper.SaveEvents(new Guid("00000000-0000-0000-0000-000000000000"), rsCreated);
             Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
-            //helper.SaveExpectedResults(new Guid("00000000-0000-0000-0000-000000000000"), expectedResults);
 
             #region Prints
 
@@ -1601,7 +1598,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return //result(input1, input2)
+                           ((IObservable<object>)result.DynamicInvoke(input1, input2))
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);

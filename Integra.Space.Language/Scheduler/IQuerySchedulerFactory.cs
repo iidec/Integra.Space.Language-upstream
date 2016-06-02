@@ -16,6 +16,12 @@ namespace Integra.Space
         /// Gets a custom scheduler
         /// </summary>
         /// <returns>Custom scheduler</returns>
-        System.Reactive.Concurrency.IScheduler GetScheduler();
+        System.Linq.Expressions.Expression GetScheduler();
+        
+        /// <summary>
+        /// Gets the test scheduler.
+        /// </summary>
+        /// <returns>The test scheduler.</returns>
+        IScheduler GetTestScheduler();
     }
 }

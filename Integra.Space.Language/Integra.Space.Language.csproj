@@ -178,6 +178,7 @@
     <Compile Include="Query\Serialization\IEventResultSerializable.cs" />
     <Compile Include="Query\Serialization\IQueryResultSerializable.cs" />
     <Compile Include="Query\Serialization\IQueryResultWriter.cs" />
+    <Compile Include="Query\SpaceQuery.cs" />
     <Compile Include="Resources\RUNTIME_ERRORS.Designer.cs">
       <DependentUpon>RUNTIME_ERRORS.resx</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -216,15 +217,18 @@
     <Compile Include="Runtime\TestObjects\RightExtractedDataComparer.cs" />
     <Compile Include="Runtime\TestObjects\RightExtractedData.cs" />
     <Compile Include="Runtime\TreeTransformations.cs" />
+    <Compile Include="Runtime\TypeBuilders\DynamicObjectTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\EventResultTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\ExtractedEventDataTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Comparers\GroupByKeyComparer.cs" />
     <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />
-    <Compile Include="Runtime\TypeBuilders\ResultTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\SpaceQueryTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\SpaceTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\JoinSideObjectComparerTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\QueryResultTypeBuilder.cs" />
     <Compile Include="Runtime\Scope\Scope.cs" />
     <Compile Include="Scheduler\IQuerySchedulerFactory.cs" />
-    <Compile Include="Runtime\TypeBuilders\LanguageTypeBuilder.cs">
-      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
-    </Compile>
     <Compile Include="Runtime\Helpers\NodesFinder.cs" />
     <Compile Include="Runtime\ObservableConstructor.cs" />
     <Compile Include="ExecutionPlan\PlanNodeTypeExtensions.cs" />

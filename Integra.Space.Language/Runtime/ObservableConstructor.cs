@@ -88,6 +88,16 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         private Dictionary<int, ParameterExpression> lagVariables;
 
+        /// <summary>
+        /// Buffer size of join sources expression.
+        /// </summary>
+        private ParameterExpression bufferSizeOfJoinSourcesExpression;
+
+        /// <summary>
+        /// Scheduler defined in the compile context.
+        /// </summary>
+        private ParameterExpression schedulerExpression;
+
         #endregion Field definitions
 
         #region Constructors
@@ -112,6 +122,9 @@ namespace Integra.Space.Language.Runtime
             this.isInConditionOn = false;
             this.IsSecondSource = false;
             this.lagVariables = new Dictionary<int, ParameterExpression>();
+
+            this.bufferSizeOfJoinSourcesExpression = Expression.Variable(typeof(TimeSpan), "bufferSizeOfJoinSources");
+            this.schedulerExpression = Expression.Variable(typeof(System.Reactive.Concurrency.IScheduler), "Scheduler");
         }
 
         #endregion Constructors
@@ -176,13 +189,31 @@ namespace Integra.Space.Language.Runtime
         /// Creates a delegate
         /// </summary>
         /// <param name="plan">Execution plan</param>
-        /// <param name="inputType">Input type.</param>
-        /// <param name="outputType">Output type.</param>
         /// <returns>Result delegate.</returns>
-        public Delegate Compile(PlanNode plan, Type inputType, Type outputType)
+        public Delegate Compile(PlanNode plan)
         {
-            var delegateType = typeof(Func<,>).MakeGenericType(inputType, outputType);
-            Delegate result = Expression.Lambda(delegateType, this.GenerateExpressionTree(plan), this.parameterList.ToArray()).Compile();
+            ConstructorInfo ctrTimeSpan = typeof(TimeSpan).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+            int bufferSize = int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]);
+            this.lagVariables.Add(0, Expression.Variable(typeof(TimeSpan), "lagIzq"));
+            this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
+
+            Expression rootExpression = this.GenerateExpressionTree(plan);
+
+            Expression rootBlock = Expression.Block(
+                                        new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
+                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
+                                        Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
+                                        Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
+                                        rootExpression
+                                        );
+
+            LambdaExpression lambda = Expression.Lambda(rootBlock, this.parameterList.ToArray());
+
+            SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.context.QueryName, lambda);
+            var queryType = sqtb.CreateNewType();
+
+            Delegate result = lambda.Compile();
 
             this.actualScope = null;
             this.parameterList.Clear();
@@ -279,8 +310,15 @@ namespace Integra.Space.Language.Runtime
         public Expression<Func<In, Out>> CreateLambda<In, Out>(PlanNode plan)
         {
             Expression rootExpression = this.GenerateExpressionTree(plan);
-            Expression<Func<In, Out>> result2 = Expression.Lambda<Func<In, Out>>(rootExpression, this.parameterList.ToArray());
-            return result2;
+
+            Expression rootBlock = Expression.Block(
+                                        new[] { this.schedulerExpression },
+                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        rootExpression
+                                        );
+
+            Expression<Func<In, Out>> result = Expression.Lambda<Func<In, Out>>(rootBlock, this.parameterList.ToArray());
+            return result;
         }
 
         /// <summary>
@@ -294,17 +332,23 @@ namespace Integra.Space.Language.Runtime
         public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
         {
             // create the lag varaibles
+            ConstructorInfo ctrTimeSpan = typeof(TimeSpan).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+            int bufferSize = int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]);
             this.lagVariables.Add(0, Expression.Variable(typeof(TimeSpan), "lagIzq"));
             this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
 
             Expression rootExpression = this.GenerateExpressionTree(plan);
 
             Expression rootBlock = Expression.Block(
-                                        new[] { this.lagVariables[0], this.lagVariables[1] },
+                                        new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
+                                        Expression.Assign(this.schedulerExpression, Expression.Constant(this.context.Scheduler.GetTestScheduler())),
+                                        /*Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),*/
+                                        Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
                                         Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
                                         Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
                                         rootExpression
                                         );
+
             Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootBlock, this.parameterList.First(), this.parameterList.Last());
 
             return result;
@@ -318,7 +362,16 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public Expression<Func<Out>> CreateLambda<Out>(PlanNode plan)
         {
+            Expression rootExpression = this.GenerateExpressionTree(plan); 
+
+            Expression rootBlock = Expression.Block(
+                                        new[] { this.schedulerExpression },
+                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        rootExpression
+                                        );
+
             Expression<Func<Out>> result = Expression.Lambda<Func<Out>>(this.GenerateExpressionTree(plan), this.parameterList.ToArray());
+
             return result;
         }
 
@@ -957,10 +1010,10 @@ namespace Integra.Space.Language.Runtime
             }
 
             // ConstantExpression bufferSizeOfJoinSources = Expression.Constant(double.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]), typeof(double));
-            Expression sum = Expression.Add(lagVariable, bufferSizeOfJoinSources);
-            
+            Expression sum = Expression.Add(lagVariable, this.bufferSizeOfJoinSourcesExpression);
+
             // Expression bufferTime = Expression.Call(typeof(TimeSpan).GetMethod("FromMilliseconds"), sum);
-            Expression timer = Expression.Call(methodTimer, sum, Expression.Constant(this.context.Scheduler.GetScheduler()));
+            Expression timer = Expression.Call(methodTimer, sum, this.schedulerExpression);
 
             Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, timer, new List<Expression>(), result, true, string.Format("Start of the observable timer at {0}.", source), string.Format("End of the observable timer at {0}.", source), RUNTIME_ERRORS.RE82);
 
@@ -1012,7 +1065,7 @@ namespace Integra.Space.Language.Runtime
                                             .Where(m => m.Name == "Empty" && m.GetParameters().Length == 1 && m.GetParameters()[0].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)))
                                             .Single().MakeGenericMethod(genericType);
 
-            Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(null, methodEmpty, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of the observable empty.", "End of the observable empty.", RUNTIME_ERRORS.RE66);
+            Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(null, methodEmpty, this.schedulerExpression), new List<Expression>(), result, true, "Start of the observable empty.", "End of the observable empty.", RUNTIME_ERRORS.RE66);
             /*Expression resultExpression =
                 Expression.Block(
                     new[] { result },
@@ -1046,7 +1099,7 @@ namespace Integra.Space.Language.Runtime
                                                     .Where(m => { return m.Name == "Timeout" && m.GetParameters().Length == 4 && m.GetParameters()[1].ParameterType.Equals(typeof(TimeSpan)) && m.GetParameters()[3].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
                                                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                    valueResult = Expression.Call(timeoutMethod, incomingObservable, right, this.CreateObservableEmpty(actualNode), Expression.Constant(this.context.Scheduler.GetScheduler()));
+                    valueResult = Expression.Call(timeoutMethod, incomingObservable, right, this.CreateObservableEmpty(actualNode), this.schedulerExpression);
                 }
                 else
                 {
@@ -1054,7 +1107,7 @@ namespace Integra.Space.Language.Runtime
                                                     .Where(m => { return m.Name == "Timeout" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.Equals(typeof(TimeSpan)) && m.GetParameters()[2].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
                                                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                    valueResult = Expression.Call(timeoutMethod, incomingObservable, right, Expression.Constant(this.context.Scheduler.GetScheduler()));
+                    valueResult = Expression.Call(timeoutMethod, incomingObservable, right, this.schedulerExpression);
                 }
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, valueResult, new List<Expression>(), result, true, "Start of the observable timeout.", "End of the observable timeout.", RUNTIME_ERRORS.RE67);
@@ -1125,7 +1178,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression singleEvent = this.actualScope.GetFirstParameter();
 
                 MethodInfo setStateMethod = typeof(ExtractedEventData).GetMethod("SetState");
-                
+
                 Type delegateTypeForSetTimeout = typeof(Action<>).MakeGenericType(toList.Type.GetGenericArguments()[0]);
                 LambdaExpression lambdaSetTimeout = Expression.Lambda(delegateTypeForSetTimeout, Expression.Call(singleEvent, setStateMethod, Expression.Constant(ExtractedEventDataStateEnum.Expired, typeof(ExtractedEventDataStateEnum))), new ParameterExpression[] { singleEvent });
 
@@ -1234,7 +1287,7 @@ namespace Integra.Space.Language.Runtime
 
             ParameterExpression obvJoinResult = Expression.Variable(typeof(IObservable<>).MakeGenericType(lambdaEnumerableJoin.ReturnType), "ObservableJoinResult");
             ParameterExpression paramException2 = Expression.Variable(typeof(Exception), "ObservableJoinException");
-            
+
             Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), new List<Expression>(), obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
             /*Expression tryCatchExprObvJoin =
                 Expression.Block(
@@ -1314,7 +1367,7 @@ namespace Integra.Space.Language.Runtime
                 Expression getLagDer = Expression.Assign(this.lagVariables[1], Expression.Subtract(nowVariable, Expression.Property(enumerableSelectorRightParam, "JoinProcessingTimestamp")));
 
                 Expression enumerableSelector = Expression.Block(
-                    new[] { paramToReturnInSelector, nowVariable },                    
+                    new[] { paramToReturnInSelector, nowVariable },
                     Expression.Assign(paramToReturnInSelector, Expression.Constant(null, methodCreate.ReturnType)),
                     Expression.Assign(nowVariable, now),
                     getLagIzq,
@@ -1376,7 +1429,7 @@ namespace Integra.Space.Language.Runtime
 
                 Expression tryCatchExprJoin = this.CreateEnumerableWhere(actualNode, tryCatchExprEnumJoin, whereBlock);
                 Expression tryCatchExprToObservable = this.EnumerableToObservable(actualNode, tryCatchExprJoin);
-                
+
                 ParameterExpression nowVariableJoinProcessing = Expression.Variable(typeof(DateTime), "NowVariable");
                 Expression nowJoinProcessing = Expression.Property(null, typeof(DateTime).GetProperty("Now"));
 
@@ -1394,7 +1447,7 @@ namespace Integra.Space.Language.Runtime
                 })
                 .Single();
 
-                ParameterExpression leftSingleEvent = this.actualScope.GetFirstParameter();                
+                ParameterExpression leftSingleEvent = this.actualScope.GetFirstParameter();
                 LambdaExpression leftLambdaSetDateTimeLeftJoinProcessing = Expression.Lambda(typeof(Action<>).MakeGenericType(leftToList.Type.GetGenericArguments()[0]), Expression.Assign(Expression.Property(leftSingleEvent, "JoinProcessingTimestamp"), nowVariableJoinProcessing), new ParameterExpression[] { leftSingleEvent });
 
                 // este pop es del CreateNewScope al inicio de este bloque
@@ -2552,7 +2605,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Where(m => { return m.Name == "ObserveOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(observeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of ObserveOn.", "End of ObserveOn.", RUNTIME_ERRORS.RE75);
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(observeOnMethod, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of ObserveOn.", "End of ObserveOn.", RUNTIME_ERRORS.RE75);
                 /*Expression resultExpression =
                     Expression.Block(
                         new[] { result },
@@ -2598,7 +2651,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Where(m => { return m.Name == "SubscribeOn" && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler)); })
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeOnMethod, incomingObservable, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of SubscribeOn.", "End of Subscribe.", RUNTIME_ERRORS.RE76);
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeOnMethod, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of SubscribeOn.", "End of Subscribe.", RUNTIME_ERRORS.RE76);
                 /*Expression resultExpression =
                     Expression.Block(
                         new[] { result },
@@ -2645,10 +2698,6 @@ namespace Integra.Space.Language.Runtime
             try
             {
                 ConstructionValidator.Validate(actualNode.NodeType, actualNode, incomingObservable, bufferTimeOrSize);
-                Expression bufferScheduler;
-
-                System.Reactive.Concurrency.IScheduler scheduler = this.context.Scheduler.GetScheduler();
-                bufferScheduler = Expression.Constant(scheduler);
 
                 MethodInfo methodBuffer = null;
                 if (bufferTimeOrSize.Type.IsGenericType)
@@ -2682,7 +2731,7 @@ namespace Integra.Space.Language.Runtime
                 Expression function = Expression.Throw(Expression.New(typeof(Exception).GetConstructor(new Type[] { typeof(string), typeof(RuntimeException) }), Expression.Constant(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, "Invalid 'apply window of'.", actualNode.NodeText), typeof(string)), paramException));
                 if (bufferTimeOrSize.Type.Equals(typeof(TimeSpan)))
                 {
-                    function = Expression.Call(methodBuffer, incomingObservable, bufferTimeOrSize, bufferScheduler);
+                    function = Expression.Call(methodBuffer, incomingObservable, bufferTimeOrSize, this.schedulerExpression);
                 }
                 else if (bufferTimeOrSize.Type.Equals(typeof(int)) || (bufferTimeOrSize.Type.IsGenericType && bufferTimeOrSize.Type.GetGenericTypeDefinition() == typeof(Func<>)))
                 {
@@ -2741,7 +2790,7 @@ namespace Integra.Space.Language.Runtime
                 })
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodTake, incomingObservable, takeSize, Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of the observable 'top' function", "End of the observable 'top' function", RUNTIME_ERRORS.RE16);
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodTake, incomingObservable, takeSize, this.schedulerExpression), new List<Expression>(), result, true, "Start of the observable 'top' function", "End of the observable 'top' function", RUNTIME_ERRORS.RE16);
 
                 /*Expression resultExpression =
                     Expression.Block(
@@ -2797,7 +2846,7 @@ namespace Integra.Space.Language.Runtime
                 MethodInfo get1 = bufferTimeAndSize.Type.GetProperty("TimeSpanValue").GetMethod;
                 MethodInfo get2 = bufferTimeAndSize.Type.GetProperty("IntegerValue").GetMethod;
 
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodBuffer, incomingObservable, Expression.Call(bufferTimeAndSize, get1), Expression.Call(bufferTimeAndSize, get2), Expression.Constant(this.context.Scheduler.GetScheduler())), new List<Expression>(), result, true, "Start of the expression observable buffer with time and size", "End of the expression observable buffer with time and size", RUNTIME_ERRORS.RE18);
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodBuffer, incomingObservable, Expression.Call(bufferTimeAndSize, get1), Expression.Call(bufferTimeAndSize, get2), this.schedulerExpression), new List<Expression>(), result, true, "Start of the expression observable buffer with time and size", "End of the expression observable buffer with time and size", RUNTIME_ERRORS.RE18);
 
                 /*Expression resultExpression =
                     Expression.Block(
@@ -3607,10 +3656,7 @@ namespace Integra.Space.Language.Runtime
                     .Where(m => m.Name == "ToObservable" && m.GetParameters().Length == 2)
                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
-                System.Reactive.Concurrency.IScheduler scheduler = this.context.Scheduler.GetScheduler();
-                Expression schedulerExp = Expression.Constant(scheduler);
-
-                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodToObservable, incomingObservable, schedulerExp), new List<Expression>(), result, true, "Start of the enumerable to observable", "End of the enumerable to observable", RUNTIME_ERRORS.RE61);
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodToObservable, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of the enumerable to observable", "End of the enumerable to observable", RUNTIME_ERRORS.RE61);
 
                 /*Expression resultExpression =
                     Expression.Block(
@@ -4116,13 +4162,9 @@ namespace Integra.Space.Language.Runtime
             ParameterExpression y = null;
             if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableSelect))
             {
-                myType = LanguageTypeBuilder.CompileResultType(listOfFields);
-                y = Expression.Variable(myType);
-                expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));
-            }
-            else if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableExtractedEventData))
-            {
-                myType = LanguageTypeBuilder.CompileExtractedEventDataSpecificTypeForJoin(listOfFields, this.IsSecondSource);
+                // myType = LanguageTypeBuilder.CompileResultType(listOfFields);
+                EventResultTypeBuilder ertb = new EventResultTypeBuilder(this.context.QueryName, listOfFields);
+                myType = ertb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));
             }
@@ -4165,7 +4207,9 @@ namespace Integra.Space.Language.Runtime
 
                 this.PopScope();
 
-                myType = LanguageTypeBuilder.CompileExtractedEventDataComparerTypeForJoin(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
+                // myType = LanguageTypeBuilder.CompileExtractedEventDataComparerTypeForJoin(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
+                JoinSideObjectComparerTypeBuilder jsoctb = new JoinSideObjectComparerTypeBuilder(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
+                myType = jsoctb.CreateNewType();
 
                 // this.isSecondSource = true;
                 y = Expression.Variable(myType);
@@ -4173,7 +4217,9 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
+                // myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
+                DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.QueryName, listOfFields);
+                myType = dotb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType)));
             }
@@ -4254,7 +4300,10 @@ namespace Integra.Space.Language.Runtime
                 }
             }
 
-            Type myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
+            // Type myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
+            DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.QueryName, listOfFields);
+            Type myType = dotb.CreateNewType();
+
             ParameterExpression y = Expression.Variable(myType);
             expressionList.Add(Expression.Assign(y, Expression.New(myType)));
 
@@ -4302,7 +4351,8 @@ namespace Integra.Space.Language.Runtime
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the result projection")));
             }
 
-            Type resultType = ResultTypeBuilder.CreateResultType(this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
+            QueryResultTypeBuilder qrtb = new QueryResultTypeBuilder(this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
+            Type resultType = qrtb.CreateNewType();
 
             // inicializo el observer con el tipo creado a partir de la proyección
             if (this.observer == null)
@@ -4406,7 +4456,7 @@ namespace Integra.Space.Language.Runtime
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(leftItem, leftType), Expression.Constant(rightItem, rightType));
                 }*/
-                
+
                 result = Expression.Variable(typeof(Tuple<,>).MakeGenericType(leftType, rightType), "JoinProjection");
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, valueToReturn, new List<Expression>(), result, true, "Start the join projection", "End the join projection", RUNTIME_ERRORS.RE80);
@@ -5231,7 +5281,7 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="plan">plan node to convert</param>
         /// <returns>expression tree of actual plan</returns>
-        private ConstantExpression GenerateConstant(PlanNode plan)
+        private Expression GenerateConstant(PlanNode plan)
         {
             if (!plan.Properties.ContainsKey("Value"))
             {
@@ -5251,6 +5301,12 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Type tipo = Type.GetType(plan.Properties["DataType"].ToString());
+                
+                if (tipo.Equals(typeof(TimeSpan)) || tipo.Equals(typeof(DateTime)))
+                {
+                    return Expression.Call(null, tipo.GetMethod("Parse", new Type[] { typeof(string) }), Expression.Constant(plan.Properties["Value"].ToString()));
+                }
+
                 return Expression.Constant(plan.Properties["Value"], tipo);
             }
             catch (Exception e)
