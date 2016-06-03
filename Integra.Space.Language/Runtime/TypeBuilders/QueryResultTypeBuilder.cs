@@ -14,22 +14,21 @@ namespace Integra.Space.Language.Runtime
     /// Query result type builder class.
     /// </summary>
     internal class QueryResultTypeBuilder : SpaceTypeBuilder
-    {        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryResultTypeBuilder"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
         /// <param name="resultArrayType">Type of the result array.</param>
-        public QueryResultTypeBuilder(string queryId, Type resultArrayType) : base("SpaceQueryResultAssembly_" + queryId, "SpaceQueryResult_" + queryId, typeof(QueryResult<>).MakeGenericType(resultArrayType))
+        public QueryResultTypeBuilder(AssemblyBuilder asmBuilder, string queryId, Type resultArrayType) : base(asmBuilder, "SpaceQueryResult_" + queryId, typeof(QueryResult<>).MakeGenericType(resultArrayType))
         {
         }
 
         /// <inheritdoc />
         public override Type CreateNewType()
         {
-            AssemblyBuilder asmBuilder = this.CreateAssembly();
-            ModuleBuilder modBuilder = this.CreateModule(asmBuilder);
-            TypeBuilder typeBuilder = this.CreateType(modBuilder);
+            TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
 
             return typeBuilder.CreateType();

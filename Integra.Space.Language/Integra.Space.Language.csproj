@@ -210,6 +210,7 @@
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
     <Compile Include="Runtime\CompileContext.cs" />
+    <Compile Include="Runtime\FakePipeline.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
     <Compile Include="Runtime\Helpers\Validations.cs" />
     <Compile Include="Runtime\TestObjects\LeftExtractedDataComparer.cs" />
@@ -223,6 +224,9 @@
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Comparers\GroupByKeyComparer.cs" />
     <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />
+    <Compile Include="Runtime\TypeBuilders\LanguageTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\SpaceAssemblyBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\SpaceModuleBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceQueryTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\JoinSideObjectComparerTypeBuilder.cs" />

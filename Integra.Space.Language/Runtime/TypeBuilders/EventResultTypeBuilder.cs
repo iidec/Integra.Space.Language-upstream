@@ -24,9 +24,10 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="EventResultTypeBuilder"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
         /// <param name="listOfFields">List of fields</param>
-        public EventResultTypeBuilder(string queryId, List<FieldNode> listOfFields) : base("SpaceEventResultAssembly_" + queryId, "SpaceEventResult_" + queryId, typeof(EventResult))
+        public EventResultTypeBuilder(AssemblyBuilder asmBuilder, string queryId, List<FieldNode> listOfFields) : base(asmBuilder, "SpaceEventResult_" + queryId, typeof(EventResult))
         {
             this.listOfFields = listOfFields;
         }
@@ -34,9 +35,7 @@ namespace Integra.Space.Language.Runtime
         /// <inheritdoc />
         public override Type CreateNewType()
         {
-            AssemblyBuilder asmBuilder = this.CreateAssembly();
-            ModuleBuilder modBuilder = this.CreateModule(asmBuilder);
-            TypeBuilder typeBuilder = this.CreateType(modBuilder);
+            TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
 
             foreach (var field in this.listOfFields)

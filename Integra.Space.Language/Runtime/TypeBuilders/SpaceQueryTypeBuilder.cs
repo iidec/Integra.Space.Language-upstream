@@ -30,9 +30,10 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="SpaceQueryTypeBuilder"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
         /// <param name="function">Lambda expression of the function to create.</param>
-        public SpaceQueryTypeBuilder(string queryId, LambdaExpression function) : base("SpaceQueryAssembly_" + queryId, "SpaceQuery_" + queryId, typeof(SpaceQuery))
+        public SpaceQueryTypeBuilder(AssemblyBuilder asmBuilder, string queryId, LambdaExpression function) : base(asmBuilder, "SpaceQuery_" + queryId, typeof(SpaceQuery))
         {
             this.queryId = queryId;
             this.function = function;
@@ -41,16 +42,29 @@ namespace Integra.Space.Language.Runtime
         /// <inheritdoc />
         public override Type CreateNewType()
         {
-            AssemblyBuilder asmBuilder = this.CreateAssembly();
-            ModuleBuilder modBuilder = this.CreateModule(asmBuilder);
-            TypeBuilder typeBuilder = this.CreateType(modBuilder);
+            TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
             
             this.CreateMethodForFunction(typeBuilder);
             Type newType = typeBuilder.CreateType();
-            this.SaveAssembly(asmBuilder);
 
             return newType;
+        }
+
+        /// <summary>
+        /// Create and save a new assembly.
+        /// </summary>
+        /// <returns>The new assembly created.</returns>
+        public Assembly CreateNewAssembly()
+        {
+            TypeBuilder typeBuilder = this.CreateType();
+            this.CreateConstructor(typeBuilder);
+
+            this.CreateMethodForFunction(typeBuilder);
+            Type newType = typeBuilder.CreateType();
+            string assemblyPath = this.SaveAssembly(this.AsmBuilder);
+            
+            return Assembly.Load(this.AsmBuilder.GetName());
         }
                         
         /// <inheritdoc />
@@ -76,9 +90,12 @@ namespace Integra.Space.Language.Runtime
         /// Saves the created assembly in a file.
         /// </summary>
         /// <param name="asmBuilder">Assembly builder</param>
-        private void SaveAssembly(AssemblyBuilder asmBuilder)
+        /// <returns>The assembly path.</returns>
+        private string SaveAssembly(AssemblyBuilder asmBuilder)
         {
-            asmBuilder.Save(asmBuilder.GetName().Name + SpaceTypeBuilder.FILEEXTENSION); // , PortableExecutableKinds.PE32Plus, ImageFileMachine.IA64);
+            string assemblyPath = asmBuilder.GetName().Name + SpaceAssemblyBuilder.FILEEXTENSION;
+            asmBuilder.Save(assemblyPath); // , PortableExecutableKinds.PE32Plus, ImageFileMachine.IA64);
+            return assemblyPath;
         }
 
         /// <inheritdoc />

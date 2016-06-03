@@ -230,9 +230,9 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             // agrega algunos nodos extra para a la compilación
-            PlanNode executionPlanNode = finalResult;
+            /*PlanNode executionPlanNode = finalResult;
             TreeTransformations tf = new TreeTransformations(executionPlanNode);
-            tf.Transform();
+            tf.Transform();*/
 
             return finalResult;
         }

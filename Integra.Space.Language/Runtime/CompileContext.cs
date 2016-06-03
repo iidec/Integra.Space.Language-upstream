@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.Runtime
 {
+    using System.Reflection.Emit;
     using Integra.Space.Language.Metadata;
 
     /// <summary>
@@ -26,6 +27,11 @@ namespace Integra.Space.Language.Runtime
         /// Indicates whether the compilation must be in debug mode.
         /// </summary>
         private bool debugMode = true;
+
+        /// <summary>
+        /// Value indicating whether the compilation is for test or not.
+        /// </summary>
+        private bool isTestMode = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether the print log is activated.
@@ -88,5 +94,26 @@ namespace Integra.Space.Language.Runtime
         /// Gets or sets the execution plan.
         /// </summary>
         public PlanNode ExecutionPlan { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the compilation is for test or not.
+        /// </summary>
+        public bool IsTestMode
+        {
+            get
+            {
+                return this.isTestMode;
+            }
+
+            set
+            {
+                this.isTestMode = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the assembly builder for this code generation.
+        /// </summary>
+        public AssemblyBuilder AsmBuilder { get; set; }
     }
 }

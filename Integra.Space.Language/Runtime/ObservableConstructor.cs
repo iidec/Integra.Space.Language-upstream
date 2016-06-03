@@ -190,7 +190,7 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="plan">Execution plan</param>
         /// <returns>Result delegate.</returns>
-        public Delegate Compile(PlanNode plan)
+        public Assembly Compile(PlanNode plan)
         {
             ConstructorInfo ctrTimeSpan = typeof(TimeSpan).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
             int bufferSize = int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]);
@@ -199,9 +199,21 @@ namespace Integra.Space.Language.Runtime
 
             Expression rootExpression = this.GenerateExpressionTree(plan);
 
+            Expression setSchedulerExp = null;
+            if (this.context.IsTestMode)
+            {
+                ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
+                this.parameterList.Add(schedulerParam);
+            }
+            else
+            {
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
+            }
+
             Expression rootBlock = Expression.Block(
                                         new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
-                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        setSchedulerExp,
                                         Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
                                         Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
                                         Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
@@ -210,11 +222,9 @@ namespace Integra.Space.Language.Runtime
 
             LambdaExpression lambda = Expression.Lambda(rootBlock, this.parameterList.ToArray());
 
-            SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.context.QueryName, lambda);
-            var queryType = sqtb.CreateNewType();
-
-            Delegate result = lambda.Compile();
-
+            SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.context.AsmBuilder, this.context.QueryName, lambda);
+            Assembly assembly = sqtb.CreateNewAssembly();
+            
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -223,8 +233,8 @@ namespace Integra.Space.Language.Runtime
             this.isInConditionOn = false;
             this.IsSecondSource = false;
 
-            Console.WriteLine("La función fue compilada exitosamente.");
-            return result;
+            Console.WriteLine("El assembly fue creado exitosamente.");
+            return assembly;
         }
 
         /// <summary>
@@ -338,11 +348,22 @@ namespace Integra.Space.Language.Runtime
             this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
 
             Expression rootExpression = this.GenerateExpressionTree(plan);
+            
+            Expression setSchedulerExp = null;
+            if (this.context.IsTestMode)
+            {
+                ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
+                this.parameterList.Add(schedulerParam);
+            }
+            else
+            {
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
+            }
 
             Expression rootBlock = Expression.Block(
                                         new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
-                                        Expression.Assign(this.schedulerExpression, Expression.Constant(this.context.Scheduler.GetTestScheduler())),
-                                        /*Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),*/
+                                        setSchedulerExp,
                                         Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
                                         Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
                                         Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
@@ -350,7 +371,7 @@ namespace Integra.Space.Language.Runtime
                                         );
 
             Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootBlock, this.parameterList.First(), this.parameterList.Last());
-
+            
             return result;
         }
 
@@ -4163,7 +4184,7 @@ namespace Integra.Space.Language.Runtime
             if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableSelect))
             {
                 // myType = LanguageTypeBuilder.CompileResultType(listOfFields);
-                EventResultTypeBuilder ertb = new EventResultTypeBuilder(this.context.QueryName, listOfFields);
+                EventResultTypeBuilder ertb = new EventResultTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
                 myType = ertb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));
@@ -4208,7 +4229,7 @@ namespace Integra.Space.Language.Runtime
                 this.PopScope();
 
                 // myType = LanguageTypeBuilder.CompileExtractedEventDataComparerTypeForJoin(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
-                JoinSideObjectComparerTypeBuilder jsoctb = new JoinSideObjectComparerTypeBuilder(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
+                JoinSideObjectComparerTypeBuilder jsoctb = new JoinSideObjectComparerTypeBuilder(this.context.AsmBuilder, listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
                 myType = jsoctb.CreateNewType();
 
                 // this.isSecondSource = true;
@@ -4218,7 +4239,7 @@ namespace Integra.Space.Language.Runtime
             else
             {
                 // myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
-                DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.QueryName, listOfFields);
+                DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
                 myType = dotb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType)));
@@ -4301,7 +4322,7 @@ namespace Integra.Space.Language.Runtime
             }
 
             // Type myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
-            DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.QueryName, listOfFields);
+            DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
             Type myType = dotb.CreateNewType();
 
             ParameterExpression y = Expression.Variable(myType);
@@ -4351,7 +4372,7 @@ namespace Integra.Space.Language.Runtime
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the result projection")));
             }
 
-            QueryResultTypeBuilder qrtb = new QueryResultTypeBuilder(this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
+            QueryResultTypeBuilder qrtb = new QueryResultTypeBuilder(this.context.AsmBuilder, this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
             Type resultType = qrtb.CreateNewType();
 
             // inicializo el observer con el tipo creado a partir de la proyección

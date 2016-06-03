@@ -2,6 +2,8 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using Integra.Space.Language.Runtime;
+using System.Reflection;
+using System.Linq;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
@@ -11,25 +13,41 @@ namespace Integra.Space.LanguageUnitTests.Constants
         [TestMethod]
         public void ConstantBooleanTrue()
         {
-            ExpressionParser parser = new ExpressionParser("true");
-            PlanNode plan = parser.Evaluate();
+            string eql = "true";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<bool> result = te.Compile<bool>(plan);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
 
-            Assert.AreEqual<object>(true, result(), "El plan obtenido difiere del plan esperado.");
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            Assert.AreEqual<object>(true, (bool)result.Invoke(queryObject, new object[] { dsf.TestScheduler }), "El plan obtenido difiere del plan esperado.");
         }
 
         [TestMethod]
         public void ConstantBooleanFalse()
         {
-            ExpressionParser parser = new ExpressionParser("false");
-            PlanNode plan = parser.Evaluate();
+            string eql = "false";
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<bool> result = te.Compile<bool>(plan);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
 
-            Assert.AreEqual<object>(false, result(), "El plan obtenido difiere del plan esperado.");
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            Assert.AreEqual<object>(false, (bool)result.Invoke(queryObject, new object[] { dsf.TestScheduler }), "El plan obtenido difiere del plan esperado.");
         }
     }
 }

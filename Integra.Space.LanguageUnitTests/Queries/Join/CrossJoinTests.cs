@@ -11,6 +11,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Integra.Space.LanguageUnitTests.Queries
@@ -1510,19 +1511,30 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                         "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.@event.Message.#1.#0 as c1, t1.@event.Message.#1.#1 as c2, isnull(t1.@event.SystemTimestamp, '01/01/2016') as ts1, " +
                                         "t2.@event.Message.#1.#0 as c3, t2.@event.Message.#1.#1 as c4, isnull(t2.@event.SourceTimestamp, '01/01/2017') as ts2 ";
-
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
+            
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            /*EQLPublicParser parser = new EQLPublicParser(eql);
+            PlanNode plan = parser.Evaluate().First();
 
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime });
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true });
             //Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
-            Delegate result = te.Compile(plan);
+            Assembly assembly = te.Compile(plan);*/
+            
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
             #endregion Compiler
 
@@ -1599,32 +1611,32 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 () =>
                 {
                     return //result(input1, input2)
-                           ((IObservable<object>)result.DynamicInvoke(input1, input2))
-                    .Select(x =>
-                    {
-                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
-                        var b1 = a.GetType().GetProperty("c1");
-                        var b2 = a.GetType().GetProperty("c2");
-                        var b3 = a.GetType().GetProperty("c3");
-                        var b4 = a.GetType().GetProperty("c4");
-                        var b5 = a.GetType().GetProperty("ts1");
-                        var b6 = a.GetType().GetProperty("ts2");
-                        var b7 = a.GetType().GetProperty("o1");
-                        var b8 = a.GetType().GetProperty("o2");
-                        var b9 = a.GetType().GetProperty("o3");
-                        return (object)(new
-                        {
-                            o1 = b7.GetValue(a),
-                            o2 = b8.GetValue(a),
-                            o3 = b9.GetValue(a),
-                            ts1 = b5.GetValue(a),
-                            ts2 = b6.GetValue(a),
-                            c1 = b1.GetValue(a),
-                            c2 = b2.GetValue(a),
-                            c3 = b3.GetValue(a),
-                            c4 = b4.GetValue(a)
-                        });
-                    });
+                           ((IObservable<object>)result.Invoke(queryObject, new object[] { input1, input2, dsf.TestScheduler }))
+                            .Select(x =>
+                            {
+                                var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
+                                var b1 = a.GetType().GetProperty("c1");
+                                var b2 = a.GetType().GetProperty("c2");
+                                var b3 = a.GetType().GetProperty("c3");
+                                var b4 = a.GetType().GetProperty("c4");
+                                var b5 = a.GetType().GetProperty("ts1");
+                                var b6 = a.GetType().GetProperty("ts2");
+                                var b7 = a.GetType().GetProperty("o1");
+                                var b8 = a.GetType().GetProperty("o2");
+                                var b9 = a.GetType().GetProperty("o3");
+                                return (object)(new
+                                {
+                                    o1 = b7.GetValue(a),
+                                    o2 = b8.GetValue(a),
+                                    o3 = b9.GetValue(a),
+                                    ts1 = b5.GetValue(a),
+                                    ts2 = b6.GetValue(a),
+                                    c1 = b1.GetValue(a),
+                                    c2 = b2.GetValue(a),
+                                    c3 = b3.GetValue(a),
+                                    c4 = b4.GetValue(a)
+                                });
+                            });
                 }
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1
                 , 0 // tienen que ser siempre 0 porque el límite inferior del random es 1

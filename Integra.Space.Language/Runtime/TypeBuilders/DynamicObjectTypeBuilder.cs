@@ -24,9 +24,10 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicObjectTypeBuilder"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
         /// <param name="listOfFields">List of fields</param>
-        public DynamicObjectTypeBuilder(string queryId, List<FieldNode> listOfFields) : base("SpaceDynamicObjectAssembly_" + queryId, "SpaceDynamicObject_" + queryId, null)
+        public DynamicObjectTypeBuilder(AssemblyBuilder asmBuilder, string queryId, List<FieldNode> listOfFields) : base(asmBuilder, "SpaceDynamicObject_" + queryId, null)
         {
             this.listOfFields = listOfFields;
         }
@@ -34,9 +35,7 @@ namespace Integra.Space.Language.Runtime
         /// <inheritdoc />
         public override Type CreateNewType()
         {
-            AssemblyBuilder asmBuilder = this.CreateAssembly();
-            ModuleBuilder modBuilder = this.CreateModule(asmBuilder);
-            TypeBuilder typeBuilder = this.CreateType(modBuilder);
+            TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
 
             foreach (var field in this.listOfFields)

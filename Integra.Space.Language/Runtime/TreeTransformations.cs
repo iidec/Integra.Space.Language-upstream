@@ -8,6 +8,7 @@ namespace Integra.Space.Language.Runtime
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reflection.Emit;
 
     /// <summary>
     /// Tree transformations class
@@ -25,11 +26,18 @@ namespace Integra.Space.Language.Runtime
         private Dictionary<string, Type> dictionaryOfTypes;
 
         /// <summary>
+        /// Assembly builder.
+        /// </summary>
+        private AssemblyBuilder asmBuilder;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="TreeTransformations"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="executionPlanRootNode">Execution plan root node.</param>
-        public TreeTransformations(PlanNode executionPlanRootNode)
+        public TreeTransformations(AssemblyBuilder asmBuilder, PlanNode executionPlanRootNode)
         {
+            this.asmBuilder = asmBuilder;
             this.executionPlanRootNode = executionPlanRootNode;
         }
 
@@ -47,20 +55,6 @@ namespace Integra.Space.Language.Runtime
                 this.InsertGenerationOfLocalObjects(objects);
                 this.ReplaceEventsByLocalObject(objects);
             }
-
-            /*PlanNode join = this.executionPlanRootNode.FindNode(PlanNodeTypeEnum.CrossJoin, PlanNodeTypeEnum.InnerJoin, PlanNodeTypeEnum.LeftJoin, PlanNodeTypeEnum.RightJoin).FirstOrDefault();
-
-            if (join != null)
-            {
-                IEnumerable<PlanNode> ffls = join.Children.First().FindNode(PlanNodeTypeEnum.ObservableFromForLambda);
-                foreach (PlanNode ffl in ffls)
-                {
-                    if (ffl.Properties.ContainsKey("ParameterPosition"))
-                    {
-                        ffl.Properties["ParameterPosition"] = 0;
-                    }
-                }
-            }*/
         }
 
         /// <summary>
@@ -115,7 +109,7 @@ namespace Integra.Space.Language.Runtime
                     fieldList.Add(new FieldNode(@object.Properties["PropertyName"].ToString(), this.ConvertToNullable(Type.GetType(@object.Properties["DataType"].ToString())), 0));
                 }
                 
-                eedtb = new ExtractedEventDataTypeBuilder(fieldList, position);
+                eedtb = new ExtractedEventDataTypeBuilder(this.asmBuilder, fieldList, position);
                 newType = eedtb.CreateNewType();
                                 
                 this.dictionaryOfTypes.Add(grupo.Key, newType);
@@ -213,18 +207,6 @@ namespace Integra.Space.Language.Runtime
             }
 
             List<PlanNode> parentsWheresEventLock = this.executionPlanRootNode.FindParentNode(PlanNodeTypeEnum.ObservableWhereForEventLock);
-            /*foreach (PlanNode whereEventLockParent in parentsWheresEventLock)
-            {
-                Console.WriteLine();
-                for (int i = 0; i < whereEventLockParent.Children.Count; i++)
-                {
-                    PlanNode whereEventLock = whereEventLockParent.Children[i];
-                    PlanNode selectNode = localObjects.Where(x => x.Properties["Source"].Equals(whereEventLock.Properties["Source"])).Single();
-                    selectNode.Children[0].Children = new List<PlanNode>();
-                    selectNode.Children[0].Children.Add(whereEventLock);
-                    whereEventLockParent.Children[i] = selectNode;
-                }
-            }*/
 
             foreach (PlanNode whereEventLockParent in parentsWheresEventLock)
             {
@@ -287,26 +269,6 @@ namespace Integra.Space.Language.Runtime
                             {
                                 return this.executionPlanRootNode.Children.Where(w => w.NodeType == PlanNodeTypeEnum.ObservableFrom).First().Children.First().Properties["Value"].ToString();
                             }
-
-                            /*if (x.NodeType == PlanNodeTypeEnum.Cast)
-                            {
-                                // identifier = x.FindNode(SpaceParseTreeNodeTypeEnum.OBJECT).Single().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                                identifier = x.FindNode(PlanNodeTypeEnum.Event).First().Children.Where(y => y.NodeType == PlanNodeTypeEnum.Identifier).FirstOrDefault();
-                            }
-                            else
-                            {
-                                // identifier = x.ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.EVENT).First().ChildNodes.Where(y => y.Type == SpaceParseTreeNodeTypeEnum.identifier).FirstOrDefault();
-                                identifier = x.FindNode(PlanNodeTypeEnum.Event).First().Children.Where(y => y.NodeType == PlanNodeTypeEnum.Identifier).FirstOrDefault();
-                            }
-
-                            if (identifier != null)
-                            {
-                                return identifier.Properties["Value"].ToString();
-                            }
-                            else
-                            {
-                                return this.executionPlanRootNode.Children.Where(w => w.NodeType == PlanNodeTypeEnum.ObservableFrom).First().Children.First().Properties["Value"].ToString();
-                            }*/
                         });
             
             if (objects.Count() == 0)

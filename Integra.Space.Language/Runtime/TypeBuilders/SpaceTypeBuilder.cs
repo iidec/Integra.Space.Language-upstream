@@ -13,17 +13,7 @@ namespace Integra.Space.Language.Runtime
     /// Space type builder interface
     /// </summary>
     internal abstract class SpaceTypeBuilder
-    {
-        /// <summary>
-        /// File extension of the assembly.
-        /// </summary>
-        protected const string FILEEXTENSION = ".dll";
-
-        /// <summary>
-        /// Assembly name.
-        /// </summary>
-        private string assemblySignature;
-
+    {        
         /// <summary>
         /// Name of the type that going to be created.
         /// </summary>
@@ -33,28 +23,33 @@ namespace Integra.Space.Language.Runtime
         /// Parent type of the new type.
         /// </summary>
         private Type parentType;
+
+        /// <summary>
+        /// Assembly builder.
+        /// </summary>
+        private AssemblyBuilder asmBuilder;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="SpaceTypeBuilder"/> class.
         /// </summary>
-        /// <param name="assemblySignature">Assembly name.</param>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="typeSignature">Name of the type that going to be created.</param>
         /// <param name="parentType">Parent type of the new type.</param>
-        public SpaceTypeBuilder(string assemblySignature, string typeSignature, Type parentType)
+        public SpaceTypeBuilder(AssemblyBuilder asmBuilder, string typeSignature, Type parentType)
         {
-            this.assemblySignature = assemblySignature;
+            this.asmBuilder = asmBuilder;
             this.typeSignature = typeSignature;
             this.parentType = parentType;
         }
 
         /// <summary>
-        /// Gets the assembly name.
+        /// Gets the assembly builder.
         /// </summary>
-        protected string AssemblySignature
+        protected AssemblyBuilder AsmBuilder
         {
             get
             {
-                return this.assemblySignature;
+                return this.asmBuilder;
             }
         }
 
@@ -85,37 +80,14 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <returns>The new type created.</returns>
         public abstract System.Type CreateNewType();
-
-        /// <summary>
-        /// Creates the assembly builder.
-        /// </summary>
-        /// <returns>The assembly builder created.</returns>
-        protected virtual AssemblyBuilder CreateAssembly()
-        {
-            AssemblyName an = new AssemblyName(this.AssemblySignature);
-            AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.RunAndSave);
-            return assemblyBuilder;
-        }
-
-        /// <summary>
-        /// Creates the module builder.
-        /// </summary>
-        /// <param name="asmBuilder">Assembly builder.</param>
-        /// <returns>The module builder created.</returns>
-        protected virtual ModuleBuilder CreateModule(AssemblyBuilder asmBuilder)
-        {
-            ModuleBuilder moduleBuilder = asmBuilder.DefineDynamicModule("MainModule", asmBuilder.GetName().Name + SpaceTypeBuilder.FILEEXTENSION);
-            return moduleBuilder;
-        }
-
+        
         /// <summary>
         /// Creates the type builder.
         /// </summary>
-        /// <param name="modBuilder">Module builder.</param>
         /// <returns>The type builder created.</returns>
-        protected TypeBuilder CreateType(ModuleBuilder modBuilder)
+        protected TypeBuilder CreateType()
         {
-            TypeBuilder tb = modBuilder.DefineType(this.TypeSignature, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout | TypeAttributes.Serializable, this.parentType);
+            TypeBuilder tb = this.asmBuilder.GetDynamicModule("SpaceMainModule").DefineType(this.TypeSignature, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout | TypeAttributes.Serializable, this.parentType);
             return tb;
         }
 

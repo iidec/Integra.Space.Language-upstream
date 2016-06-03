@@ -39,12 +39,13 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="JoinSideObjectComparerTypeBuilder"/> class.
         /// </summary>
+        /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="listOfFields">List of fields</param>
         /// <param name="parentType">Parent type of the new type.</param>
         /// <param name="typeOfTheOtherSource">Type of the opposite.</param>
         /// <param name="isSecondSource">Value indicating whether this type is for the second source.</param>
         /// <param name="onCondition">Lambda expression of the on condition of the query.</param>
-        public JoinSideObjectComparerTypeBuilder(List<FieldNode> listOfFields, Type parentType, Type typeOfTheOtherSource, bool isSecondSource, LambdaExpression onCondition) : base("SpaceJoinSideObjectComparerAssembly_" + parentType.Name, "SpaceJoinSideObjectComparer_" + parentType.Name, parentType)
+        public JoinSideObjectComparerTypeBuilder(AssemblyBuilder asmBuilder, List<FieldNode> listOfFields, Type parentType, Type typeOfTheOtherSource, bool isSecondSource, LambdaExpression onCondition) : base(asmBuilder, "SpaceJoinSideObjectComparer_" + parentType.Name, parentType)
         {
             this.listOfFields = listOfFields;
             this.typeOfTheOtherSource = typeOfTheOtherSource;
@@ -55,9 +56,7 @@ namespace Integra.Space.Language.Runtime
         /// <inheritdoc />
         public override Type CreateNewType()
         {
-            AssemblyBuilder asmBuilder = this.CreateAssembly();
-            ModuleBuilder modBuilder = this.CreateModule(asmBuilder);
-            TypeBuilder typeBuilder = this.CreateType(modBuilder);
+            TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
             
             this.CreateGetHashCodeMethod(typeBuilder);
