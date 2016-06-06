@@ -14,7 +14,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Language type builder class
     /// </summary>
-    public static class LanguageTypeBuilder
+    internal static class LanguageTypeBuilder
     {
         /// <summary>
         /// Count of objects generated.

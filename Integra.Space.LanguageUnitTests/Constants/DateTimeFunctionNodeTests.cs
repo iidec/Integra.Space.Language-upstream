@@ -29,7 +29,10 @@ namespace Integra.Space.LanguageUnitTests.Constants
             Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
 
             Type[] types = assembly.GetTypes();
-            object queryObject = Activator.CreateInstance(types.Last());
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
             MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
             return (T)result.Invoke(queryObject, new object[] { dsf.TestScheduler });

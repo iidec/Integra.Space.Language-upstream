@@ -204,7 +204,7 @@
     <Compile Include="Runtime\TypeBuilders\ExtractedEventDataTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />
-    <Compile Include="Runtime\TypeBuilders\LanguageTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\QueryInformationTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceAssemblyBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceModuleBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceQueryTypeBuilder.cs" />

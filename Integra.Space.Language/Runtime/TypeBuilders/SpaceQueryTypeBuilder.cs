@@ -7,7 +7,6 @@ namespace Integra.Space.Language.Runtime
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Linq.Expressions;
     using System.Reflection;
     using System.Reflection.Emit;
@@ -62,9 +61,13 @@ namespace Integra.Space.Language.Runtime
 
             this.CreateMethodForFunction(typeBuilder);
             Type newType = typeBuilder.CreateType();
-            string assemblyPath = this.SaveAssembly(this.AsmBuilder);
 
-            // return Assembly.Load(this.AsmBuilder.GetName());
+            // Create a new information type.
+            QueryInformationTypeBuilder qitb = new QueryInformationTypeBuilder(this.AsmBuilder, this.queryId, newType);
+            qitb.CreateNewType();
+
+            this.SaveAssembly(this.AsmBuilder);
+
             return newType.Assembly;
         }
                         

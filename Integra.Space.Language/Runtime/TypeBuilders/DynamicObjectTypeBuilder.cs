@@ -3,7 +3,6 @@
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-
 namespace Integra.Space.Language.Runtime
 {
     using System;
@@ -32,7 +31,7 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
-        /// <param name="listOfFields">List of fields</param>
+        /// <param name="listOfFields">List of fields.</param>
         public DynamicObjectTypeBuilder(AssemblyBuilder asmBuilder, string queryId, List<FieldNode> listOfFields) : base(asmBuilder, string.Format("SpaceDynamicObject_{0}_{1}", queryId, r1.Next(0, 10000)), null)
         {
             this.listOfFields = listOfFields;

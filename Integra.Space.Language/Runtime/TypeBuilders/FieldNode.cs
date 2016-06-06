@@ -10,7 +10,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Field Node
     /// </summary>
-    public class FieldNode
+    internal class FieldNode
     {
         /// <summary>
         /// Field name.
