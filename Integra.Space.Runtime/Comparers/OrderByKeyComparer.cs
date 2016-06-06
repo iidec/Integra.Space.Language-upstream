@@ -3,7 +3,7 @@
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.Runtime
+namespace Integra.Space
 {
     using System;
     using System.Collections.Generic;
@@ -14,7 +14,7 @@ namespace Integra.Space.Language.Runtime
     /// Order by key comparer class
     /// </summary>
     /// <typeparam name="T">Type to compare</typeparam>
-    internal class OrderByKeyComparer<T> : IComparer<T>
+    public class OrderByKeyComparer<T> : IComparer<T>
     {
         /// <summary>
         /// properties of the order by key

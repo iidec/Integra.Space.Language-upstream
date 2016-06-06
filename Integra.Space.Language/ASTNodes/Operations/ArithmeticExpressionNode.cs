@@ -140,10 +140,10 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Line = leftNode.Line;
                     casteo.NodeText = leftNode.NodeText;
                     casteo.NodeType = PlanNodeTypeEnum.Cast;
-                    casteo.Properties.Add("DataType", selectedType.ToString());
+                    casteo.Properties.Add("DataType", selectedType);
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(leftNode);
-                    this.result.Properties.Add("DataType", selectedType.ToString());
+                    this.result.Properties.Add("DataType", selectedType);
                     this.result.Children.Add(casteo);
                     this.result.Children.Add(rightNode);
                 }
@@ -154,10 +154,10 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Line = rightNode.Line;
                     casteo.NodeText = rightNode.NodeText;
                     casteo.NodeType = PlanNodeTypeEnum.Cast;
-                    casteo.Properties.Add("DataType", selectedType.ToString());
+                    casteo.Properties.Add("DataType", selectedType);
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
-                    this.result.Properties.Add("DataType", selectedType.ToString());
+                    this.result.Properties.Add("DataType", selectedType);
                     this.result.Children.Add(leftNode);
                     this.result.Children.Add(casteo);
                 }
@@ -166,11 +166,11 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 if (leftType.Equals(typeof(DateTime)) || rightType.Equals(typeof(DateTime)))
                 {
-                    this.result.Properties.Add("DataType", typeof(TimeSpan).ToString());
+                    this.result.Properties.Add("DataType", typeof(TimeSpan));
                 }
                 else
                 {
-                    this.result.Properties.Add("DataType", leftType.ToString());
+                    this.result.Properties.Add("DataType", leftType);
                 }
 
                 this.result.Children.Add(leftNode);

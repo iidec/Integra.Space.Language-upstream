@@ -74,12 +74,12 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.result.Children = new List<PlanNode>();
             if (idFrom.NodeType.Equals(PlanNodeTypeEnum.ValueWithAlias))
             {
-                idFrom.Children[1].Properties["DataType"] = typeof(string).ToString();
+                idFrom.Children[1].Properties["DataType"] = typeof(string);
                 this.result.Children.Add(idFrom.Children[1]);
             }
             else
             {
-                idFrom.Properties["DataType"] = typeof(string).ToString();
+                idFrom.Properties["DataType"] = typeof(string);
                 this.result.Children.Add(idFrom);
             }
 

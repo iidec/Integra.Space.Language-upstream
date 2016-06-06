@@ -7,24 +7,36 @@ using Microsoft.Reactive.Testing;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Linq;
+using System.Reflection;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class Others
     {
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsQbservable(), dsf.TestScheduler }));
+        }
+
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosProyeccionMixta()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo"
-                                                                                            );
-            List<PlanNode> plan = parser.Evaluate();
-
+            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
@@ -32,7 +44,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
@@ -61,15 +73,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosProyeccionMixta()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo"
-                                                                                            );
-            List<PlanNode> plan = parser.Evaluate();
-
+            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
@@ -77,7 +83,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
@@ -106,15 +112,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma"
-                                                                                            );
-            List<PlanNode> plan = parser.Evaluate();
-
+            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
@@ -122,7 +122,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
@@ -151,15 +151,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma"
-                                                                                            );
-            List<PlanNode> plan = parser.Evaluate();
-
+            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
@@ -167,7 +161,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
@@ -196,19 +190,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventos()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Evaluate();
-
+                                                                                            "(decimal)@event.Message.#1.#4");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
@@ -216,7 +204,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
@@ -241,20 +229,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSelect()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Message.Body.#43 as campo1");
-            List<PlanNode> plan = parser.Evaluate();
-
+            string eql = "from SpaceObservable1 select @event.Message.Body.#43 as campo1";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-            
+
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => result(input.AsQbservable())
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {

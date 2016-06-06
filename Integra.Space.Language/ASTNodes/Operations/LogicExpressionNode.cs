@@ -58,7 +58,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[2]) as AstNodeBase;
                 this.result = new PlanNode();
                 this.result.Column = ChildrenNodes[1].Token.Location.Column;
-                this.result.Properties.Add("DataType", typeof(bool).ToString());
+                this.result.Properties.Add("DataType", typeof(bool));
                 this.result.Line = ChildrenNodes[1].Token.Location.Line;
             }
             else if (childrenCount == 2)
@@ -67,7 +67,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.operationNode = (string)ChildrenNodes[0].Token.Value;
                 this.result = new PlanNode();
                 this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Properties.Add("DataType", typeof(bool).ToString());
+                this.result.Properties.Add("DataType", typeof(bool));
                 this.result.Line = ChildrenNodes[0].Token.Location.Line;
             }
             else
@@ -157,7 +157,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Line = leftNode.Line;
                     casteo.NodeText = leftNode.NodeText;
                     casteo.NodeType = PlanNodeTypeEnum.Cast;
-                    casteo.Properties.Add("DataType", typeof(bool).ToString());
+                    casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(leftNode);
                     this.result.Children.Add(casteo);
@@ -170,7 +170,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Line = rightNode.Line;
                     casteo.NodeText = rightNode.NodeText;
                     casteo.NodeType = PlanNodeTypeEnum.Cast;
-                    casteo.Properties.Add("DataType", typeof(bool).ToString());
+                    casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
                     this.result.Children.Add(leftNode);
@@ -214,7 +214,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Line = rightNode.Line;
                     casteo.NodeText = rightNode.NodeText;
                     casteo.NodeType = PlanNodeTypeEnum.Cast;
-                    casteo.Properties.Add("DataType", typeof(bool).ToString());
+                    casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
                     this.result.Children.Add(casteo);

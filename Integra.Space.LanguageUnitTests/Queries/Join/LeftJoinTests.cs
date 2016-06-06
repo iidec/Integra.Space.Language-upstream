@@ -6,12 +6,27 @@ using System;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reflection;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class LeftJoinTests : ReactiveTest
     {
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input1, ITestableObservable<EventObject> input2, bool printLog = false, bool debugMode = false, bool measureElapsedTime = false)
+        {
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input1.AsQbservable(), input2.AsQbservable(), dsf.TestScheduler }));
+        }
+
         #region On condition true
 
         [TestMethod]
@@ -25,13 +40,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -44,7 +53,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -78,13 +87,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -97,7 +100,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -131,13 +134,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "TIMEOUT '00:00:02' " +
                                  "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -150,7 +147,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -184,13 +181,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:20' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -203,7 +194,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                () =>
                {
-                   return result(input1, input2)
+                   return this.Process(eql, dsf, input1, input2)
                    .Select(x =>
                    {
                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -237,13 +228,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
@@ -256,7 +241,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1.AsObservable(), input2.AsObservable())
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -292,13 +277,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -318,7 +297,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -368,13 +347,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -393,7 +366,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -453,13 +426,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -472,7 +439,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -512,13 +479,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -531,7 +492,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -565,13 +526,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -584,7 +539,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -618,13 +573,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "TIMEOUT '00:00:02' " +
                                  "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -637,7 +586,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -671,13 +620,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:01' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
@@ -690,7 +633,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                () =>
                {
-                   return result(input1, input2)
+                   return this.Process(eql, dsf, input1, input2)
                    .Select(x =>
                    {
                        var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -724,13 +667,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
@@ -743,7 +680,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1.AsObservable(), input2.AsObservable())
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -779,13 +716,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -805,7 +736,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -854,13 +785,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
-            Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
 
             ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
@@ -873,7 +798,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () =>
                 {
-                    return result(input1, input2)
+                    return this.Process(eql, dsf, input1, input2)
                     .Select(x =>
                     {
                         var a = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
@@ -914,15 +839,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -944,15 +869,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -979,15 +904,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1009,15 +934,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1040,15 +965,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1071,15 +996,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1102,15 +1027,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1133,16 +1058,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
 
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1165,16 +1089,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
 
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1197,16 +1120,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
 
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1228,16 +1150,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
 
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1259,16 +1180,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.@event.Message.#1.#2 as c1"; // , t2.@event.Message.#1.#2 as c2 
 
-            EQLPublicParser parser = new EQLPublicParser(eql);
-            PlanNode plan = parser.Evaluate().First();
-
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf });
 
             try
             {
-                Func<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<EventObject>, IObservable<object>>(plan);
+                EQLPublicParser parser = new EQLPublicParser(eql);
+                PlanNode plan = parser.Evaluate().First();
+                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                FakePipeline fp = new FakePipeline();
+                Assembly assembly = fp.Process(context, eql, dsf);
             }
             catch (Exception e)
             {

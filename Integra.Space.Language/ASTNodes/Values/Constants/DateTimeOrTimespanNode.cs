@@ -7,7 +7,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
 {
     using System;
     using Integra.Space.Language.ASTNodes.Base;
-    
+
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Parsing;
@@ -40,16 +40,17 @@ namespace Integra.Space.Language.ASTNodes.Constants
 
             DateTime d;
             TimeSpan t;
+            string cadena = treeNode.Token.Value.ToString();
 
-            if (TimeSpan.TryParse(treeNode.Token.Value.ToString(), out t))
+            if (TimeSpan.TryParse(cadena, out t))
             {
-                this.result.Properties.Add("Value", t);
-                this.result.Properties.Add("DataType", typeof(TimeSpan).ToString());
+                this.result.Properties.Add("Value", cadena);
+                this.result.Properties.Add("DataType", typeof(TimeSpan));
             }
-            else if (DateTime.TryParse(treeNode.Token.Value.ToString(), out d))
+            else if (DateTime.TryParse(cadena, out d))
             {
-                this.result.Properties.Add("Value", d);
-                this.result.Properties.Add("DataType", typeof(DateTime).ToString());
+                this.result.Properties.Add("Value", cadena);
+                this.result.Properties.Add("DataType", typeof(DateTime));
             }
         }
 

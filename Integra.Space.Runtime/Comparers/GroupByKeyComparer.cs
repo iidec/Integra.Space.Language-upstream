@@ -3,7 +3,7 @@
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.Runtime
+namespace Integra.Space
 {
     using System.Collections.Generic;
     using System.Linq;

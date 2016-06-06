@@ -790,6 +790,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to CE86: Error creating a constant expression..
+        /// </summary>
+        internal static string CE86 {
+            get {
+                return ResourceManager.GetString("CE86", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to CE9: Value type of function &apos;lower&apos; must be string..
         /// </summary>
         internal static string CE9 {

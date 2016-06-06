@@ -4,12 +4,36 @@ using Integra.Space.Language;
 using Integra.Space.Language.Runtime;
 using System.Threading;
 using System.Globalization;
+using System.Reflection;
+using System.Linq;
+using Microsoft.Reactive.Testing;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
     [TestClass]
     public class DateTimeFunctionNodeTests
     {
+        /// <summary>
+        /// Este método no se usa en todas las pruebas de esta clase.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        private T Process<T>(string eql, DefaultSchedulerFactory dsf)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return (T)result.Invoke(queryObject, new object[] { dsf.TestScheduler });
+        }
         /// <summary>
         /// Obtiene el segundo de la cadena especificada
         /// </summary>
@@ -198,13 +222,10 @@ namespace Integra.Space.LanguageUnitTests.Constants
         [TestMethod]
         public void MillisecondFunction1()
         {
-            ExpressionParser parser = new ExpressionParser("millisecond('01/01/2014 10:11:12.1 am')");
-            PlanNode plan = parser.Evaluate();
+            string eql = "millisecond('01/01/2014 10:11:12.1 am')";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int?> result = te.Compile<int?>(plan);
-
-            Assert.AreEqual<int?>(100, result(), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<int?>(100, this.Process<int?>(eql, dsf), "El plan obtenido difiere del plan esperado.");
         }
 
         /// <summary>

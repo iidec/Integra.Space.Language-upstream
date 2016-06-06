@@ -13,7 +13,7 @@ namespace Integra.Space.Language.Runtime
     /// Space type builder interface
     /// </summary>
     internal abstract class SpaceTypeBuilder
-    {        
+    {
         /// <summary>
         /// Name of the type that going to be created.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Integra.Space.Language.Runtime
         /// Assembly builder.
         /// </summary>
         private AssemblyBuilder asmBuilder;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SpaceTypeBuilder"/> class.
         /// </summary>
@@ -80,15 +80,23 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <returns>The new type created.</returns>
         public abstract System.Type CreateNewType();
-        
+
         /// <summary>
         /// Creates the type builder.
         /// </summary>
         /// <returns>The type builder created.</returns>
         protected TypeBuilder CreateType()
         {
-            TypeBuilder tb = this.asmBuilder.GetDynamicModule("SpaceMainModule").DefineType(this.TypeSignature, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout | TypeAttributes.Serializable, this.parentType);
-            return tb;
+            try
+            {
+                TypeBuilder tb = this.asmBuilder.GetDynamicModule("SpaceMainModule").DefineType(this.TypeSignature, TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout | TypeAttributes.Serializable, this.parentType);
+                return tb;
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine(string.Format("Error al crear el tipo: {0} que hereda de. {1}.", this.typeSignature, this.parentType.Name));
+                throw new Exception(string.Format("Error al crear el tipo: {0} que hereda de. {1}.", this.typeSignature, this.parentType.Name), e);
+            }
         }
 
         /// <summary>

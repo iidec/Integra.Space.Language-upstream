@@ -65,18 +65,18 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
             if (cantHijos == 1)
             {
                 string propertyName = string.Empty;
-                if (result.Properties["DataType"].Equals(typeof(string).ToString()))
+                if (result.Properties["DataType"].Equals(typeof(string)))
                 {
                     result.NodeText = "[" + this.text + "]";
                     propertyName = ChildrenNodes[0].Token.Value.ToString().Trim().Replace(' ', '_');
                 }
-                else if (result.Properties["DataType"].Equals(typeof(object).ToString()))
+                else if (result.Properties["DataType"].Equals(typeof(object)))
                 {
                     result.NodeText = this.text;
                     propertyName = ChildrenNodes[0].Token.Value.ToString();
                 }
 
-                result.Properties["DataType"] = typeof(string).ToString();
+                result.Properties["DataType"] = typeof(string);
                 result.Properties.Add("PropertyName", propertyName);
             }
             else

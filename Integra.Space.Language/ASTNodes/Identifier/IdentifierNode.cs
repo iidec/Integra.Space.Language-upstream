@@ -34,7 +34,7 @@ namespace Integra.Space.Language.ASTNodes.Identifier
             this.result.NodeText = treeNode.Token.Text;
             this.result.NodeType = PlanNodeTypeEnum.Identifier;
             this.result.Properties.Add("Value", treeNode.Token.Value);
-            this.result.Properties.Add("DataType", typeof(object).ToString());
+            this.result.Properties.Add("DataType", typeof(object));
         }
 
         /// <summary>

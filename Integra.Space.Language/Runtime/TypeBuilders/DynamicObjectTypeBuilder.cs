@@ -17,6 +17,12 @@ namespace Integra.Space.Language.Runtime
     internal class DynamicObjectTypeBuilder : SpaceTypeBuilder
     {
         /// <summary>
+        /// Random for type name.
+        /// </summary>
+        [ThreadStatic]
+        private static Random r1 = new Random();
+
+        /// <summary>
         /// Fields to create in the new type.
         /// </summary>
         private List<FieldNode> listOfFields;
@@ -27,7 +33,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="asmBuilder">Assembly builder.</param>
         /// <param name="queryId">Query identifier.</param>
         /// <param name="listOfFields">List of fields</param>
-        public DynamicObjectTypeBuilder(AssemblyBuilder asmBuilder, string queryId, List<FieldNode> listOfFields) : base(asmBuilder, "SpaceDynamicObject_" + queryId, null)
+        public DynamicObjectTypeBuilder(AssemblyBuilder asmBuilder, string queryId, List<FieldNode> listOfFields) : base(asmBuilder, string.Format("SpaceDynamicObject_{0}_{1}", queryId, r1.Next(0, 10000)), null)
         {
             this.listOfFields = listOfFields;
         }

@@ -361,6 +361,9 @@
   <data name="CE85" xml:space="preserve">
     <value>CE85: Error in select for observable group by.</value>
   </data>
+  <data name="CE86" xml:space="preserve">
+    <value>CE86: Error creating a constant expression.</value>
+  </data>
   <data name="CE9" xml:space="preserve">
     <value>CE9: Value type of function 'lower' must be string.</value>
   </data>

@@ -10,7 +10,7 @@ namespace Integra.Space.Language.Exceptions
     /// <summary>
     /// Compilation exception.
     /// </summary>
-    internal class RuntimeException : Exception
+    public class RuntimeException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="RuntimeException"/> class

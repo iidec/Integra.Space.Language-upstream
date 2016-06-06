@@ -116,7 +116,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 PlanNode alias1 = new PlanNode();
                 alias1.NodeType = PlanNodeTypeEnum.Constant;
                 alias1.Properties.Add("Value", "TimeSpanValue");
-                alias1.Properties.Add("DataType", typeof(object).ToString());
+                alias1.Properties.Add("DataType", typeof(object));
 
                 planTuple1.Children.Add(alias1);
                 planTuple1.Children.Add(windowSizeAux);
@@ -128,7 +128,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 PlanNode alias2 = new PlanNode();
                 alias2.NodeType = PlanNodeTypeEnum.Constant;
                 alias2.Properties.Add("Value", "IntegerValue");
-                alias2.Properties.Add("DataType", typeof(object).ToString());
+                alias2.Properties.Add("DataType", typeof(object));
                 
                 PlanNode maxWindowSize = new PlanNode();
                 maxWindowSize.NodeType = PlanNodeTypeEnum.Constant;
@@ -164,7 +164,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 PlanNode alias1 = new PlanNode();
                 alias1.NodeType = PlanNodeTypeEnum.Constant;
                 alias1.Properties.Add("Value", "TimeSpanValue");
-                alias1.Properties.Add("DataType", typeof(object).ToString());
+                alias1.Properties.Add("DataType", typeof(object));
 
                 planTuple1.Children.Add(alias1);
                 planTuple1.Children.Add(windowSizeAux1);
@@ -176,7 +176,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 PlanNode alias2 = new PlanNode();
                 alias2.NodeType = PlanNodeTypeEnum.Constant;
                 alias2.Properties.Add("Value", "IntegerValue");
-                alias2.Properties.Add("DataType", typeof(object).ToString());
+                alias2.Properties.Add("DataType", typeof(object));
 
                 planTuple2.Children.Add(alias2);
                 planTuple2.Children.Add(windowSizeAux2);

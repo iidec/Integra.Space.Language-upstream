@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Collections.Generic;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
+using System.Reflection;
 
 namespace Integra.Space.LanguageUnitTests.Events
 {
@@ -14,27 +15,39 @@ namespace Integra.Space.LanguageUnitTests.Events
     public class EventValuesNodeTests
     {
         List<EventObject> eventList = new List<EventObject>();
+        
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            object queryObject = Activator.CreateInstance(types.Last());
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsQbservable(), dsf.TestScheduler }));
+        }
+        
         [TestMethod]
         public void EventPropertyAgentNameValue()
         {
             eventList.Add(TestObjects.EventObjectTest1);
 
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.agent.Name as nombre");
-            List<PlanNode> plan = parser.Evaluate();
-            
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+            string eql = "from SpaceObservable1 select @event.agent.Name as nombre";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<string> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("nombre").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+            ITestableObserver<string> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("nombre").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -52,21 +65,16 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAdapterNameValue()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Adapter.Name as nombre");
-            List<PlanNode> plan = parser.Evaluate();
+            string eql = "from SpaceObservable1 select @event.Adapter.Name as nombre";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<string> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("nombre").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+            ITestableObserver<string> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("nombre").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -84,21 +92,16 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAgentMachineNameValue()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Agent.MachineName as machineName");
-            List<PlanNode> plan = parser.Evaluate();
+            string eql = "from SpaceObservable1 select @event.Agent.MachineName as machineName";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
                 new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
                 new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
                 );
 
-            ITestableObserver<string> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("machineName").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+            ITestableObserver<string> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("machineName").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -116,15 +119,15 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAgentTimeStampType()
         {
-            eventList.Add(TestObjects.EventObjectTest1);
+            string eql = "from SpaceObservable1 select @event.Agent.Timestamp as ts";
 
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.Agent.Timestamp as ts");
-            List<PlanNode> plan = parser.Evaluate();
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
-
-            result(eventList.ToObservable().AsQbservable()).Subscribe(x => {
+            this.Process(eql, dsf, input).Subscribe(x => {
                 Assert.IsInstanceOfType(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("ts").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)), typeof(DateTime), "El plan obtenido difiere del plan esperado.");
             });
         }
@@ -132,15 +135,16 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAdapterTimeStampType()
         {
-            eventList.Add(TestObjects.EventObjectTest1);
+            string eql = "from SpaceObservable1 select @event.adapter.Timestamp as ts";
 
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 select @event.adapter.Timestamp as ts");
-            List<PlanNode> plan = parser.Evaluate();
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
+                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+                );
 
-            result(eventList.ToObservable().AsQbservable()).Subscribe(x => {
+            this.Process(eql, dsf, input).Subscribe(x => {
                 Assert.IsInstanceOfType(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("ts").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)), typeof(DateTime), "El plan obtenido difiere del plan esperado.");
             });
         }

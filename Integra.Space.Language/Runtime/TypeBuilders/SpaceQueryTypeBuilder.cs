@@ -63,8 +63,9 @@ namespace Integra.Space.Language.Runtime
             this.CreateMethodForFunction(typeBuilder);
             Type newType = typeBuilder.CreateType();
             string assemblyPath = this.SaveAssembly(this.AsmBuilder);
-            
-            return Assembly.Load(this.AsmBuilder.GetName());
+
+            // return Assembly.Load(this.AsmBuilder.GetName());
+            return newType.Assembly;
         }
                         
         /// <inheritdoc />

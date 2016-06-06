@@ -391,7 +391,7 @@ namespace Integra.Space.Language.Runtime
                                         rootExpression
                                         );
 
-            Expression<Func<Out>> result = Expression.Lambda<Func<Out>>(this.GenerateExpressionTree(plan), this.parameterList.ToArray());
+            Expression<Func<Out>> result = Expression.Lambda<Func<Out>>(rootBlock, this.parameterList.ToArray());
 
             return result;
         }
@@ -821,7 +821,14 @@ namespace Integra.Space.Language.Runtime
                 }
                 else
                 {
-                    return mainAction;
+                    if (mainAction.Type.Equals(typeof(void)) && resultParameter != null)
+                    {
+                        return Expression.Block(new[] { resultParameter }, mainAction, resultParameter);
+                    }
+                    else
+                    {
+                        return mainAction;
+                    }
                 }
             }
 
@@ -5321,7 +5328,7 @@ namespace Integra.Space.Language.Runtime
                     return Expression.Constant(null);
                 }
 
-                Type tipo = Type.GetType(plan.Properties["DataType"].ToString());
+                Type tipo = (Type)plan.Properties["DataType"];
                 
                 if (tipo.Equals(typeof(TimeSpan)) || tipo.Equals(typeof(DateTime)))
                 {
@@ -5332,7 +5339,7 @@ namespace Integra.Space.Language.Runtime
             }
             catch (Exception e)
             {
-                return Expression.Constant(null);
+                throw new CompilationException(Resources.SR.CompilationError(plan.Line, plan.Column, COMPILATION_ERRORS.CE86, plan.NodeText), e);
             }
         }
 
@@ -5888,7 +5895,7 @@ namespace Integra.Space.Language.Runtime
             }
 
             ParameterExpression leftAux = Expression.Variable(leftNode.Type, "leftArgumentSubsctractAux");
-            ParameterExpression rightAux = Expression.Variable(leftNode.Type, "rightArgumentSubsctractAux");
+            ParameterExpression rightAux = Expression.Variable(rightNode.Type, "rightArgumentSubsctractAux");
 
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
@@ -6312,7 +6319,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression mainAction = Expression.IfThenElse(
-                                                Expression.Equal(Expression.Constant(this.groupExpression.Type.GetProperty(propiedad)), Expression.Constant(null)),
+                                                Expression.Equal(Expression.Call(this.groupExpression, this.groupExpression.Type.GetMethod("get_Key")), Expression.Constant(null)),
                                                 Expression.Assign(param, Expression.Default(this.groupExpression.Type.GetProperty(propiedad).PropertyType)),
                                                 Expression.Assign(param, Expression.Property(this.groupExpression, propiedad))
                                             );
@@ -6368,7 +6375,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression mainAction = Expression.IfThenElse(
-                                            Expression.Equal(Expression.Constant(g.Type.GetProperty(propiedad)), Expression.Constant(null)),
+                                            Expression.Equal(Expression.Call(g, g.Type.GetProperty(propiedad).GetGetMethod()), Expression.Constant(null)),
                                             Expression.Assign(param, Expression.Default(tipo.GetProperty(propiedad).PropertyType)),
                                             Expression.Assign(param, Expression.Property(g, propiedad))
                                         );

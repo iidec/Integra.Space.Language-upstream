@@ -74,7 +74,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
             this.result.Line = ChildrenNodes[0].Token.Location.Line;
             this.result.NodeType = PlanNodeTypeEnum.Event;
             this.result.Properties.Add("Value", this.eventWord);
-            this.result.Properties.Add("DataType", typeof(string).ToString());
+            this.result.Properties.Add("DataType", typeof(string));
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Event
                 sourceIdAux.NodeText = string.Empty;
                 sourceIdAux.NodeType = PlanNodeTypeEnum.Identifier;
                 sourceIdAux.Properties.Add("Value", string.Empty);
-                sourceIdAux.Properties.Add("DataType", typeof(object).ToString());
+                sourceIdAux.Properties.Add("DataType", typeof(object));
             }
             else if (count == 3)
             {

@@ -60,7 +60,7 @@ namespace Integra.Space.Language.ASTNodes.Objects.Object
             this.result.NodeText = field.NodeText;
             this.result.Properties.Add("PropertyName", field.Properties["PropertyName"]);
             this.result.Properties.Add("IncidenciasEnOn", 0);
-            this.result.Properties.Add(SR.DataTypeProperty, typeof(object).ToString());
+            this.result.Properties.Add(SR.DataTypeProperty, typeof(object));
             this.result.NodeType = PlanNodeTypeEnum.ObjectValue;
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(field);

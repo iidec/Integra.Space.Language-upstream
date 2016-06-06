@@ -189,6 +189,10 @@
       <Project>{6d4d259b-281f-454f-9b47-4ce2d108ba6a}</Project>
       <Name>Integra.Space.Language</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Integra.Space.Runtime\Integra.Space.Runtime.csproj">
+      <Project>{87560b2c-3273-4f36-88a2-5fa49c2b6195}</Project>
+      <Name>Integra.Space.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

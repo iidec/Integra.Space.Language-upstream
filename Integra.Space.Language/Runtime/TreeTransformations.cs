@@ -190,7 +190,7 @@ namespace Integra.Space.Language.Runtime
                     alias.NodeText = column.Properties["PropertyName"].ToString();
                     alias.NodeType = PlanNodeTypeEnum.Identifier;
                     alias.Properties.Add("Value", column.Properties["PropertyName"].ToString());
-                    alias.Properties.Add("DataType", typeof(object).ToString());
+                    alias.Properties.Add("DataType", typeof(object));
 
                     tupleProjection.Children.Add(alias);
 
