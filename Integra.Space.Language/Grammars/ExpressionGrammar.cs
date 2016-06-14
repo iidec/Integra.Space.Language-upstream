@@ -56,12 +56,7 @@ namespace Integra.Space.Language.Grammars
         /// Projection values
         /// </summary>
         private NonTerminal projectionValue;
-
-        /// <summary>
-        /// Projection values
-        /// </summary>
-        private NonTerminal groupByValue;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionGrammar"/> class
         /// </summary>
@@ -113,18 +108,7 @@ namespace Integra.Space.Language.Grammars
                 return this.projectionValue;
             }
         }
-
-        /// <summary>
-        /// Gets the projection value
-        /// </summary>
-        public NonTerminal GroupByValue
-        {
-            get
-            {
-                return this.groupByValue;
-            }
-        }
-
+        
         /// <summary>
         /// Gets the nonterminal for expression conditions
         /// </summary>
@@ -354,9 +338,6 @@ namespace Integra.Space.Language.Grammars
             this.projectionValue = new NonTerminal("PROJECTION_VALUES", typeof(PassNode));
             this.projectionValue.AstConfig.NodeType = null;
             this.projectionValue.AstConfig.DefaultNodeCreator = () => new PassNode();
-            this.groupByValue = new NonTerminal("GROUP_BY_VALUES", typeof(PassNode));
-            this.groupByValue.AstConfig.NodeType = null;
-            this.groupByValue.AstConfig.DefaultNodeCreator = () => new PassNode();
             NonTerminal nt_MATH_FUNCTIONS = new NonTerminal("MATH_FUNCTIONS", typeof(MathFunctionNode));
             nt_MATH_FUNCTIONS.AstConfig.NodeType = null;
             nt_MATH_FUNCTIONS.AstConfig.DefaultNodeCreator = () => new MathFunctionNode();
@@ -400,9 +381,6 @@ namespace Integra.Space.Language.Grammars
                                         | nt_ISNULL_FUNCTION
                                         | nt_GROUP_KEY_VALUE
                                         | nt_ARITHMETIC_EXPRESSION;
-            /* **************************** */
-            /* GROUP BY VALUES */
-            this.groupByValue.Rule = this.values; // este ya no se usa
             /* **************************** */
             /* GROUP KEY */
             nt_GROUP_KEY.Rule = nt_GROUP_KEY + terminalPunto + terminalId

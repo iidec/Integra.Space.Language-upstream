@@ -76,7 +76,6 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalOn = ToTerm("on", "on");
             KeyTerm terminalTimeout = ToTerm("timeout", "timeout");
             KeyTerm terminalWith = ToTerm("with", "with");
-            KeyTerm terminalEventLifeTime = ToTerm("eventlifetime", "eventlifetime");
 
             // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
@@ -156,20 +155,9 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_JOIN_TYPE = new NonTerminal("JOIN_TYPE", typeof(PassNode));
             nt_JOIN_TYPE.AstConfig.NodeType = null;
             nt_JOIN_TYPE.AstConfig.DefaultNodeCreator = () => new PassNode();
-            NonTerminal nt_EVENT_LIFE_TIME = new NonTerminal("EVENT_LIFE_TIME", typeof(EventLifeTimeNode));
-            nt_EVENT_LIFE_TIME.AstConfig.NodeType = null;
-            nt_EVENT_LIFE_TIME.AstConfig.DefaultNodeCreator = () => new EventLifeTimeNode();
 
             /* USER QUERY */
-            nt_USER_QUERY.Rule = /*nt_SOURCE_DEFINITION + nt_SELECT
-                                    | nt_SOURCE_DEFINITION + nt_APPLY_WINDOW + nt_SELECT
-                                    |*/ nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT
-                                    /*| nt_SOURCE_DEFINITION + nt_APPLY_WINDOW + nt_SELECT + nt_ORDER_BY
-                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_SELECT
-                                    | nt_SOURCE_DEFINITION + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT
-                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT
-                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_SELECT + nt_ORDER_BY
-                                    | nt_SOURCE_DEFINITION + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY*/
+            nt_USER_QUERY.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT
                                     | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY;
             /* **************************** */
             /* APPLY WINDOW */
@@ -212,10 +200,6 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* TIMEOUT */
             nt_TIMEOUT.Rule = terminalTimeout + terminalDateTimeValue;
-            /* **************************** */
-            /* EVENT LIFE TIME */
-            nt_EVENT_LIFE_TIME.Rule = terminalEventLifeTime + terminalDateTimeValue
-                                        | this.Empty;
             /* **************************** */
             /* WHERE */
             nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION

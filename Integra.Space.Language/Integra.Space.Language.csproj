@@ -93,7 +93,6 @@
     <Compile Include="ASTNodes\Base\AstNodeBase.cs" />
     <Compile Include="ASTNodes\Lists\ListNodeOrderBy.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\TopNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Windows\EventLifeTimeNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Windows\TimeStatementNode.cs" />
     <Compile Include="ASTNodes\Values\Cast\ExplicitCast.cs" />
     <Compile Include="ASTNodes\Values\Cast\TypeNode.cs" />
