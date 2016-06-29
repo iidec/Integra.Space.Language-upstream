@@ -1,6 +1,10 @@
 ### Space
-Space es un conjunto de programas y servicios que permiten:
+Space es un sistema de monitoreo de eventos en tiempo real capaz de analizar
+miles de eventos por segundo a traves de un lenguaje de consulta desarrollado 
+por nosotros.
 
-* Monitorear eventos en tiempo real.
-* Crear consultas sobre un flujo de eventos a través de un lenguaje sencillo pero poderoso. Si sabes SQL, sabes EQL.
-* Ver los flujos de eventos consultados desde una consola web a través cualquier navegador de cualquier dispositivo, similar a un SQL Plus de Oracle.
+Caracteristicas:
+
+- Monitorear eventos en tiempo real.
+- Crear consultas sobre flujos de eventos a través de un lenguaje sencillo pero poderoso llamdo EQL. Si sabes SQL, sabes EQL.
+- Ver los resultados de las consultas a través cualquier navegador de cualquier dispositivo.
