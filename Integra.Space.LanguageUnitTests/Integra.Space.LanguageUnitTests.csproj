@@ -111,6 +111,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Commands\CommandTests.cs" />
     <Compile Include="Constants\BooleanNodeTests.cs" />
     <Compile Include="Constants\DateTimeFunctionNodeTests.cs" />
     <Compile Include="Constants\DateTimeNodeTests.cs" />

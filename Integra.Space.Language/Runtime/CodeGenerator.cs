@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ObservableConstructor.cs" company="Integra.Space.Language">
+// <copyright file="CodeGenerator.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -24,7 +24,7 @@ namespace Integra.Space.Language.Runtime
     [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1118:ParameterMustNotSpanMultipleLines", Justification = "Reviewed.")]
     [SuppressMessage("StyleCop.CSharp.ReadabilityRules", "SA1111:ClosingParenthesisMustBeOnLineOfLastParameter", Justification = "Reviewed.")]
     [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Reviewed.")] // se debe quitar
-    internal class ObservableConstructor
+    internal class CodeGenerator
     {
         #region Field definitions
 
@@ -103,10 +103,10 @@ namespace Integra.Space.Language.Runtime
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ObservableConstructor"/> class
+        /// Initializes a new instance of the <see cref="CodeGenerator"/> class
         /// </summary>
         /// <param name="context">Compilation context.</param>
-        public ObservableConstructor(CompileContext context)
+        public CodeGenerator(CompileContext context)
         {
             if (context.Scheduler == null)
             {
@@ -128,28 +128,6 @@ namespace Integra.Space.Language.Runtime
         }
 
         #endregion Constructors
-
-        /// <summary>
-        /// Gets the scope parameter.
-        /// </summary>
-        public Scope ActualScope
-        {
-            get
-            {
-                return this.actualScope;
-            }
-        }
-
-        /// <summary>
-        /// Gets the parameter expression for the observer.
-        /// </summary>
-        public ParameterExpression Observer
-        {
-            get
-            {
-                return this.observer;
-            }
-        }
 
         #region Compile methods
 
@@ -259,31 +237,7 @@ namespace Integra.Space.Language.Runtime
             Console.WriteLine("La función fue compilada exitosamente.");
             return funcResult;
         }
-
-        /// <summary>
-        /// Compile the result function.
-        /// </summary>
-        /// <typeparam name="In1">Left input type.</typeparam>
-        /// <typeparam name="In2">Right input type.</typeparam>
-        /// <typeparam name="Out">Output type.</typeparam>
-        /// <param name="plan">Execution plan.</param>
-        /// <returns>Result function.</returns>
-        public Func<In1, In2, Out> Compile<In1, In2, Out>(PlanNode plan)
-        {
-            Func<In1, In2, Out> funcResult = this.CreateLambda<In1, In2, Out>(plan).Compile();
-
-            this.actualScope = null;
-            this.parameterList.Clear();
-            this.sources.Clear();
-            this.projectionWithDispose = false;
-            this.scopeLevel = 0;
-            this.isInConditionOn = false;
-            this.IsSecondSource = false;
-
-            Console.WriteLine("La función fue compilada exitosamente.");
-            return funcResult;
-        }
-
+        
         /// <summary>
         /// Compile the result function.
         /// </summary>
@@ -330,51 +284,7 @@ namespace Integra.Space.Language.Runtime
             Expression<Func<In, Out>> result = Expression.Lambda<Func<In, Out>>(rootBlock, this.parameterList.ToArray());
             return result;
         }
-
-        /// <summary>
-        /// Creates a lambda expression
-        /// </summary>
-        /// <typeparam name="In1">Input type</typeparam>
-        /// <typeparam name="In2">Scheduler type</typeparam>
-        /// <typeparam name="Out">Output type</typeparam>
-        /// <param name="plan">Execution plan</param>
-        /// <returns>Expression lambda</returns>
-        public Expression<Func<In1, In2, Out>> CreateLambda<In1, In2, Out>(PlanNode plan)
-        {
-            // create the lag varaibles
-            ConstructorInfo ctrTimeSpan = typeof(TimeSpan).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
-            int bufferSize = int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]);
-            this.lagVariables.Add(0, Expression.Variable(typeof(TimeSpan), "lagIzq"));
-            this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
-
-            Expression rootExpression = this.GenerateExpressionTree(plan);
-            
-            Expression setSchedulerExp = null;
-            if (this.context.IsTestMode)
-            {
-                ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
-                setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
-                this.parameterList.Add(schedulerParam);
-            }
-            else
-            {
-                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
-            }
-
-            Expression rootBlock = Expression.Block(
-                                        new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
-                                        setSchedulerExp,
-                                        Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
-                                        Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
-                                        Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
-                                        rootExpression
-                                        );
-
-            Expression<Func<In1, In2, Out>> result = Expression.Lambda<Func<In1, In2, Out>>(rootBlock, this.parameterList.First(), this.parameterList.Last());
-            
-            return result;
-        }
-
+        
         /// <summary>
         /// Creates a lambda expression
         /// </summary>

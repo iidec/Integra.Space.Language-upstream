@@ -14,10 +14,10 @@ namespace Integra.Space.Language.Analysis.Metadata.Syntax
         public static SyntaxNode Parse(string text)
         {
             EQLSyntaxTree syntaxTree = new EQLSyntaxTree();
-            EQLPublicParser parser = new EQLPublicParser(text);
-            List<PlanNode> plan = parser.Evaluate();
+            QueryParser parser = new QueryParser(text);
+            PlanNode plan = parser.Evaluate();
             SyntaxNode root = new SyntaxNode("Query");
-            syntaxTree.Parse(plan[0], root);
+            syntaxTree.Parse(plan, root);
             return root;
         }
 

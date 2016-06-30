@@ -60,15 +60,15 @@ namespace Integra.Space.Language.Analysis
                           */  
                         }
 
-                        EQLPublicParser parser = new EQLPublicParser(eql);
-                        List<PlanNode> plan = parser.Evaluate();
+                        QueryParser parser = new QueryParser(eql);
+                        PlanNode plan = parser.Evaluate();
 
                         Console.WriteLine("Plan generated.");
                         Console.WriteLine("Creating graph...");
 
                         string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
                         TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
-                        tgg.GenerateGraph(plan.First());
+                        tgg.GenerateGraph(plan);
 
                         Console.WriteLine("Graph created.");
                         Console.WriteLine("Opening graph...");
@@ -134,20 +134,20 @@ namespace Integra.Space.Language.Analysis
                                                                                             */
                     }
 
-                    EQLPublicParser parser = new EQLPublicParser(eql);
-                    parser.Parse();
+                    QueryParser parser = new QueryParser(eql);
+                    ParseTree parseTree = parser.ParseTree;
 
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating metadata...");
 
                     Integra.Space.Language.Metadata.MetadataGenerator mg = new Integra.Space.Language.Metadata.MetadataGenerator();
-                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parser.ParseTree.Root);
+                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parseTree.Root);
                     //Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
                     Console.WriteLine("Metadata created.");
                     Console.WriteLine("Transforming plan...");
 
-                    PlanNode executionPlanNode = parser.Evaluate().First();
+                    PlanNode executionPlanNode = parser.Evaluate();
                     /*
                     TreeTransformations tf = new TreeTransformations(executionPlanNode);
                     tf.Transform();

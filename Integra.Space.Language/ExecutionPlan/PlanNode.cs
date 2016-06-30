@@ -13,7 +13,7 @@ namespace Integra.Space.Language
     /// Execution plan tree node
     /// </summary>
     [Serializable]
-    internal sealed class PlanNode
+    internal sealed class PlanNode : ISpaceASTNode
     {
         /// <summary>
         /// Doc go here

@@ -5,13 +5,16 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System;
-
     /// <summary>
-    /// PlanType enumerable
+    /// Plan type enumerable
     /// </summary>
     internal enum PlanNodeTypeEnum : uint
     {
+        /// <summary>
+        /// None type.
+        /// </summary>
+        None = 0,
+
         /// <summary>
         /// Constant type
         /// </summary>

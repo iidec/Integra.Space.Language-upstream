@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Root
 {
+    using CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -19,7 +20,7 @@ namespace Integra.Space.Language.ASTNodes.Root
         /// <summary>
         /// result of the evaluated constant
         /// </summary>
-        private AstNode value;
+        private AstNodeBase command;
 
         /// <summary>
         /// First method called
@@ -29,7 +30,7 @@ namespace Integra.Space.Language.ASTNodes.Root
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.value = AddChild(NodeUseType.Keyword, "Root", ChildrenNodes[0]) as AstNodeBase;
+            this.command = AddChild(NodeUseType.ValueRead, "COMMAND", ChildrenNodes[0]) as AstNodeBase;
         }
 
         /// <summary>
@@ -41,13 +42,10 @@ namespace Integra.Space.Language.ASTNodes.Root
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            PlanNode result = (PlanNode)this.value.Evaluate(thread);
+            PipelineCommandContext context = (PipelineCommandContext)this.command.Evaluate(thread);
             this.EndEvaluate(thread);
-
-            System.Collections.Generic.List<PlanNode> resultList = new System.Collections.Generic.List<PlanNode>();
-            resultList.Add(result);
-
-            return resultList;
+            
+            return context;
         }
     }
 }

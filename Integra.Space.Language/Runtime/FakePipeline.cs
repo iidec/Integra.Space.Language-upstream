@@ -24,8 +24,8 @@ namespace Integra.Space.Language.Runtime
         /// <returns>The assembly created.</returns>
         public Assembly Process(CompileContext context, string script, IQuerySchedulerFactory schedulerFactory)
         {
-            EQLPublicParser parser = new EQLPublicParser(script);
-            PlanNode executionPlan = parser.Evaluate().First();
+            QueryParser parser = new QueryParser(script);
+            PlanNode executionPlan = parser.Evaluate();
 
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + context.QueryName);
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
@@ -36,7 +36,7 @@ namespace Integra.Space.Language.Runtime
             tf.Transform();
 
             context.AsmBuilder = asmBuilder;
-            ObservableConstructor te = new ObservableConstructor(context);
+            CodeGenerator te = new CodeGenerator(context);
 
             return te.Compile(executionPlan);
         }
@@ -62,7 +62,7 @@ namespace Integra.Space.Language.Runtime
             tf.Transform();
 
             context.AsmBuilder = asmBuilder;
-            ObservableConstructor te = new ObservableConstructor(context);
+            CodeGenerator te = new CodeGenerator(context);
 
             return te.Compile(executionPlan);
         }

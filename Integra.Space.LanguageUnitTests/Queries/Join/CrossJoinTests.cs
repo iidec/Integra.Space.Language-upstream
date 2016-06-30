@@ -861,8 +861,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -891,8 +891,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -926,8 +926,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -956,8 +956,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -987,8 +987,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1018,8 +1018,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1049,8 +1049,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1080,8 +1080,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1111,8 +1111,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1142,8 +1142,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1172,8 +1172,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
@@ -1202,8 +1202,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(eql);
-                PlanNode plan = parser.Evaluate().First();
+                QueryParser parser = new QueryParser(eql);
+                PlanNode plan = parser.Evaluate();
                 CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);

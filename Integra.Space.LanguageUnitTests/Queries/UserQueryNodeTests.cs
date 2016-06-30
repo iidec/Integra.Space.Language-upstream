@@ -2119,15 +2119,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
+                QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave",
                                                                 "SpaceObservable1",
                                                                 "key")
                                                                 );
-                List<PlanNode> plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate();
 
-                ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2150,16 +2150,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
+                QueryParser parser = new QueryParser(
                     string.Format("from {0} where {1} select {2} as Llave",
                                                                 "SpaceObservable1",
                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                 "key")
                                                                 );
-                List<PlanNode> plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate();
 
-                ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2182,15 +2182,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
+                QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave",
                                                                 "SpaceObservable1",
                                                                 "count()")
                                                                 );
-                List<PlanNode> plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate();
 
-                ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty });
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2213,15 +2213,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
+                QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave",
                                                                 "SpaceObservable1",
                                                                 "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                 );
-                List<PlanNode> plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate();
 
-                ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2294,7 +2294,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         {
             try
             {
-                EQLPublicParser parser = new EQLPublicParser(
+                QueryParser parser = new QueryParser(
                     string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
                                                                                                 "SpaceObservable1",
                                                                                                 "@event.Message.#0.MessageType == \"0100\"",
@@ -2303,10 +2303,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                                 "key.grupo1",
                                                                                                 "sum(@event.Message.#1.CardAcceptorNameLocation)")
                                                                                                 );
-                List<PlanNode> plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate();
 
-                ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2335,10 +2335,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo2",
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Evaluate();
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate();
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
@@ -2352,10 +2352,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "key.grupo2",
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Evaluate();
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate();
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
@@ -2368,10 +2368,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.CardAcceptorNameLocation",
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Evaluate();
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate();
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
@@ -2383,10 +2383,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.CardAcceptorNameLocation",
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Evaluate();
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate();
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]

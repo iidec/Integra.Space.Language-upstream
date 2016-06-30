@@ -48,3 +48,4 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("ConsoleApplication1")]
 [assembly: InternalsVisibleTo("Integra.Space.Language.Tests")]
 [assembly: InternalsVisibleTo("Integra.Space.Language.Explorables")]
+[assembly: InternalsVisibleTo("Integra.Space.Management")]

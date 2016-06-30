@@ -1,19 +1,22 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="EQLPublicParser.cs" company="Integra.Space.Language">
+// <copyright file="SpaceParser.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System.Collections.Generic;
     using Exceptions;
-    using Integra.Space.Language.Grammars;
+    using Irony.Interpreter;
     using Irony.Parsing;
 
     /// <summary>
-    /// Class that implements the logic to parse commands
+    /// Space parser class.
     /// </summary>
-    internal sealed class EQLPublicParser
+    /// <typeparam name="TGrammar">Grammar type.</typeparam>
+    /// <typeparam name="TLanguageRuntime">Language runtime class.</typeparam>
+    internal abstract class SpaceParser<TGrammar, TLanguageRuntime>
+        where TGrammar : InterpretedLanguageGrammar, new()
+        where TLanguageRuntime : LanguageRuntime, new()
     {
         /// <summary>
         /// Command text.
@@ -26,21 +29,26 @@ namespace Integra.Space.Language
         private ParseTree parseTree;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EQLPublicParser"/> class.
+        /// Initializes a new instance of the <see cref="SpaceParser{TGrammar, TLanguageRuntime}"/> class.
         /// </summary>
         /// <param name="commandText">Command text</param>
-        public EQLPublicParser(string commandText)
+        public SpaceParser(string commandText)
         {
             this.commandText = commandText;
         }
 
         /// <summary>
-        /// Gets the parse tree generated.
+        /// Gets the parse tree.
         /// </summary>
         public ParseTree ParseTree
         {
             get
             {
+                if (this.parseTree == null)
+                {
+                    this.parseTree = this.Parse();
+                }
+
                 return this.parseTree;
             }
         }
@@ -49,15 +57,13 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands.
         /// </summary>
         /// <returns>Execution plan.</returns>
-        public List<PlanNode> Evaluate()
+        protected object EvaluateParseTree()
         {
-            List<PlanNode> nodes = null;
-
             try
             {
-                this.Parse();
-                Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new EQLLanguageRuntime());
-                nodes = (List<PlanNode>)app.Evaluate(this.parseTree);
+                ParseTree parseTree = this.Parse();
+                Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new TLanguageRuntime());
+                return app.Evaluate(parseTree);
             }
             catch (SyntaxException e)
             {
@@ -67,26 +73,27 @@ namespace Integra.Space.Language
             {
                 throw new ParseException(Resources.SR.InterpretationException, e);
             }
-
-            return nodes;
         }
 
         /// <summary>
         /// Implements the logic to parse commands.
         /// </summary>
-        public void Parse()
+        /// <returns>The parse tree.</returns>
+        private ParseTree Parse()
         {
-            EQLGrammar grammar = new EQLGrammar();
+            TGrammar grammar = new TGrammar();
             LanguageData language = new LanguageData(grammar);
             Parser parser = new Parser(language);
-            this.parseTree = parser.Parse(this.commandText);
-            if (this.parseTree.HasErrors())
+            ParseTree parseTree = parser.Parse(this.commandText);
+            if (parseTree.HasErrors())
             {
-                foreach (var parserMessage in this.parseTree.ParserMessages)
+                foreach (var parserMessage in parseTree.ParserMessages)
                 {
                     throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                 }
             }
+
+            return parseTree;
         }
     }
 }

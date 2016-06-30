@@ -17,12 +17,7 @@ namespace Integra.Space.Language.Runtime
         /// Query name.
         /// </summary>
         private string queryName;
-
-        /// <summary>
-        /// Observable type for the compilation.
-        /// </summary>
-        private System.Type observerType;
-
+        
         /// <summary>
         /// Indicates whether the compilation must be in debug mode.
         /// </summary>

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="EQLGrammar.cs" company="Integra.Space.Language">
+// <copyright file="QueryGrammar.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -21,7 +21,7 @@ namespace Integra.Space.Language.Grammars
     /// EQLGrammar grammar for the commands and the predicates 
     /// </summary>
     [Language("EQLGrammar", "0.4", "")]
-    internal sealed class EQLGrammar : InterpretedLanguageGrammar
+    internal sealed class QueryGrammar : InterpretedLanguageGrammar
     {
         /// <summary>
         /// Expression grammar
@@ -39,21 +39,21 @@ namespace Integra.Space.Language.Grammars
         private GroupByGrammar groupByGrammar;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="EQLGrammar"/> class
+        /// Initializes a new instance of the <see cref="QueryGrammar"/> class
         /// </summary>
-        public EQLGrammar()
+        public QueryGrammar()
             : base(false)
         {
             this.expressionGrammar = new ExpressionGrammar();
             this.projectionGrammar = new ProjectionGrammar();
             this.groupByGrammar = new GroupByGrammar();
-            this.Grammar();
+            this.CreateGrammar();
         }
 
         /// <summary>
-        /// Specify the language grammar
+        /// Specify the query grammar.
         /// </summary>
-        public void Grammar()
+        public void CreateGrammar()
         {
             /*** TERMINALES DE LA GRAMATICA ***/
 
@@ -130,10 +130,7 @@ namespace Integra.Space.Language.Grammars
             nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.DefaultNodeCreator = () => new ListNodeOrderBy();
             NonTerminal nt_USER_QUERY = new NonTerminal("USER_QUERY", typeof(UserQueryNode));
             nt_USER_QUERY.AstConfig.NodeType = null;
-            nt_USER_QUERY.AstConfig.DefaultNodeCreator = () => new UserQueryNode();
-            NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND_NODE", typeof(CommandNode));
-            nt_COMMAND_NODE.AstConfig.NodeType = null;
-            nt_COMMAND_NODE.AstConfig.DefaultNodeCreator = () => new CommandNode();
+            nt_USER_QUERY.AstConfig.DefaultNodeCreator = () => new UserQueryNode();            
             NonTerminal nt_ID_WITH_ALIAS = new NonTerminal("ID_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
             nt_ID_WITH_ALIAS.AstConfig.NodeType = null;
             nt_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
@@ -209,16 +206,13 @@ namespace Integra.Space.Language.Grammars
             nt_GROUP_BY_OP.Rule = nt_GROUP_BY
                                     | this.Empty;
             /* **************************** */
-            /* COMANDOS */
-            nt_COMMAND_NODE.Rule = nt_USER_QUERY;
-            /* **************************** */
-
+            
             /* ID OR ID WITH ALIAS */
             nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
                                             | terminalId;
             /* **************************** */
 
-            this.Root = nt_COMMAND_NODE;
+            this.Root = nt_USER_QUERY;
 
             this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;
         }
