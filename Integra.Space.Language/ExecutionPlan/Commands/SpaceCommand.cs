@@ -6,6 +6,7 @@
 namespace Integra.Space.Language
 {
     using System.Collections.Generic;
+    using Common;
 
     /// <summary>
     /// Command action node class.
@@ -13,63 +14,63 @@ namespace Integra.Space.Language
     internal abstract class SpaceCommand : ISpaceCommand
     {
         /// <summary>
-        /// Line of the evaluated sentence.
+        /// Command action.
         /// </summary>
-        private int line;
+        private SpaceActionCommandEnum action;
 
         /// <summary>
-        /// Column of the evaluated sentence.
+        /// Space object type.
         /// </summary>
-        private int column;
+        private SpaceObjectEnum spaceObjectType;
 
         /// <summary>
-        /// Text of the actual command.
+        /// Space object name.
         /// </summary>
-        private string commandText;
+        private string objectName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SpaceCommand"/> class.
         /// </summary>
-        /// <param name="line">Line of the evaluated sentence.</param>
-        /// <param name="column">Column evaluated sentence column.</param>
-        /// <param name="commandText">Text of the actual node.</param>
-        public SpaceCommand(int line, int column, string commandText)
+        /// <param name="action">Space command action.</param>
+        /// <param name="spaceObjectType">Space object type.</param>
+        /// <param name="objectName">Object name.</param>
+        public SpaceCommand(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string objectName)
         {
-            this.line = line;
-            this.column = column;
-            this.commandText = commandText;
+            this.action = action;
+            this.spaceObjectType = spaceObjectType;
+            this.objectName = objectName; 
         }
 
         /// <summary>
-        /// Gets the line of the evaluated sentence
+        /// Gets command action.
         /// </summary>
-        public int Line
+        public SpaceActionCommandEnum Action
         {
             get
             {
-                return this.line;
+                return this.action;
             }
         }
 
         /// <summary>
-        /// Gets the evaluated sentence column
+        /// Gets the space object type.
         /// </summary>
-        public int Column
+        public SpaceObjectEnum SpaceObjectType
         {
             get
             {
-                return this.column;
+                return this.spaceObjectType;
             }
         }
 
         /// <summary>
-        /// Gets the text of the actual node
+        /// Gets the object name.
         /// </summary>
-        public string CommandText
+        public string ObjectName
         {
             get
             {
-                return this.commandText;
+                return this.objectName;
             }
         }
     }

@@ -7,12 +7,13 @@ namespace Integra.Space.Language.ASTNodes.Commands
 {
     using System;
     using System.Collections.Generic;
-    using CommandContext;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Parsing;
-       
+
     /// <summary>
     /// Space command AST node class.
     /// </summary>
@@ -31,7 +32,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space query.
         /// </summary>
-        private string query; 
+        private string query;
 
         /// <summary>
         /// First method called
@@ -60,10 +61,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Tuple<string, SpaceObjectEnum> spaceObjectAux = (Tuple<string, SpaceObjectEnum>)this.spaceObject.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            List<Tuple<string, SpaceObjectEnum, bool?>> spaceObjectList = new List<Tuple<string, SpaceObjectEnum, bool?>>();
-            spaceObjectList.Add(Tuple.Create<string, SpaceObjectEnum, bool?>(spaceObjectAux.Item1, spaceObjectAux.Item2, null));
-
-            return new PipelineCommandContext(actionAux, spaceObjectList, this.query);
+            return new CreateAndAlterStreamNode(actionAux, this.query, spaceObjectAux.Item1, this.Location.Line, this.Location.Column, this.AsString);
         }
     }
 }

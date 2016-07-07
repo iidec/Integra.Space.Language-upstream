@@ -55,6 +55,10 @@
       <HintPath>..\packages\Integra.Messaging.Debug.2.1.0.0\lib\net45\Integra.Messaging.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Integra.Space.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Integra.Space.Common.Debug.0.0.1.6\lib\Integra.Space.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
       <Private>True</Private>

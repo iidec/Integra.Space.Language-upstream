@@ -46,6 +46,10 @@
       <HintPath>..\packages\Integra.Messaging.Debug.2.1.0.0\lib\net45\Integra.Messaging.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Integra.Space.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Irony">
       <HintPath>..\packages\Irony.0.9.0\lib\net45\Irony.dll</HintPath>
       <Private>True</Private>
@@ -157,48 +161,18 @@
     <Compile Include="Exceptions\CompilationException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\SyntaxException.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\CreateObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\AlterObjectNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\CreateObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\DropObjectNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Role\CreateRoleNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Role\DropRoleNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Source\DropSourceNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Stream\DropStreamNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Stream\AlterStreamNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Stream\CreateStreamNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\User\AlterUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\User\CreateUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\User\DropUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\ISpaceCommand.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\RevokePermissionNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\DenyPermissionNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\GrantPermissionNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\Role\RevokePermissionToRoleNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\Role\DenyPermissionToRoleNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\Role\GrantPermissionToRoleNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Stream\CreateAndAlterStreamNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\User\CreateAndAlterUserNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\SpacePermissionsCommandNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\User\DenyPermissionToUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\User\GrantPermissionToUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\User\RevokePermissionToUserNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\SpaceCommand.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Source\CreateSourceNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\Source\StopSourceNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\Source\StartSourceNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\StopNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\StartNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Status\StatusCommandNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\Stream\StartStreamNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Status\Stream\StopStreamNode.cs" />
-    <Compile Include="ExecutionPlan\Enums\SpaceActionCommandEnum.cs" />
-    <Compile Include="ExecutionPlan\Enums\SpaceObjectEnum.cs" />
-    <Compile Include="ExecutionPlan\Enums\SpacePermissionsEnum.cs" />
-    <Compile Include="ExecutionPlan\Enums\SpaceUserOptionEnum.cs" />
     <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
     <Compile Include="Parsers\CommandParser.cs" />
     <Compile Include="Parsers\SpaceParser.cs" />
-    <Compile Include="CommandContext\PipelineCommandContext.cs" />
-    <Compile Include="CommandContext\SpaceUserOption.cs" />
     <Compile Include="Runtime\Scope\ScopeParameter.cs" />
     <Compile Include="ExecutionPlan\SpaceASTNode.cs" />
     <Compile Include="Grammars\CommandGrammar.cs" />
@@ -272,7 +246,6 @@
     <Compile Include="Runtime\TypeBuilders\JoinSideObjectComparerTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\QueryResultTypeBuilder.cs" />
     <Compile Include="Runtime\Scope\Scope.cs" />
-    <Compile Include="Scheduler\IQuerySchedulerFactory.cs" />
     <Compile Include="Runtime\Helpers\NodesFinder.cs" />
     <Compile Include="Runtime\CodeGenerator.cs" />
     <Compile Include="ExecutionPlan\PlanNodeTypeExtensions.cs" />
@@ -344,9 +317,7 @@
       <Name>Integra.Space.Runtime</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="CommandContext\Nodes\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\StyleCop.Error.MSBuild.1.0.0\build\StyleCop.Error.MSBuild.Targets" Condition="Exists('packages\StyleCop.Error.MSBuild.1.0.0\build\StyleCop.Error.MSBuild.Targets')" />
   <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />

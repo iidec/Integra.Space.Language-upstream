@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using Integra.Space.Common;
+
     /// <summary>
     /// Grant permission node class.
     /// </summary>
@@ -13,14 +15,13 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="DenyPermissionToRoleNode"/> class.
         /// </summary>
+        /// <param name="spaceObject">Space object.</param>
+        /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
+        /// <param name="permission">Space permission.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="permission">Space permission.</param>
-        /// <param name="spaceObject">Space object.</param>
-        /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
-        /// <param name="streamIdentifier">Stream identifier.</param>
-        public DenyPermissionToRoleNode(int line, int column, string nodeText, SpacePermissionsEnum permission, SpaceObjectEnum spaceObject, string toIdentifier, string streamIdentifier = "") : base(line, column, nodeText, permission, spaceObject, toIdentifier, streamIdentifier)
+        public DenyPermissionToRoleNode(SpaceObjectEnum spaceObject, string toIdentifier, SpacePermissionsEnum permission, int line, int column, string nodeText) : base(SpaceObjectEnum.Role, toIdentifier, permission, line, column, nodeText)
         {
         }
     }

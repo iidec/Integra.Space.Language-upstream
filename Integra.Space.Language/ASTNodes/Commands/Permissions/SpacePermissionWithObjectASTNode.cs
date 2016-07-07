@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Commands
 {
+    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -63,7 +64,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.EndEvaluate(thread);
 
-            return new System.Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>(permission, t.Item2, t.Item1);
+            return new SpacePermission(permission, t.Item2, t.Item1);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="AlterUserNode.cs" company="Integra.Space.Common">
+// <copyright file="CreateAndAlterUserNode.cs" company="Integra.Space.Common">
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -11,7 +11,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Action over object node class.
     /// </summary>
-    internal sealed class AlterUserNode : AlterObjectNode
+    internal sealed class CreateAndAlterUserNode : SpaceCrudCommandNode
     {
         /// <summary>
         /// Password of the user.
@@ -19,16 +19,28 @@ namespace Integra.Space.Language
         private List<SpaceUserOption> userOptions;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AlterUserNode"/> class.
+        /// Initializes a new instance of the <see cref="CreateAndAlterUserNode"/> class.
         /// </summary>
+        /// <param name="action">Space command action.</param>
         /// <param name="identifier">Space object identifier.</param>
+        /// <param name="userOptions">User command options.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="userOptions">User command options.</param>
-        public AlterUserNode(string identifier, int line, int column, string nodeText, List<SpaceUserOption> userOptions) : base(Common.SpaceObjectEnum.User, identifier, line, column, nodeText)
+        public CreateAndAlterUserNode(SpaceActionCommandEnum action, string identifier, List<SpaceUserOption> userOptions, int line, int column, string nodeText) : base(action, SpaceObjectEnum.User, identifier, line, column, nodeText)
         {
             this.userOptions = userOptions;
+        }
+
+        /// <summary>
+        /// Gets the user options defined in the command.
+        /// </summary>
+        public List<SpaceUserOption> UserOptions
+        {
+            get
+            {
+                return this.userOptions;
+            }
         }
     }
 }

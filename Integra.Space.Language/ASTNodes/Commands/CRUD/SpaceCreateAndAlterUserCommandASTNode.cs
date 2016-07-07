@@ -7,12 +7,13 @@ namespace Integra.Space.Language.ASTNodes.Commands
 {
     using System;
     using System.Collections.Generic;
-    using CommandContext;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Parsing;
-       
+
     /// <summary>
     /// Space command AST node class.
     /// </summary>
@@ -61,10 +62,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             List<SpaceUserOption> userOptionListAux = (List<SpaceUserOption>)this.userOptionList.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            List<Tuple<string, SpaceObjectEnum, bool?>> spaceObjectList = new List<Tuple<string, SpaceObjectEnum, bool?>>();
-            spaceObjectList.Add(Tuple.Create<string, SpaceObjectEnum, bool?>(spaceObjectAux.Item1, spaceObjectAux.Item2, null));
-
-            return new PipelineCommandContext(actionAux, spaceObjectList, userOptionListAux);
+            return new CreateAndAlterUserNode(actionAux, spaceObjectAux.Item1, userOptionListAux, this.Location.Line, this.Location.Column, this.AsString);
         }
     }
 }

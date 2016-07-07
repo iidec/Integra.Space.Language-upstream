@@ -7,6 +7,7 @@ namespace Integra.Space.Language.Runtime
 {
     using System.Reflection.Emit;
     using Integra.Space.Language.Metadata;
+    using Scheduler;
 
     /// <summary>
     /// Space compile context

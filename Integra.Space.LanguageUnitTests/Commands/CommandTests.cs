@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
-using Integra.Space.Language.CommandContext;
+using Integra.Space.Common;
 
 namespace Integra.Space.LanguageUnitTests.Commands
 {
@@ -11,7 +11,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void Process(string command)
         {
             CommandParser cp = new CommandParser(command);
-            PipelineCommandContext context = cp.Evaluate();
+            SpaceCommand spaceCommand = cp.Evaluate();
+
             Console.WriteLine();
         }
 

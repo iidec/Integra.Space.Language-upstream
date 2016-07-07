@@ -5,7 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Commands
 {
-    using CommandContext;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;

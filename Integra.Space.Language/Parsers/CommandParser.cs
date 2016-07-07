@@ -5,10 +5,9 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using CommandContext;
-    using Exceptions;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.Grammars;
-    using Irony.Parsing;
 
     /// <summary>
     /// Class that implements the logic to parse conditional expressions
@@ -27,9 +26,9 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands.
         /// </summary>
         /// <returns>Execution plan.</returns>
-        public PipelineCommandContext Evaluate()
+        public SpaceCommand Evaluate()
         {
-            return (PipelineCommandContext)this.EvaluateParseTree();
+            return (SpaceCommand)this.EvaluateParseTree();
         }
     }
 }

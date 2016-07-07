@@ -5,19 +5,22 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using Common;
+
     /// <summary>
     /// Action over object node class.
     /// </summary>
-    internal abstract class CreateObjectNode : SpaceCrudCommandNode
+    internal class CreateObjectNode : SpaceCrudCommandNode
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateObjectNode"/> class.
         /// </summary>
-        /// <param name="identifier">Space object identifier.</param>
+        /// <param name="spaceObjectType">Space object type.</param>
+        /// <param name="name">Space object name.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateObjectNode(string identifier, int line, int column, string nodeText) : base(identifier, line, column, nodeText)
+        public CreateObjectNode(SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(SpaceActionCommandEnum.Create, spaceObjectType, name, line, column, nodeText)
         {
         }
     }

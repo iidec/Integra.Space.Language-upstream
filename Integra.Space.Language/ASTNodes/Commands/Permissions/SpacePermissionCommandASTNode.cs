@@ -7,7 +7,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
 {
     using System;
     using System.Collections.Generic;
-    using CommandContext;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -26,7 +27,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space permission list.
         /// </summary>
-        private ListASTNode<SpacePermissionWithObjectGroupASTNode, Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>> permissionList;
+        private ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission> permissionList;
 
         /// <summary>
         /// Terminal to.
@@ -48,7 +49,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.action = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "Action", ChildrenNodes[0]) as AstNodeBase;
-            this.permissionList = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "PermissionList", ChildrenNodes[1]) as ListASTNode<SpacePermissionWithObjectGroupASTNode, Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>>;
+            this.permissionList = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "PermissionList", ChildrenNodes[1]) as ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission>;
             this.terminalTo = ChildrenNodes[2].Token.Text;
             this.userOrRole = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "UserOrRole", ChildrenNodes[3]) as AstNodeBase;
         }
@@ -63,31 +64,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             this.BeginEvaluate(thread);
             SpaceActionCommandEnum actionAux = (SpaceActionCommandEnum)this.action.Evaluate(thread);
-            List<Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>> permissionListAux = (List<Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>>)this.permissionList.Evaluate(thread);
+            List<SpacePermission> permissionListAux = (List<SpacePermission>)this.permissionList.Evaluate(thread);
             Tuple<string, SpaceObjectEnum> userOrRoleAux = (Tuple<string, SpaceObjectEnum>)this.userOrRole.Evaluate(thread);
             this.EndEvaluate(thread);
-
-            List<Tuple<string, SpaceObjectEnum, bool?>> spaceObjectList = new List<Tuple<string, SpaceObjectEnum, bool?>>();
-            spaceObjectList.Add(Tuple.Create<string, SpaceObjectEnum, bool?>(userOrRoleAux.Item1, userOrRoleAux.Item2, null));
-            this.AddObjectsUsedInTheCommand(permissionListAux, spaceObjectList);
-
-            return new PipelineCommandContext(actionAux, spaceObjectList, permissionListAux);
-        }
-
-        /// <summary>
-        /// Add the objects specified in the permissions to the space object list.
-        /// </summary>
-        /// <param name="permissionList">Permission list.</param>
-        /// <param name="objectList">Space object list.</param>
-        protected void AddObjectsUsedInTheCommand(List<Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>> permissionList, List<Tuple<string, SpaceObjectEnum, bool?>> objectList)
-        {
-            foreach (Tuple<SpacePermissionsEnum, SpaceObjectEnum, string> p in permissionList)
-            {
-                if (p.Item3 != null)
-                {
-                    objectList.Add(Tuple.Create<string, SpaceObjectEnum, bool?>(p.Item3, p.Item2, null));
-                }
-            }
+            
+            return new SpacePermissionsCommandNode(actionAux, userOrRoleAux.Item2, userOrRoleAux.Item1, permissionListAux, this.Location.Line, this.Location.Column, this.AsString);
         }
     }
 }

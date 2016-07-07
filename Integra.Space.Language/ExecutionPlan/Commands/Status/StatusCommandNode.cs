@@ -5,10 +5,12 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using Common;
+
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class StatusCommandNode : SpaceCommand
+    internal class StatusCommandNode : CompiledCommand
     {
         /// <summary>
         /// Space object identifier.
@@ -18,13 +20,15 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="StatusCommandNode"/> class.
         /// </summary>
-        /// <param name="identifier">Space object identifier.</param>
+        /// <param name="action">Space command action.</param>
+        /// <param name="spaceObjectType">Space object type.</param>
+        /// <param name="name">Space object identifier.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public StatusCommandNode(string identifier, int line, int column, string nodeText) : base(line, column, nodeText)
+        public StatusCommandNode(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
         {
-            this.identifier = identifier;
+            this.identifier = name;
         }
     }
 }

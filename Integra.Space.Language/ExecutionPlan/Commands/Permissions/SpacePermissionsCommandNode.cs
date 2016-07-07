@@ -5,17 +5,21 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using System;
+    using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using System.Linq;
+    using Integra.Space.Common;
 
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class SpacePermissionsCommandNode : SpaceCommand
+    internal class SpacePermissionsCommandNode : CompiledCommand
     {
         /// <summary>
-        /// Space action.
+        /// Space permissions.
         /// </summary>
-        private SpacePermissionsEnum permission;
+        private List<SpacePermission> permissions;
 
         /// <summary>
         /// Space object.
@@ -26,38 +30,32 @@ namespace Integra.Space.Language
         /// Space object to assign the permission.
         /// </summary>
         private string toIdentifier;
-
-        /// <summary>
-        /// Stream identifier.
-        /// </summary>
-        private string streamIdentifier;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SpacePermissionsCommandNode"/> class.
         /// </summary>
+        /// <param name="action">Space command action.</param>
+        /// <param name="spaceObjectType">Space object type..</param>
+        /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
+        /// <param name="permissions">Space permissions.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="permission">Space permission.</param>
-        /// <param name="spaceObject">Space object.</param>
-        /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
-        /// <param name="streamIdentifier">Stream identifier.</param>
-        public SpacePermissionsCommandNode(int line, int column, string nodeText, SpacePermissionsEnum permission, SpaceObjectEnum spaceObject, string toIdentifier, string streamIdentifier = "") : base(line, column, nodeText)
+        public SpacePermissionsCommandNode(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string toIdentifier, List<SpacePermission> permissions, int line, int column, string nodeText) : base(action, spaceObjectType, toIdentifier, line, column, nodeText)
         {
-            this.permission = permission;
-            this.spaceObject = spaceObject;
+            this.permissions = permissions;
+            this.spaceObject = spaceObjectType;
             this.toIdentifier = toIdentifier;
-            this.streamIdentifier = streamIdentifier;
         }
 
         /// <summary>
-        /// Gets the space action.
+        /// Gets the space permissions.
         /// </summary>
-        public SpacePermissionsEnum Permission
+        public List<SpacePermission> Permissions
         {
             get
             {
-                return this.permission;
+                return this.permissions;
             }
         }
 
@@ -83,14 +81,68 @@ namespace Integra.Space.Language
             }
         }
 
-        /// <summary>
-        /// Gets the stream identifier.
-        /// </summary>
-        public string StreamIdentifier
+        /// <inheritdoc />
+        public override HashSet<SpaceObjectEnum> GetUsedSpaceObjectTypes()
         {
-            get
+            HashSet<SpaceObjectEnum> listOfUsedObjects = base.GetUsedSpaceObjectTypes();
+
+            this.permissions
+                .Where(x => !string.IsNullOrWhiteSpace(x.ObjectName))
+                .Select(x => x.ObjectType)
+                .Except(listOfUsedObjects)
+                .ToList()
+                .ForEach(objectType =>
+                {
+                    listOfUsedObjects.Add(objectType);
+                });
+
+            return listOfUsedObjects;
+        }
+
+        /// <inheritdoc />
+        public override HashSet<Tuple<SpaceObjectEnum, string>> GetUsedSpaceObjects()
+        {
+            HashSet<Tuple<SpaceObjectEnum, string>> listOfUsedObjects = base.GetUsedSpaceObjects();
+
+            this.permissions
+                .Where(x => !string.IsNullOrWhiteSpace(x.ObjectName))
+                .Distinct(new PermissionComparer())
+                .ToList()
+                .ForEach(permission =>
+                {
+                    listOfUsedObjects.Add(Tuple.Create(permission.ObjectType, permission.ObjectName));
+                });
+
+            return listOfUsedObjects;
+        }
+
+        /// <summary>
+        /// Object used comparer class.
+        /// </summary>
+        private class PermissionComparer : IEqualityComparer<SpacePermission>
+        {
+            /// <inheritdoc />
+            public bool Equals(SpacePermission x, SpacePermission y)
             {
-                return this.streamIdentifier;
+                if (x.ObjectName == y.ObjectName && x.ObjectType == y.ObjectType)
+                {
+                    return true;
+                }
+
+                return false;
+            }
+
+            /// <inheritdoc />
+            public int GetHashCode(SpacePermission obj)
+            {
+                if (obj.ObjectName != null)
+                {
+                    return obj.ObjectType.GetHashCode() + obj.ObjectName.GetHashCode();
+                }
+                else
+                {
+                    return obj.ObjectType.GetHashCode();
+                }
             }
         }
     }

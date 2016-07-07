@@ -15,6 +15,8 @@ namespace Integra.Space.Language.Grammars
     using ASTNodes.QuerySections;
     using ASTNodes.Root;
     using ASTNodes.UserQuery;
+    using Common;
+    using Common.CommandContext;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -198,12 +200,12 @@ namespace Integra.Space.Language.Grammars
             /************************************************/
 
             /* SPACE PERMISSION LIST */
-            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("SPACE_PERMISSION_LIST", typeof(ListASTNode<SpacePermissionWithObjectGroupASTNode, Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>>));
+            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("SPACE_PERMISSION_LIST", typeof(ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission>));
             nt_SPACE_PERMISSION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpacePermissionWithObjectGroupASTNode, Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>>();
-            NonTerminal nt_SPACE_USER_OPTION_LIST = new NonTerminal("SPACE_USER_OPTION_LIST", typeof(ListASTNode<SpaceUserOptionASTNode, CommandContext.SpaceUserOption>));
+            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission>();
+            NonTerminal nt_SPACE_USER_OPTION_LIST = new NonTerminal("SPACE_USER_OPTION_LIST", typeof(ListASTNode<SpaceUserOptionASTNode, SpaceUserOption>));
             nt_SPACE_USER_OPTION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceUserOptionASTNode, CommandContext.SpaceUserOption>();
+            nt_SPACE_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceUserOptionASTNode, SpaceUserOption>();
             /************************************************/
 
             /* CRUD COMMANDS */

@@ -5,10 +5,12 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using Integra.Space.Common;
+
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class StopNode : StatusCommandNode 
+    internal abstract class StopNode : StatusCommandNode
     {
         /// <summary>
         /// Space object identifier.
@@ -18,11 +20,12 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="StopNode"/> class.
         /// </summary>
+        /// <param name="spaceObjectType">Space object type.</param>
         /// <param name="identifier">Space object identifier.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public StopNode(string identifier, int line, int column, string nodeText) : base(identifier, line, column, nodeText)
+        public StopNode(SpaceObjectEnum spaceObjectType, string identifier, int line, int column, string nodeText) : base(SpaceActionCommandEnum.Stop, spaceObjectType, identifier, line, column, nodeText)
         {
             this.identifier = identifier;
         }

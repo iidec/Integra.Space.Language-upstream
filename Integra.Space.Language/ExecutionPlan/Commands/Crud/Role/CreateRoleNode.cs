@@ -17,7 +17,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateRoleNode(string identifier, int line, int column, string nodeText) : base(identifier, line, column, nodeText)
+        public CreateRoleNode(string identifier, int line, int column, string nodeText) : base(Common.SpaceObjectEnum.Role, identifier, line, column, nodeText)
         {
         }
     }

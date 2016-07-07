@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Commands
 {
+    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -42,7 +43,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            System.Tuple<SpacePermissionsEnum, SpaceObjectEnum, string> definedPermissionAux = (System.Tuple<SpacePermissionsEnum, SpaceObjectEnum, string>)this.definedPermission.Evaluate(thread);
+            SpacePermission definedPermissionAux = (SpacePermission)this.definedPermission.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return definedPermissionAux;

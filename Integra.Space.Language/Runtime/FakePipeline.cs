@@ -9,6 +9,7 @@ namespace Integra.Space.Language.Runtime
     using System.Linq;
     using System.Reflection;
     using System.Reflection.Emit;
+    using Scheduler;
 
     /// <summary>
     /// Fake pipeline class.

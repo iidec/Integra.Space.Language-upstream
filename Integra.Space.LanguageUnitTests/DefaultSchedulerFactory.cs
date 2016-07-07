@@ -3,7 +3,7 @@ using System.Reactive.Concurrency;
 using System.Configuration;
 using Microsoft.Reactive.Testing;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
+using Integra.Space.Scheduler;
 
 namespace Integra.Space.LanguageUnitTests
 {
@@ -63,7 +63,7 @@ namespace Integra.Space.LanguageUnitTests
                 case (int)SchedulerTypeEnum.NewThreadScheduler:
                     return Expression.Property(null, typeof(NewThreadScheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.Scheduler:
-                    return Expression.Property(null, typeof(Scheduler).GetProperty("Default"));
+                    return Expression.Property(null, typeof(System.Reactive.Concurrency.Scheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.TaskPoolScheduler:
                     return Expression.Property(null, typeof(TaskPoolScheduler).GetProperty("Default"));
                 case (int)SchedulerTypeEnum.ThreadPoolScheduler:
@@ -74,11 +74,6 @@ namespace Integra.Space.LanguageUnitTests
                 default:
                     throw new Exception("Undefined or not suported scheduler.");
             }
-        }
-
-        public IScheduler GetTestScheduler()
-        {
-            return this.testScheduler;
         }
     }
 }

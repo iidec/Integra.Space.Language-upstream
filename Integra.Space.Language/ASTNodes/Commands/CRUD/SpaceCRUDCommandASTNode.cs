@@ -5,7 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Commands
 {
-    using CommandContext;
+    using Common;
+    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -41,7 +42,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            PipelineCommandContext contextAxu = (PipelineCommandContext)this.context.Evaluate(thread);
+            SpaceCommand contextAxu = (SpaceCommand)this.context.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return contextAxu;
