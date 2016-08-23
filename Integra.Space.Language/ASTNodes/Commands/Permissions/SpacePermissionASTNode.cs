@@ -44,7 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);            
             this.EndEvaluate(thread);
 
-            SpacePermissionsEnum permission;
+            PermissionsEnum permission;
             if (System.Enum.TryParse(this.spacePermission, true, out permission))
             {
                 return permission;

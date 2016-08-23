@@ -49,10 +49,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SpaceObjectEnum @object = (SpaceObjectEnum)this.spaceObject.Evaluate(thread);         
+            SystemObjectEnum @object = (SystemObjectEnum)this.spaceObject.Evaluate(thread);         
             this.EndEvaluate(thread);
 
-            return new System.Tuple<string, SpaceObjectEnum>(this.identifier, @object);            
+            return new System.Tuple<string, SystemObjectEnum>(this.identifier, @object);            
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SpacePermissionCommandASTNode.cs" company="Integra.Space.Language">
+// <copyright file="AddCommandASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -16,22 +16,17 @@ namespace Integra.Space.Language.ASTNodes.Commands
     /// <summary>
     /// Space command AST node class.
     /// </summary>
-    internal class SpacePermissionCommandASTNode : AstNodeBase
+    internal class AddCommandASTNode : AstNodeBase
     {
-        /// <summary>
-        /// Space action.
-        /// </summary>
-        private AstNodeBase action;
-
         /// <summary>
         /// Space permission list.
         /// </summary>
-        private ListASTNode<SpacePermissionWithObjectGroupASTNode, PermissionNode> permissionList;
+        private ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>> listOfUsersOrRoles;
 
         /// <summary>
         /// Terminal to.
         /// </summary>
-        private string terminalTo;
+        private string terminalAdd;
 
         /// <summary>
         /// Space user or role.
@@ -47,9 +42,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
 
-            this.action = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "Action", ChildrenNodes[0]) as AstNodeBase;
-            this.permissionList = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "PermissionList", ChildrenNodes[1]) as ListASTNode<SpacePermissionWithObjectGroupASTNode, PermissionNode>;
-            this.terminalTo = ChildrenNodes[2].Token.Text;
+            this.terminalAdd = ChildrenNodes[0].Token.Text;
+            this.listOfUsersOrRoles = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "PermissionList", ChildrenNodes[1]) as ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>>;
             this.userOrRole = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "UserOrRole", ChildrenNodes[3]) as AstNodeBase;
         }
 
@@ -62,12 +56,13 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            ActionCommandEnum actionAux = (ActionCommandEnum)this.action.Evaluate(thread);
-            List<PermissionNode> permissionListAux = (List<PermissionNode>)this.permissionList.Evaluate(thread);
+            ActionCommandEnum actionAux;
+            Enum.TryParse<ActionCommandEnum>(this.terminalAdd, true, out actionAux);
+            List<Tuple<string, SystemObjectEnum>> userOrRolesListAux = (List<Tuple<string, SystemObjectEnum>>)this.listOfUsersOrRoles.Evaluate(thread);
             Tuple<string, SystemObjectEnum> userOrRoleAux = (Tuple<string, SystemObjectEnum>)this.userOrRole.Evaluate(thread);
             this.EndEvaluate(thread);
             
-            return new SpacePermissionsCommandNode(actionAux, userOrRoleAux.Item2, userOrRoleAux.Item1, permissionListAux, this.Location.Line, this.Location.Column, this.AsString);
+            return new AddCommandNode(actionAux, userOrRoleAux.Item2, userOrRoleAux.Item1, userOrRolesListAux, this.Location.Line, this.Location.Column, this.AsString);
         }
     }
 }

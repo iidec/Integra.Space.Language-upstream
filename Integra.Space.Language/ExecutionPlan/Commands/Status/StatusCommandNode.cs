@@ -26,9 +26,29 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public StatusCommandNode(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
+        public StatusCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
         {
             this.identifier = name;
+        }
+
+        /// <inheritdoc />
+        public override PermissionsEnum PermissionValue
+        {
+            get
+            {
+                if (this.Action == ActionCommandEnum.Start)
+                {
+                    return PermissionsEnum.Start;
+                }
+                else if (this.Action == ActionCommandEnum.Stop)
+                {
+                    return PermissionsEnum.Stop;
+                }
+                else
+                {
+                    throw new System.Exception("Invalid action for the command.");
+                }
+            }
         }
     }
 }

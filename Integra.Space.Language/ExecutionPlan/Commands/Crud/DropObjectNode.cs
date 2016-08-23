@@ -20,8 +20,24 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public DropObjectNode(SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(SpaceActionCommandEnum.Drop, spaceObjectType, name, line, column, nodeText)
+        public DropObjectNode(SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(ActionCommandEnum.Drop, spaceObjectType, name, line, column, nodeText)
         {
+        }
+
+        /// <inheritdoc />
+        public override PermissionsEnum PermissionValue
+        {
+            get
+            {
+                if (this.Action == ActionCommandEnum.Drop)
+                {
+                    return PermissionsEnum.Drop;
+                }
+                else
+                {
+                    throw new System.Exception("Invalid action for the command.");
+                }
+            }
         }
     }
 }

@@ -20,8 +20,24 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateObjectNode(SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(SpaceActionCommandEnum.Create, spaceObjectType, name, line, column, nodeText)
+        public CreateObjectNode(SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(ActionCommandEnum.Create, spaceObjectType, name, line, column, nodeText)
         {
+        }
+
+        /// <inheritdoc />
+        public override PermissionsEnum PermissionValue
+        {
+            get
+            {
+                if (this.Action == ActionCommandEnum.Create)
+                {
+                    return PermissionsEnum.Create;
+                }
+                else
+                {
+                    throw new System.Exception("Invalid action for the command.");
+                }
+            }
         }
     }
 }

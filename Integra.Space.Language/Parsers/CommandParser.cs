@@ -6,7 +6,6 @@
 namespace Integra.Space.Language
 {
     using Common;
-    using Common.CommandContext;
     using Integra.Space.Language.Grammars;
 
     /// <summary>
@@ -26,9 +25,9 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands.
         /// </summary>
         /// <returns>Execution plan.</returns>
-        public SpaceCommand Evaluate()
+        public SystemCommand Evaluate()
         {
-            return (SpaceCommand)this.EvaluateParseTree();
+            return (SystemCommand)this.EvaluateParseTree();
         }
     }
 }

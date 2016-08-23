@@ -44,7 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);            
             this.EndEvaluate(thread);
 
-            SpaceActionCommandEnum action;
+            ActionCommandEnum action;
             if (System.Enum.TryParse(this.spaceAction, true, out action))
             {
                 return action;

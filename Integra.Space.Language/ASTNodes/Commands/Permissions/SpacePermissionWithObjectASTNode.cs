@@ -49,22 +49,23 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SpacePermissionsEnum permission = (SpacePermissionsEnum)this.permission.Evaluate(thread);
-            System.Tuple<string, SpaceObjectEnum> t = null;
 
+            PermissionsEnum permission = (PermissionsEnum)this.permission.Evaluate(thread);
+
+            System.Tuple<string, SystemObjectEnum> t = null;
             if (this.spaceObject is SpaceObjectASTNode)
             {
-                SpaceObjectEnum @object = (SpaceObjectEnum)this.spaceObject.Evaluate(thread);
-                t = System.Tuple.Create<string, SpaceObjectEnum>(null, @object);
+                SystemObjectEnum @object = (SystemObjectEnum)this.spaceObject.Evaluate(thread);
+                t = System.Tuple.Create<string, SystemObjectEnum>(null, @object);
             }
             else if (this.spaceObject is SpaceObjectWithIdASTNode)
             {
-                t = (System.Tuple<string, SpaceObjectEnum>)this.spaceObject.Evaluate(thread);
+                t = (System.Tuple<string, SystemObjectEnum>)this.spaceObject.Evaluate(thread);
             }
 
             this.EndEvaluate(thread);
 
-            return new SpacePermission(permission, t.Item2, t.Item1);
+            return new PermissionNode(permission, t.Item2, t.Item1);
         }
     }
 }

@@ -17,9 +17,9 @@ namespace Integra.Space
         System.Type GetQueryType();
 
         /// <summary>
-        /// 
+        /// Gets the referenced assemblies by the dll.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The referenced assemblies</returns>
         System.Reflection.AssemblyName[] GetReferencedAssemblies();
     }
 }

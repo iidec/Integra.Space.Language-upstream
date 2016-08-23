@@ -15,7 +15,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
     /// <summary>
     /// Permission list AST node class.
     /// </summary>
-    /// <typeparam name="TListItem">Type of the items of the list.</typeparam>
+    /// <typeparam name="TListItem">Type of the AST node of the items of the list.</typeparam>
     /// <typeparam name="TResultItem">Type of the items of the result list.</typeparam>
     internal class ListASTNode<TListItem, TResultItem> : StatementListNode where TListItem : AstNodeBase
     {

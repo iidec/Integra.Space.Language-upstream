@@ -33,15 +33,6 @@ namespace Integra.Space.LanguageUnitTests
                 return this.testScheduler;
             }
         }
-        public IScheduler GetObserverScheduler()
-        {
-            return System.Reactive.Concurrency.ThreadPoolScheduler.Instance;
-        }
-
-        public IScheduler GetSubscriberScheduler()
-        {
-            return System.Reactive.Concurrency.ThreadPoolScheduler.Instance;
-        }
         
         /// <inheritdoc />
         public Expression GetScheduler()

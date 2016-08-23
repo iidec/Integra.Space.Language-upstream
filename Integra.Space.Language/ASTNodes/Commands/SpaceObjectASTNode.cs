@@ -41,10 +41,15 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            this.BeginEvaluate(thread);            
+            this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
 
-            SpaceObjectEnum @object;
+            SystemObjectEnum @object;
+            if (this.spaceObject.Equals("role", System.StringComparison.InvariantCultureIgnoreCase) | this.spaceObject.Equals("user", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.spaceObject = "database" + this.spaceObject;
+            }
+
             if (System.Enum.TryParse(this.spaceObject, true, out @object))
             {
                 return @object;

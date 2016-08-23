@@ -6,17 +6,10 @@
 namespace Integra.Space.Language.Grammars
 {
     using System;
-    using System.Linq;
-    using ASTNodes;
     using ASTNodes.Commands;
-    using ASTNodes.Constants;
     using ASTNodes.Identifier;
-    using ASTNodes.Lists;
-    using ASTNodes.QuerySections;
     using ASTNodes.Root;
-    using ASTNodes.UserQuery;
     using Common;
-    using Common.CommandContext;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -68,6 +61,10 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalTo = ToTerm("to", "to");
             KeyTerm terminalRead = ToTerm("read", "read");
             KeyTerm terminalManage = ToTerm("manage", "manage");
+            KeyTerm terminalOwner = ToTerm("owner", "owner");
+
+            /* PARA ASIGNACIÓN DE ROLES */
+            KeyTerm terminalAdd = ToTerm("add", "add");
 
             /* IDENTIFICADOR */
             IdentifierTerminal terminalId = new IdentifierTerminal("identifier", IdOptions.None);
@@ -82,7 +79,7 @@ namespace Integra.Space.Language.Grammars
             terminalQuery.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
 
             /* CADENA */
-            StringLiteral terminalCadena = new StringLiteral("cadena", "'", StringOptions.AllowsAllEscapes);
+            StringLiteral terminalCadena = new StringLiteral("cadena", "\"", StringOptions.AllowsAllEscapes);
 
             /* VALORES CONSTANTES */
             ConstantTerminal terminalUserOptionValue = new ConstantTerminal("userStatus", typeof(bool));
@@ -137,39 +134,45 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_SPACE_USER = new NonTerminal("SPACE_USER", typeof(SpaceObjectASTNode));
             nt_SPACE_USER.AstConfig.NodeType = null;
             nt_SPACE_USER.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+            NonTerminal nt_SPACE_ROLE = new NonTerminal("SPACE_ROLE", typeof(SpaceObjectASTNode));
+            nt_SPACE_ROLE.AstConfig.NodeType = null;
+            nt_SPACE_ROLE.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
             NonTerminal nt_SPACE_SOURCE_OR_ROLE = new NonTerminal("SPACE_SOURCE_OR_ROLE", typeof(SpaceObjectASTNode));
             nt_SPACE_SOURCE_OR_ROLE.AstConfig.NodeType = null;
             nt_SPACE_SOURCE_OR_ROLE.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
             /************************************************/
 
             /* PERMISSIONS */
-            NonTerminal nt_SPACE_CRUD_PERMISSIONS = new NonTerminal("SPACE_CRUD_PERMISSIONS", typeof(SpacePermissionASTNode));
-            nt_SPACE_CRUD_PERMISSIONS.AstConfig.NodeType = null;
-            nt_SPACE_CRUD_PERMISSIONS.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
-            NonTerminal nt_SPACE_STATUS_PERMISSIONS = new NonTerminal("SPACE_STATUS_PERMISSIONS", typeof(SpacePermissionASTNode));
-            nt_SPACE_STATUS_PERMISSIONS.AstConfig.NodeType = null;
-            nt_SPACE_STATUS_PERMISSIONS.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
-            NonTerminal nt_SPACE_ASSIGN_PERMISSIONS = new NonTerminal("SPACE_ASSIGN_PERMISSIONS", typeof(SpacePermissionASTNode));
-            nt_SPACE_ASSIGN_PERMISSIONS.AstConfig.NodeType = null;
-            nt_SPACE_ASSIGN_PERMISSIONS.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
-            NonTerminal nt_SPACE_READ_PERMISSION = new NonTerminal("SPACE_READ_PERMISSION", typeof(SpacePermissionASTNode));
-            nt_SPACE_READ_PERMISSION.AstConfig.NodeType = null;
-            nt_SPACE_READ_PERMISSION.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
+            NonTerminal nt_SPACE_CREATE_PERMISSION = new NonTerminal("SPACE_CRUD_PERMISSIONS", typeof(SpacePermissionASTNode));
+            nt_SPACE_CREATE_PERMISSION.AstConfig.NodeType = null;
+            nt_SPACE_CREATE_PERMISSION.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
+            NonTerminal nt_SPACE_READ_AND_STATUS_PERMISSIONS = new NonTerminal("SPACE_STATUS_PERMISSIONS", typeof(SpacePermissionASTNode));
+            nt_SPACE_READ_AND_STATUS_PERMISSIONS.AstConfig.NodeType = null;
+            nt_SPACE_READ_AND_STATUS_PERMISSIONS.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
+            NonTerminal nt_SPACE_OWNER_PERMISSION = new NonTerminal("SPACE_ASSIGN_PERMISSIONS", typeof(SpacePermissionASTNode));
+            nt_SPACE_OWNER_PERMISSION.AstConfig.NodeType = null;
+            nt_SPACE_OWNER_PERMISSION.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
+            NonTerminal nt_SPACE_ALTER_PERMISSION = new NonTerminal("SPACE_READ_PERMISSION", typeof(SpacePermissionASTNode));
+            nt_SPACE_ALTER_PERMISSION.AstConfig.NodeType = null;
+            nt_SPACE_ALTER_PERMISSION.AstConfig.DefaultNodeCreator = () => new SpacePermissionASTNode();
             NonTerminal nt_SPACE_PERMISSION = new NonTerminal("SPACE_READ_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectGroupASTNode));
             nt_SPACE_PERMISSION.AstConfig.NodeType = null;
             nt_SPACE_PERMISSION.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectGroupASTNode();
             /************************************************/
 
             /* PERMISSIONS WITH OBJECTS */
-            NonTerminal nt_SPACE_CRUD_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_CRUD_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
-            nt_SPACE_CRUD_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
-            nt_SPACE_CRUD_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
+            NonTerminal nt_SPACE_CREATE_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_CRUD_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
+            nt_SPACE_CREATE_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
+            nt_SPACE_CREATE_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
             NonTerminal nt_SPACE_STATUS_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_STATUS_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
             nt_SPACE_STATUS_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
             nt_SPACE_STATUS_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
-            NonTerminal nt_SPACE_READ_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_READ_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
-            nt_SPACE_READ_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
-            nt_SPACE_READ_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
+            NonTerminal nt_SPACE_ALTER_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_ALTER_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
+            nt_SPACE_ALTER_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
+            nt_SPACE_ALTER_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
+            NonTerminal nt_SPACE_OWNER_PERMISSION_WITH_OBJECT = new NonTerminal("SPACE_OWNER_PERMISSION_WITH_OBJECT", typeof(SpacePermissionWithObjectASTNode));
+            nt_SPACE_OWNER_PERMISSION_WITH_OBJECT.AstConfig.NodeType = null;
+            nt_SPACE_OWNER_PERMISSION_WITH_OBJECT.AstConfig.DefaultNodeCreator = () => new SpacePermissionWithObjectASTNode();
             /************************************************/
 
             /* USER OPTIONS */
@@ -188,6 +191,9 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_SPACE_USER_WITH_ID = new NonTerminal("SPACE_USER_WITH_ID", typeof(SpaceObjectWithIdASTNode));
             nt_SPACE_USER_WITH_ID.AstConfig.NodeType = null;
             nt_SPACE_USER_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
+            NonTerminal nt_SPACE_ROLE_WITH_ID = new NonTerminal("SPACE_USER_WITH_ID", typeof(SpaceObjectWithIdASTNode));
+            nt_SPACE_ROLE_WITH_ID.AstConfig.NodeType = null;
+            nt_SPACE_ROLE_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
             NonTerminal nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID = new NonTerminal("SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID", typeof(SpaceObjectWithIdASTNode));
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.AstConfig.NodeType = null;
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
@@ -200,12 +206,16 @@ namespace Integra.Space.Language.Grammars
             /************************************************/
 
             /* SPACE PERMISSION LIST */
-            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("SPACE_PERMISSION_LIST", typeof(ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission>));
+            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("SPACE_PERMISSION_LIST", typeof(ListASTNode<SpacePermissionWithObjectGroupASTNode, PermissionNode>));
             nt_SPACE_PERMISSION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpacePermissionWithObjectGroupASTNode, SpacePermission>();
-            NonTerminal nt_SPACE_USER_OPTION_LIST = new NonTerminal("SPACE_USER_OPTION_LIST", typeof(ListASTNode<SpaceUserOptionASTNode, SpaceUserOption>));
+            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpacePermissionWithObjectGroupASTNode, PermissionNode>();
+            NonTerminal nt_SPACE_USER_OPTION_LIST = new NonTerminal("SPACE_USER_OPTION_LIST", typeof(ListASTNode<SpaceUserOptionASTNode, UserOption>));
             nt_SPACE_USER_OPTION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceUserOptionASTNode, SpaceUserOption>();
+            nt_SPACE_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceUserOptionASTNode, UserOption>();
+
+            NonTerminal nt_SPACE_USER_LIST = new NonTerminal("SPACE_ROLE_LIST", typeof(ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>>));
+            nt_SPACE_USER_LIST.AstConfig.NodeType = null;
+            nt_SPACE_USER_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>>();
             /************************************************/
 
             /* CRUD COMMANDS */
@@ -232,6 +242,10 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_PERMISSIONS_COMMANDS = new NonTerminal("PERMISSIONS_COMMANDS", typeof(SpacePermissionCommandASTNode));
             nt_PERMISSIONS_COMMANDS.AstConfig.NodeType = null;
             nt_PERMISSIONS_COMMANDS.AstConfig.DefaultNodeCreator = () => new SpacePermissionCommandASTNode();
+
+            NonTerminal nt_ADD_USERS_TO_ROLE_COMMAND = new NonTerminal("ADD_USERS_TO_ROLE_COMMAND", typeof(AddCommandASTNode));
+            nt_ADD_USERS_TO_ROLE_COMMAND.AstConfig.NodeType = null;
+            nt_ADD_USERS_TO_ROLE_COMMAND.AstConfig.DefaultNodeCreator = () => new AddCommandASTNode();
 
             /* RULES */
 
@@ -270,6 +284,8 @@ namespace Integra.Space.Language.Grammars
 
             nt_SPACE_USER.Rule = terminalUser;
 
+            nt_SPACE_ROLE.Rule = terminalRole;
+
             nt_SPACE_SOURCE_OR_ROLE.Rule = terminalSource
                                             | terminalRole;
 
@@ -283,78 +299,103 @@ namespace Integra.Space.Language.Grammars
 
             nt_SPACE_USER_WITH_ID.Rule = nt_SPACE_USER + terminalId;
 
+            nt_SPACE_ROLE_WITH_ID.Rule = nt_SPACE_ROLE + terminalId;
+            
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.Rule = nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS + terminalId;
 
             nt_SPACE_USER_OR_ROLE_WITH_ID.Rule = nt_SPACE_USER_OR_ROLE + terminalId;
 
-            nt_SPACE_SOURCE_OR_ROLE_WITH_ID.Rule = nt_SPACE_SOURCE_OR_ROLE + terminalId;
+            nt_SPACE_SOURCE_OR_ROLE_WITH_ID.Rule = nt_SPACE_SOURCE_OR_ROLE + terminalId;            
 
             /************************************************/
 
             /* PERMISSIONS */
 
-            nt_SPACE_CRUD_PERMISSIONS.Rule = terminalCreate
-                                        | terminalDrop
-                                        | terminalAlter;
+            nt_SPACE_CREATE_PERMISSION.Rule = terminalCreate;
 
-            nt_SPACE_STATUS_PERMISSIONS.Rule = terminalStart
-                                            | terminalStop;
+            nt_SPACE_READ_AND_STATUS_PERMISSIONS.Rule = terminalStart
+                                            | terminalStop
+                                            | terminalRead;
 
-            nt_SPACE_ASSIGN_PERMISSIONS.Rule = terminalGrant
-                                                | terminalRevoke
-                                                | terminalDeny;
+            nt_SPACE_OWNER_PERMISSION.Rule = terminalOwner;
 
-            nt_SPACE_READ_PERMISSION.Rule = terminalRead;
-
-            nt_SPACE_PERMISSION.Rule = nt_SPACE_CRUD_PERMISSION_WITH_OBJECT
-                                        | nt_SPACE_STATUS_PERMISSION_WITH_OBJECT
-                                        | nt_SPACE_READ_PERMISSION_WITH_OBJECT;
-
+            nt_SPACE_ALTER_PERMISSION.Rule = terminalAlter;
+            
             /************************************************/
 
             /* PERMISSIONS WITH OBJECTS */
 
-            nt_SPACE_CRUD_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_CRUD_PERMISSIONS + nt_SPACE_OBJECTS;
+            nt_SPACE_CREATE_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_CREATE_PERMISSION + nt_SPACE_OBJECTS;
+            
+            nt_SPACE_STATUS_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_READ_AND_STATUS_PERMISSIONS + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID;
 
-            nt_SPACE_STATUS_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_STATUS_PERMISSIONS + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID;
+            nt_SPACE_ALTER_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_ALTER_PERMISSION + nt_SPACE_STREAM_WITH_ID
+                                                        | nt_SPACE_ALTER_PERMISSION + nt_SPACE_USER_WITH_ID;
 
-            nt_SPACE_READ_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_READ_PERMISSION + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID;
-
+            nt_SPACE_OWNER_PERMISSION_WITH_OBJECT.Rule = nt_SPACE_OWNER_PERMISSION + nt_SPACE_STREAM_WITH_ID
+                                                        | nt_SPACE_OWNER_PERMISSION + nt_SPACE_SOURCE_OR_ROLE_WITH_ID;
+            
             /************************************************/
 
             /* LIST OF PERMISSIONS */
 
             nt_SPACE_PERMISSION_LIST.Rule = this.MakePlusRule(nt_SPACE_PERMISSION_LIST, terminalComa, nt_SPACE_PERMISSION);
 
+            nt_SPACE_PERMISSION.Rule = nt_SPACE_CREATE_PERMISSION_WITH_OBJECT
+                                        | nt_SPACE_STATUS_PERMISSION_WITH_OBJECT
+                                        | nt_SPACE_ALTER_PERMISSION_WITH_OBJECT
+                                        | nt_SPACE_OWNER_PERMISSION_WITH_OBJECT;
+
             /************************************************/
 
             /* COMMANDS */
 
+            /* Add users to role */
+
+            nt_ADD_USERS_TO_ROLE_COMMAND.Rule = terminalAdd + nt_SPACE_USER_LIST + terminalTo + nt_SPACE_ROLE_WITH_ID;
+
+            nt_SPACE_USER_LIST.Rule = this.MakePlusRule(nt_SPACE_USER_LIST, terminalComa, nt_SPACE_USER_WITH_ID);
+
+            /************************************************/
+
+            /* START & STOP */
+
             nt_STATUS_COMMANDS.Rule = nt_STATUS_ACTIONS + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID;
 
-            nt_PERMISSIONS_COMMANDS.Rule = nt_PERMISSION_ACTIONS + nt_SPACE_PERMISSION_LIST + terminalTo + nt_SPACE_USER_OR_ROLE_WITH_ID;
+            /************************************************/
+
+            /* CRUD commands */
 
             nt_CRUD_COMMANDS.Rule = nt_CREATE_AND_ALTER_STREAM_COMMAND
                                     | nt_CREATE_OR_ALTER_USER_COMMAND
                                     | nt_SIMPLE_CREATE_COMMAND
                                     | nt_DROP_COMMAND;
 
-            nt_DROP_COMMAND.Rule = nt_DROP_ACTION + nt_SPACE_OBJECT_WITH_ID;
-
             nt_CREATE_AND_ALTER_STREAM_COMMAND.Rule = nt_CREATE_AND_ALTER_ACTIONS + nt_SPACE_STREAM_WITH_ID + terminalQuery;
 
             nt_CREATE_OR_ALTER_USER_COMMAND.Rule = nt_CREATE_AND_ALTER_ACTIONS + nt_SPACE_USER_WITH_ID + nt_SPACE_USER_OPTION_LIST;
 
+            nt_SPACE_USER_OPTION_LIST.Rule = this.MakePlusRule(nt_SPACE_USER_OPTION_LIST, nt_SPACE_USER_OPTION);
+
             nt_SPACE_USER_OPTION.Rule = terminalPassword + terminalCadena
                                         | terminalStatus + terminalUserOptionValue;
 
-            nt_SPACE_USER_OPTION_LIST.Rule = this.MakePlusRule(nt_SPACE_USER_OPTION_LIST, nt_SPACE_USER_OPTION);
-
             nt_SIMPLE_CREATE_COMMAND.Rule = nt_CREATE_ACTION + nt_SPACE_SOURCE_OR_ROLE_WITH_ID;
+
+            nt_DROP_COMMAND.Rule = nt_DROP_ACTION + nt_SPACE_OBJECT_WITH_ID;
+            
+            /************************************************/
+
+            /* Permission commands */
+
+            nt_PERMISSIONS_COMMANDS.Rule = nt_PERMISSION_ACTIONS + nt_SPACE_PERMISSION_LIST + terminalTo + nt_SPACE_USER_OR_ROLE_WITH_ID;
+
+            /************************************************/
 
             nt_COMMAND_NODE.Rule = nt_STATUS_COMMANDS
                                     | nt_PERMISSIONS_COMMANDS
-                                    | nt_CRUD_COMMANDS;
+                                    | nt_CRUD_COMMANDS
+                                    | nt_ADD_USERS_TO_ROLE_COMMAND;
 
             this.Root = nt_COMMAND_NODE;
 

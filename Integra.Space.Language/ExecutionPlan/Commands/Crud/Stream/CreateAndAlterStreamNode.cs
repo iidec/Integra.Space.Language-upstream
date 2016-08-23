@@ -26,7 +26,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateAndAlterStreamNode(SpaceActionCommandEnum action, string identifier, string query, int line, int column, string nodeText) : base(action, SpaceObjectEnum.Stream, identifier, line, column, nodeText)
+        public CreateAndAlterStreamNode(ActionCommandEnum action, string identifier, string query, int line, int column, string nodeText) : base(action, SystemObjectEnum.Stream, identifier, line, column, nodeText)
         {
             this.query = query;
         }
@@ -39,6 +39,26 @@ namespace Integra.Space.Language
             get
             {
                 return this.query;
+            }
+        }
+
+        /// <inheritdoc />
+        public override PermissionsEnum PermissionValue
+        {
+            get
+            {
+                if (this.Action == ActionCommandEnum.Create)
+                {
+                    return PermissionsEnum.Create;
+                }
+                else if (this.Action == ActionCommandEnum.Alter)
+                {
+                    return PermissionsEnum.Alter;
+                }
+                else
+                {
+                    throw new System.Exception("Invalid action for the command.");
+                }
             }
         }
     }

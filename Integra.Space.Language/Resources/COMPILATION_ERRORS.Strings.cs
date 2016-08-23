@@ -98,7 +98,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	CE20: Error in 'select' function.
+		///	CE20: Error in 'select for result' function.
 		/// </summary>
 		public static string CE20 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE20; } }
 	
@@ -543,9 +543,51 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	CE79: Error at the 'isnull' function.
+		/// </summary>
+		public static string CE79 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE79; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	CE8: Error in 'upper' function.
 		/// </summary>
 		public static string CE8 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE8; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE81: Error in observable create.
+		/// </summary>
+		public static string CE81 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE81; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE82: Error in subscription.
+		/// </summary>
+		public static string CE82 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE82; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE83: Error in observable timeout.
+		/// </summary>
+		public static string CE83 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE83; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE84: Error in observable catch.
+		/// </summary>
+		public static string CE84 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE84; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE85: Error in select for observable group by.
+		/// </summary>
+		public static string CE85 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE85; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE86: Error creating a constant expression.
+		/// </summary>
+		public static string CE86 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE86; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SpacePermissionsCommandNode.cs" company="Integra.Space.Common">
+// <copyright file="AddCommandNode.cs" company="Integra.Space.Common">
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -14,31 +14,31 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal class SpacePermissionsCommandNode : CompiledCommand
+    internal class AddCommandNode : CompiledCommand
     {
         /// <summary>
         /// Space permissions.
         /// </summary>
-        private List<PermissionNode> permissions;
-
+        private List<Tuple<string, SystemObjectEnum>> usersAndRoles;
+        
         /// <summary>
         /// Space object to assign the permission.
         /// </summary>
         private string toIdentifier;
-
+        
         /// <summary>
-        /// Initializes a new instance of the <see cref="SpacePermissionsCommandNode"/> class.
+        /// Initializes a new instance of the <see cref="AddCommandNode"/> class.
         /// </summary>
         /// <param name="action">Space command action.</param>
         /// <param name="spaceObjectType">Space object type..</param>
         /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
-        /// <param name="permissions">Space permissions.</param>
+        /// <param name="userAndRoles">Space permissions.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public SpacePermissionsCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string toIdentifier, List<PermissionNode> permissions, int line, int column, string nodeText) : base(action, spaceObjectType, toIdentifier, line, column, nodeText)
+        public AddCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string toIdentifier, List<Tuple<string, SystemObjectEnum>> userAndRoles, int line, int column, string nodeText) : base(action, spaceObjectType, toIdentifier, line, column, nodeText)
         {
-            this.permissions = permissions;
+            this.usersAndRoles = userAndRoles;
             this.toIdentifier = toIdentifier;
         }
 
@@ -47,15 +47,7 @@ namespace Integra.Space.Language
         {
             get
             {
-                if (this.Action == ActionCommandEnum.Grant)
-                {
-                    return PermissionsEnum.Control;
-                }
-                else if (this.Action == ActionCommandEnum.Revoke)
-                {
-                    return PermissionsEnum.Control;
-                }
-                else if (this.Action == ActionCommandEnum.Deny)
+                if (this.Action == ActionCommandEnum.Add)
                 {
                     return PermissionsEnum.Control;
                 }
@@ -69,11 +61,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Gets the space permissions.
         /// </summary>
-        public List<PermissionNode> Permissions
+        public List<Tuple<string, SystemObjectEnum>> UsersAndRoles
         {
             get
             {
-                return this.permissions;
+                return this.usersAndRoles;
             }
         }
 
@@ -93,8 +85,9 @@ namespace Integra.Space.Language
         {
             HashSet<SystemObjectEnum> listOfUsedObjects = base.GetUsedSpaceObjectTypes();
 
-            this.permissions
-                .Select(x => x.ObjectType)
+            this.usersAndRoles
+                .Where(x => !string.IsNullOrWhiteSpace(x.Item1))
+                .Select(x => x.Item2)
                 .Except(listOfUsedObjects)
                 .ToList()
                 .ForEach(objectType =>
@@ -110,16 +103,13 @@ namespace Integra.Space.Language
         {
             HashSet<Tuple<SystemObjectEnum, string>> listOfUsedObjects = base.GetUsedSpaceObjects();
 
-            // se limpia la lista para que no tenga el usuario o role especificado en el comando de permiso
-            // para que solo tenga los objetos de la lista de permisos del comando.
-            // listOfUsedObjects.Clear();
-            this.permissions
-                .Where(x => x.ObjectName != null)
+            this.usersAndRoles
+                .Where(x => !string.IsNullOrWhiteSpace(x.Item1))
                 .Distinct(new PermissionComparer())
                 .ToList()
                 .ForEach(permission =>
                 {
-                    listOfUsedObjects.Add(Tuple.Create(permission.ObjectType, permission.ObjectName));
+                    listOfUsedObjects.Add(Tuple.Create(permission.Item2, permission.Item1));
                 });
 
             return listOfUsedObjects;
@@ -128,12 +118,12 @@ namespace Integra.Space.Language
         /// <summary>
         /// Object used comparer class.
         /// </summary>
-        private class PermissionComparer : IEqualityComparer<PermissionNode>
+        private class PermissionComparer : IEqualityComparer<Tuple<string, SystemObjectEnum>>
         {
             /// <inheritdoc />
-            public bool Equals(PermissionNode x, PermissionNode y)
+            public bool Equals(Tuple<string, SystemObjectEnum> x, Tuple<string, SystemObjectEnum> y)
             {
-                if (x.ObjectName == y.ObjectName && x.ObjectType == y.ObjectType)
+                if (x.Item1 == y.Item1 && x.Item2 == y.Item2)
                 {
                     return true;
                 }
@@ -142,16 +132,9 @@ namespace Integra.Space.Language
             }
 
             /// <inheritdoc />
-            public int GetHashCode(PermissionNode obj)
+            public int GetHashCode(Tuple<string, SystemObjectEnum> obj)
             {
-                if (obj.ObjectName != null)
-                {
-                    return obj.ObjectType.GetHashCode() + obj.ObjectName.GetHashCode();
-                }
-                else
-                {
-                    return obj.ObjectType.GetHashCode();
-                }
+                return obj.Item1.GetHashCode() + obj.Item2.GetHashCode();
             }
         }
     }

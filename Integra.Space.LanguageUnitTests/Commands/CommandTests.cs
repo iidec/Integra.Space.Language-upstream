@@ -11,7 +11,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void Process(string command)
         {
             CommandParser cp = new CommandParser(command);
-            SpaceCommand spaceCommand = cp.Evaluate();
+            SystemCommand spaceCommand = cp.Evaluate();
 
             Console.WriteLine();
         }
@@ -127,7 +127,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void CreateUserPassAndStatus()
         {
-            string command = "create user oscar password 'pass1234' status enable";
+            string command = "create user oscar password \"pass1234\" status enable";
             this.Process(command);
             
             
@@ -136,7 +136,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void CreateUserPass()
         {
-            string command = "create user oscar password 'pass1234'";
+            string command = "create user oscar password \"pass1234\"";
             this.Process(command);
             
             
@@ -167,7 +167,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void AlterUserPassAndStatus()
         {
-            string command = "alter user oscar password 'passABC' status disable";
+            string command = "alter user oscar password \"passABC\" status disable";
             this.Process(command);
             
             
@@ -176,7 +176,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void AlterUserPass()
         {
-            string command = "alter user oscar password 'passABC'";
+            string command = "alter user oscar password \"passABC\"";
             this.Process(command);
             
             
@@ -200,10 +200,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void GrantPermissionsToUser1()
         {
-            string command = "grant create source, read stream Stream1, alter source, drop source, create stream, read source Source1 to user oscar";
+            string command = "grant create source, read stream Stream1, alter stream Stream1, create stream, read source Source1 to user oscar";
             this.Process(command);
-            
-            
         }
 
         #endregion lists of permissions
@@ -264,32 +262,26 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant create source to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
         public void GrantCreateStreamToUser()
         {
-            string command = "grant create source to user oscar";
+            string command = "grant create stream to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
         public void GrantCreateUserToUser()
         {
-            string command = "grant create source to user oscar";
+            string command = "grant create user to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
         public void GrantCreateRoleToUser()
         {
-            string command = "grant create source to user oscar";
+            string command = "grant create role to user oscar";
             this.Process(command);
             
             
@@ -311,25 +303,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void GrantCreateStreamToRole()
         {
-            string command = "grant create source to role RoleX";
+            string command = "grant create stream to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
         public void GrantCreateUserToRole()
         {
-            string command = "grant create source to role RoleX";
+            string command = "grant create user to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
         public void GrantCreateRoleToRole()
         {
-            string command = "grant create source to role RoleX";
+            string command = "grant create role to role RoleX";
             this.Process(command);
             
             
@@ -338,108 +326,15 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to role
 
         #endregion create
-
-        #region drop
-
-        #region to user
-
-        [TestMethod]
-        public void GrantDropSourceToUser()
-        {
-            string command = "grant Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropStreamToUser()
-        {
-            string command = "grant Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropUserToUser()
-        {
-            string command = "grant Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropRoleToUser()
-        {
-            string command = "grant Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to user
-
-        #region to role
-
-        [TestMethod]
-        public void GrantDropSourceToRole()
-        {
-            string command = "grant Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropStreamToRole()
-        {
-            string command = "grant Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropUserToRole()
-        {
-            string command = "grant Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantDropRoleToRole()
-        {
-            string command = "grant Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to role
-
-        #endregion drop
-
+        
         #region alter
 
         #region to user
 
         [TestMethod]
-        public void GrantAlterSourceToUser()
-        {
-            string command = "grant Alter source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
         public void GrantAlterStreamToUser()
         {
-            string command = "grant Alter source to user oscar";
+            string command = "grant Alter stream Stream1 to user oscar";
             this.Process(command);
             
             
@@ -448,38 +343,20 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void GrantAlterUserToUser()
         {
-            string command = "grant Alter source to user oscar";
+            string command = "grant Alter user User1 to user oscar";
             this.Process(command);
             
             
         }
-
-        [TestMethod]
-        public void GrantAlterRoleToUser()
-        {
-            string command = "grant Alter source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
+        
         #endregion to user
 
         #region to role
-
-        [TestMethod]
-        public void GrantAlterSourceToRole()
-        {
-            string command = "grant Alter source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
+        
         [TestMethod]
         public void GrantAlterStreamToRole()
         {
-            string command = "grant Alter source to role RoleX";
+            string command = "grant Alter stream Stream1 to role RoleX";
             this.Process(command);
             
             
@@ -488,16 +365,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void GrantAlterUserToRole()
         {
-            string command = "grant Alter source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void GrantAlterRoleToRole()
-        {
-            string command = "grant Alter source to role RoleX";
+            string command = "grant Alter user User1 to role RoleX";
             this.Process(command);
             
             
@@ -514,12 +382,10 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region lists of permissions
 
         [TestMethod]
-        public void RevokePermissionsToUser1()
+        public void revokePermissionsToUser1()
         {
-            string command = "Revoke create source, read stream Stream1, alter source, drop source, create stream, read source Source1 to user oscar";
+            string command = "revoke create source, read stream Stream1, alter stream Stream1, create stream, read source Source1 to user oscar";
             this.Process(command);
-            
-            
         }
 
         #endregion lists of permissions
@@ -528,21 +394,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
 
         #region to user
         [TestMethod]
-        public void RevokeReadPermissionToUser1()
+        public void revokeReadPermissionToUser1()
         {
-            string command = "Revoke read stream Stream1 to user oscar";
+            string command = "revoke read stream Stream1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void RevokeReadPermissionToUser2()
+        public void revokeReadPermissionToUser2()
         {
-            string command = "Revoke read source Source1 to user oscar";
+            string command = "revoke read source Source1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -550,21 +416,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void RevokeReadPermissionToRole1()
+        public void revokeReadPermissionToRole1()
         {
-            string command = "Revoke read stream Stream1 to role oscar";
+            string command = "revoke read stream Stream1 to role oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void RevokeReadPermissionToRole2()
+        public void revokeReadPermissionToRole2()
         {
-            string command = "Revoke read source Source1 to role oscar";
+            string command = "revoke read source Source1 to role oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
@@ -576,39 +442,33 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to user
 
         [TestMethod]
-        public void RevokeCreateSourceToUser()
+        public void revokeCreateSourceToUser()
         {
-            string command = "Revoke create source to user oscar";
+            string command = "revoke create source to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void RevokeCreateStreamToUser()
+        public void revokeCreateStreamToUser()
         {
-            string command = "Revoke create source to user oscar";
+            string command = "revoke create stream to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void RevokeCreateUserToUser()
+        public void revokeCreateUserToUser()
         {
-            string command = "Revoke create source to user oscar";
+            string command = "revoke create user to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void RevokeCreateRoleToUser()
+        public void revokeCreateRoleToUser()
         {
-            string command = "Revoke create source to user oscar";
+            string command = "revoke create role to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -616,167 +476,61 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void RevokeCreateSourceToRole()
+        public void revokeCreateSourceToRole()
         {
-            string command = "Revoke create source to role RoleX";
+            string command = "revoke create source to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void RevokeCreateStreamToRole()
+        public void revokeCreateStreamToRole()
         {
-            string command = "Revoke create source to role RoleX";
+            string command = "revoke create stream to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void RevokeCreateUserToRole()
+        public void revokeCreateUserToRole()
         {
-            string command = "Revoke create source to role RoleX";
+            string command = "revoke create user to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void RevokeCreateRoleToRole()
+        public void revokeCreateRoleToRole()
         {
-            string command = "Revoke create source to role RoleX";
+            string command = "revoke create role to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
 
         #endregion create
-
-        #region drop
-
-        #region to user
-
-        [TestMethod]
-        public void RevokeDropSourceToUser()
-        {
-            string command = "Revoke Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropStreamToUser()
-        {
-            string command = "Revoke Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropUserToUser()
-        {
-            string command = "Revoke Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropRoleToUser()
-        {
-            string command = "Revoke Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to user
-
-        #region to role
-
-        [TestMethod]
-        public void RevokeDropSourceToRole()
-        {
-            string command = "Revoke Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropStreamToRole()
-        {
-            string command = "Revoke Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropUserToRole()
-        {
-            string command = "Revoke Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void RevokeDropRoleToRole()
-        {
-            string command = "Revoke Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to role
-
-        #endregion drop
-
+        
         #region alter
 
         #region to user
 
         [TestMethod]
-        public void RevokeAlterSourceToUser()
+        public void revokeAlterStreamToUser()
         {
-            string command = "Revoke Alter source to user oscar";
+            string command = "revoke Alter stream Stream1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void RevokeAlterStreamToUser()
+        public void revokeAlterUserToUser()
         {
-            string command = "Revoke Alter source to user oscar";
+            string command = "revoke Alter user User1 to user oscar";
             this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void RevokeAlterUserToUser()
-        {
-            string command = "Revoke Alter source to user oscar";
-            this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void RevokeAlterRoleToUser()
-        {
-            string command = "Revoke Alter source to user oscar";
-            this.Process(command);
-            
-            
         }
 
         #endregion to user
@@ -784,39 +538,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void RevokeAlterSourceToRole()
+        public void revokeAlterStreamToRole()
         {
-            string command = "Revoke Alter source to role RoleX";
+            string command = "revoke Alter stream Stream1 to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void RevokeAlterStreamToRole()
+        public void revokeAlterUserToRole()
         {
-            string command = "Revoke Alter source to role RoleX";
+            string command = "revoke Alter user User1 to role RoleX";
             this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void RevokeAlterUserToRole()
-        {
-            string command = "Revoke Alter source to role RoleX";
-            this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void RevokeAlterRoleToRole()
-        {
-            string command = "Revoke Alter source to role RoleX";
-            this.Process(command);
-            
-            
         }
 
         #endregion to role
@@ -830,12 +566,10 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region lists of permissions
 
         [TestMethod]
-        public void DenyPermissionsToUser1()
+        public void denyPermissionsToUser1()
         {
-            string command = "Deny create source, read stream Stream1, alter source, drop source, create stream, read source Source1 to user oscar";
+            string command = "deny create source, read stream Stream1, alter stream Stream1, create stream, read source Source1 to user oscar";
             this.Process(command);
-            
-            
         }
 
         #endregion lists of permissions
@@ -844,21 +578,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
 
         #region to user
         [TestMethod]
-        public void DenyReadPermissionToUser1()
+        public void denyReadPermissionToUser1()
         {
-            string command = "Deny read stream Stream1 to user oscar";
+            string command = "deny read stream Stream1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void DenyReadPermissionToUser2()
+        public void denyReadPermissionToUser2()
         {
-            string command = "Deny read source Source1 to user oscar";
+            string command = "deny read source Source1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -866,21 +600,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void DenyReadPermissionToRole1()
+        public void denyReadPermissionToRole1()
         {
-            string command = "Deny read stream Stream1 to role oscar";
+            string command = "deny read stream Stream1 to role oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void DenyReadPermissionToRole2()
+        public void denyReadPermissionToRole2()
         {
-            string command = "Deny read source Source1 to role oscar";
+            string command = "deny read source Source1 to role oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
@@ -892,39 +626,33 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to user
 
         [TestMethod]
-        public void DenyCreateSourceToUser()
+        public void denyCreateSourceToUser()
         {
-            string command = "Deny create source to user oscar";
+            string command = "deny create source to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DenyCreateStreamToUser()
+        public void denyCreateStreamToUser()
         {
-            string command = "Deny create source to user oscar";
+            string command = "deny create stream to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DenyCreateUserToUser()
+        public void denyCreateUserToUser()
         {
-            string command = "Deny create source to user oscar";
+            string command = "deny create user to user oscar";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DenyCreateRoleToUser()
+        public void denyCreateRoleToUser()
         {
-            string command = "Deny create source to user oscar";
+            string command = "deny create role to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -932,167 +660,61 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void DenyCreateSourceToRole()
+        public void denyCreateSourceToRole()
         {
-            string command = "Deny create source to role RoleX";
+            string command = "deny create source to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void DenyCreateStreamToRole()
+        public void denyCreateStreamToRole()
         {
-            string command = "Deny create source to role RoleX";
+            string command = "deny create stream to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DenyCreateUserToRole()
+        public void denyCreateUserToRole()
         {
-            string command = "Deny create source to role RoleX";
+            string command = "deny create user to role RoleX";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DenyCreateRoleToRole()
+        public void denyCreateRoleToRole()
         {
-            string command = "Deny create source to role RoleX";
+            string command = "deny create role to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
 
         #endregion create
-
-        #region drop
-
-        #region to user
-
-        [TestMethod]
-        public void DenyDropSourceToUser()
-        {
-            string command = "Deny Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropStreamToUser()
-        {
-            string command = "Deny Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropUserToUser()
-        {
-            string command = "Deny Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropRoleToUser()
-        {
-            string command = "Deny Drop source to user oscar";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to user
-
-        #region to role
-
-        [TestMethod]
-        public void DenyDropSourceToRole()
-        {
-            string command = "Deny Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropStreamToRole()
-        {
-            string command = "Deny Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropUserToRole()
-        {
-            string command = "Deny Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void DenyDropRoleToRole()
-        {
-            string command = "Deny Drop source to role RoleX";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion to role
-
-        #endregion drop
-
+             
         #region alter
 
         #region to user
 
         [TestMethod]
-        public void DenyAlterSourceToUser()
+        public void denyAlterStreamToUser()
         {
-            string command = "Deny Alter source to user oscar";
+            string command = "deny Alter stream Stream1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void DenyAlterStreamToUser()
+        public void denyAlterUserToUser()
         {
-            string command = "Deny Alter source to user oscar";
+            string command = "deny Alter user User1 to user oscar";
             this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void DenyAlterUserToUser()
-        {
-            string command = "Deny Alter source to user oscar";
-            this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void DenyAlterRoleToUser()
-        {
-            string command = "Deny Alter source to user oscar";
-            this.Process(command);
-            
-            
         }
 
         #endregion to user
@@ -1100,39 +722,21 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region to role
 
         [TestMethod]
-        public void DenyAlterSourceToRole()
+        public void denyAlterStreamToRole()
         {
-            string command = "Deny Alter source to role RoleX";
+            string command = "deny Alter stream Stream1 to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
-        public void DenyAlterStreamToRole()
+        public void denyAlterUserToRole()
         {
-            string command = "Deny Alter source to role RoleX";
+            string command = "deny Alter user User1 to role RoleX";
             this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void DenyAlterUserToRole()
-        {
-            string command = "Deny Alter source to role RoleX";
-            this.Process(command);
-            
-            
-        }
 
-        [TestMethod]
-        public void DenyAlterRoleToRole()
-        {
-            string command = "Deny Alter source to role RoleX";
-            this.Process(command);
-            
-            
         }
 
         #endregion to role
@@ -1140,5 +744,23 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion alter
 
         #endregion deny
+
+        #region add
+
+        [TestMethod]
+        public void AddUserToRole()
+        {
+            string command = "add user User1 to role Role1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AddUserListToRole()
+        {
+            string command = "add user User1, user User2, user User3, user User4 to role Role1";
+            this.Process(command);
+        }
+
+        #endregion add
     }
 }

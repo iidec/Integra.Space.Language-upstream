@@ -6,11 +6,9 @@
 namespace Integra.Space.Language.ASTNodes.Commands
 {
     using Common;
-    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
-    using Irony.Interpreter.Ast;
     using Irony.Parsing;
 
     /// <summary>
@@ -52,10 +50,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);            
             this.EndEvaluate(thread);
 
-            SpaceUserOptionEnum userOptionAux;
+            UserOptionEnum userOptionAux;
             if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
             {
-                return new SpaceUserOption(userOptionAux, string.Empty);
+                return new UserOption(userOptionAux, this.optionValue);
             }
             else
             {

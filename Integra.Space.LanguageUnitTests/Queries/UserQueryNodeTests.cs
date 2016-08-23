@@ -32,7 +32,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             object queryObject = Activator.CreateInstance(queryType);
             MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
-            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsQbservable(), dsf.TestScheduler }));
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsObservable(), dsf.TestScheduler }));
         }
 
         [TestMethod]
@@ -2127,7 +2127,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate();
 
                 CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2159,7 +2159,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate();
 
                 CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2190,7 +2190,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate();
 
                 CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2221,7 +2221,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate();
 
                 CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }
@@ -2255,7 +2255,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan.First());
+            Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan.First());
 
             TestScheduler dsf.TestScheduler = new TestScheduler();
 
@@ -2306,7 +2306,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate();
 
                 CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IQbservable<EventObject>, IObservable<object>> result = te.Compile<IQbservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
             }

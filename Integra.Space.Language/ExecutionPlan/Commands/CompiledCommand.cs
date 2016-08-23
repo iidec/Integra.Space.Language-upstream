@@ -11,7 +11,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class CompiledCommand : SpaceCommand
+    internal abstract class CompiledCommand : SystemCommand
     {
         /// <summary>
         /// Line of the evaluated sentence.
@@ -37,7 +37,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        public CompiledCommand(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string objectName, int line, int column, string commandText) : base(action, spaceObjectType, objectName)
+        public CompiledCommand(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string objectName, int line, int column, string commandText) : base(action, spaceObjectType, objectName)
         {
             this.line = line;
             this.column = column;

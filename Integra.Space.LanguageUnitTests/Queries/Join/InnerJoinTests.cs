@@ -27,7 +27,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             object queryObject = Activator.CreateInstance(queryType);
             MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
-            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input1.AsQbservable(), input2.AsQbservable(), dsf.TestScheduler }));
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input1.AsObservable(), input2.AsObservable(), dsf.TestScheduler }));
         }
 
         #region On condition true

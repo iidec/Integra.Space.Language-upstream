@@ -8,7 +8,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
     using System;
     using System.Collections.Generic;
     using Common;
-    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -32,7 +31,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// User options list.
         /// </summary>
-        private ListASTNode<SpaceUserOptionASTNode, SpaceUserOption> userOptionList;
+        private ListASTNode<SpaceUserOptionASTNode, UserOption> userOptionList;
 
         /// <summary>
         /// First method called
@@ -45,7 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.action = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "CREATE_AND_ALTER_USER_COMMAND", ChildrenNodes[0]) as AstNodeBase;
             this.spaceObject = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "SPACE_OBJECT", ChildrenNodes[1]) as AstNodeBase;
-            this.userOptionList = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "UserOptionsList", ChildrenNodes[2]) as ListASTNode<SpaceUserOptionASTNode, SpaceUserOption>;
+            this.userOptionList = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "UserOptionsList", ChildrenNodes[2]) as ListASTNode<SpaceUserOptionASTNode, UserOption>;
         }
 
         /// <summary>
@@ -57,9 +56,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SpaceActionCommandEnum actionAux = (SpaceActionCommandEnum)this.action.Evaluate(thread);
-            Tuple<string, SpaceObjectEnum> spaceObjectAux = (Tuple<string, SpaceObjectEnum>)this.spaceObject.Evaluate(thread);
-            List<SpaceUserOption> userOptionListAux = (List<SpaceUserOption>)this.userOptionList.Evaluate(thread);
+            ActionCommandEnum actionAux = (ActionCommandEnum)this.action.Evaluate(thread);
+            Tuple<string, SystemObjectEnum> spaceObjectAux = (Tuple<string, SystemObjectEnum>)this.spaceObject.Evaluate(thread);
+            List<UserOption> userOptionListAux = (List<UserOption>)this.userOptionList.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return new CreateAndAlterUserNode(actionAux, spaceObjectAux.Item1, userOptionListAux, this.Location.Line, this.Location.Column, this.AsString);

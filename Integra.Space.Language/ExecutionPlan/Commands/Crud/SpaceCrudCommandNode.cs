@@ -5,6 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using System;
+    using System.Collections.Generic;
     using Integra.Space.Common;
 
     /// <summary>
@@ -26,7 +28,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public SpaceCrudCommandNode(SpaceActionCommandEnum action, SpaceObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
+        public SpaceCrudCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
         {
             this.identifier = name;
         }

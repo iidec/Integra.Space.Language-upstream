@@ -43,7 +43,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SpacePermission definedPermissionAux = (SpacePermission)this.definedPermission.Evaluate(thread);
+            PermissionNode definedPermissionAux = (PermissionNode)this.definedPermission.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return definedPermissionAux;

@@ -6,9 +6,7 @@
 namespace Integra.Space.Language.ASTNodes.Commands
 {
     using System;
-    using System.Collections.Generic;
     using Common;
-    using Common.CommandContext;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -57,11 +55,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SpaceActionCommandEnum actionAux = (SpaceActionCommandEnum)this.action.Evaluate(thread);
-            Tuple<string, SpaceObjectEnum> spaceObjectAux = (Tuple<string, SpaceObjectEnum>)this.spaceObject.Evaluate(thread);
+            ActionCommandEnum actionAux = (ActionCommandEnum)this.action.Evaluate(thread);
+            Tuple<string, SystemObjectEnum> spaceObjectAux = (Tuple<string, SystemObjectEnum>)this.spaceObject.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            return new CreateAndAlterStreamNode(actionAux, this.query, spaceObjectAux.Item1, this.Location.Line, this.Location.Column, this.AsString);
+            return new CreateAndAlterStreamNode(actionAux, spaceObjectAux.Item1, this.query, this.Location.Line, this.Location.Column, this.AsString);
         }
     }
 }

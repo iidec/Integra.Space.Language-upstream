@@ -16,7 +16,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Password of the user.
         /// </summary>
-        private List<SpaceUserOption> userOptions;
+        private List<UserOption> userOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateAndAlterUserNode"/> class.
@@ -27,7 +27,22 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateAndAlterUserNode(SpaceActionCommandEnum action, string identifier, List<SpaceUserOption> userOptions, int line, int column, string nodeText) : base(action, SpaceObjectEnum.User, identifier, line, column, nodeText)
+        public CreateAndAlterUserNode(ActionCommandEnum action, string identifier, List<UserOption> userOptions, int line, int column, string nodeText) : base(action, SystemObjectEnum.DatabaseUser, identifier, line, column, nodeText)
+        {
+            this.userOptions = userOptions;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CreateAndAlterUserNode"/> class.
+        /// </summary>
+        /// <param name="action">Space command action.</param>
+        /// <param name="identifier">Space object identifier.</param>
+        /// <param name="userOptions">User command options.</param>
+        /// <param name="schema">Schema of the object.</param>
+        /// <param name="line">Line of the evaluated sentence.</param>
+        /// <param name="column">Column evaluated sentence column.</param>
+        /// <param name="nodeText">Text of the actual node.</param>
+        public CreateAndAlterUserNode(ActionCommandEnum action, string identifier, List<UserOption> userOptions, string schema, int line, int column, string nodeText) : base(action, SystemObjectEnum.DatabaseUser, identifier, line, column, nodeText)
         {
             this.userOptions = userOptions;
         }
@@ -35,11 +50,31 @@ namespace Integra.Space.Language
         /// <summary>
         /// Gets the user options defined in the command.
         /// </summary>
-        public List<SpaceUserOption> UserOptions
+        public List<UserOption> UserOptions
         {
             get
             {
                 return this.userOptions;
+            }
+        }
+
+        /// <inheritdoc />
+        public override PermissionsEnum PermissionValue
+        {
+            get
+            {
+                if (this.Action == ActionCommandEnum.Create)
+                {
+                    return PermissionsEnum.Create;
+                }
+                else if (this.Action == ActionCommandEnum.Alter)
+                {
+                    return PermissionsEnum.Alter;
+                }
+                else
+                {
+                    throw new System.Exception("Invalid action for the command.");
+                }
             }
         }
     }

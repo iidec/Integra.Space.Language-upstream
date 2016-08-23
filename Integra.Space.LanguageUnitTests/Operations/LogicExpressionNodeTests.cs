@@ -31,7 +31,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             object queryObject = Activator.CreateInstance(queryType);
             MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
-            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsQbservable(), dsf.TestScheduler }));
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsObservable(), dsf.TestScheduler }));
         }
 
         [TestMethod]
