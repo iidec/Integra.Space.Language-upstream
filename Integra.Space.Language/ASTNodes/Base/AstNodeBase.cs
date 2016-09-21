@@ -12,7 +12,7 @@ namespace Integra.Space.Language.ASTNodes.Base
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    
+
     /// <summary>
     /// ASTNodeBase base class of AST nodes
     /// </summary>
@@ -64,6 +64,41 @@ namespace Integra.Space.Language.ASTNodes.Base
         protected virtual void EndEvaluate(ScriptThread thread)
         {
             thread.CurrentNode = this.Parent;
+        }
+
+        /// <summary>
+        /// Gets the text of the non terminal.
+        /// </summary>
+        /// <returns>Non terminal text value.</returns>
+        protected string GetNodeText()
+        {
+            return this.GetNodeText(this.childrenNodes);
+        }
+
+        /// <summary>
+        /// Gets the test of the non terminal children.
+        /// </summary>
+        /// <param name="childrenNodes">Non terminal children nodes.</param>
+        /// <returns>Non terminal text value.</returns>
+        private string GetNodeText(System.Collections.IEnumerable childrenNodes)
+        {
+            string nodeText = string.Empty;
+            foreach (ParseTreeNode node in childrenNodes)
+            {
+                if (node.ChildNodes.Count > 0)
+                {
+                    nodeText = string.Concat(nodeText, " ", this.GetNodeText(node.ChildNodes));
+                }
+                else
+                {
+                    if (node.Token != null)
+                    {
+                        nodeText = string.Concat(nodeText, " ", node.Token.Text);
+                    }
+                }
+            }
+
+            return nodeText.Trim();
         }
     }
 }

@@ -47,7 +47,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
             
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
             

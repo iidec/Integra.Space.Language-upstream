@@ -17,124 +17,57 @@ namespace Integra.Space.Language
     internal class AddCommandNode : CompiledCommand
     {
         /// <summary>
-        /// Space permissions.
+        /// Database users.
         /// </summary>
-        private List<Tuple<string, SystemObjectEnum>> usersAndRoles;
-        
+        private HashSet<CommandObject> users;
+
         /// <summary>
-        /// Space object to assign the permission.
+        /// Database roles.
         /// </summary>
-        private string toIdentifier;
+        private HashSet<CommandObject> roles;
         
         /// <summary>
         /// Initializes a new instance of the <see cref="AddCommandNode"/> class.
         /// </summary>
         /// <param name="action">Space command action.</param>
-        /// <param name="spaceObjectType">Space object type..</param>
-        /// <param name="toIdentifier">Space object to assign the permission must be a role or user.</param>
-        /// <param name="userAndRoles">Space permissions.</param>
+        /// <param name="roles">Roles objects to assign the permission.</param>
+        /// <param name="users">Database users.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public AddCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string toIdentifier, List<Tuple<string, SystemObjectEnum>> userAndRoles, int line, int column, string nodeText) : base(action, spaceObjectType, toIdentifier, line, column, nodeText)
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public AddCommandNode(ActionCommandEnum action, HashSet<CommandObject> roles, HashSet<CommandObject> users, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, roles, line, column, nodeText, schemaName, databaseName)
         {
-            this.usersAndRoles = userAndRoles;
-            this.toIdentifier = toIdentifier;
+            Contract.Assert(roles != null);
+            Contract.Assert(users != null);
+
+            this.users = users;
+            this.roles = roles;
+
+            // agrego la lista de usuarios al hashset de objetos del comando. En este momento solo tenia en el hashset los roles especificados en el comando.
+            users.ToList().ForEach(x => this.CommandObjects.Add(x));
         }
 
-        /// <inheritdoc />
-        public override PermissionsEnum PermissionValue
+        /// <summary>
+        /// Gets the database roles.
+        /// </summary>
+        public HashSet<CommandObject> Roles
         {
             get
             {
-                if (this.Action == ActionCommandEnum.Add)
-                {
-                    return PermissionsEnum.Control;
-                }
-                else
-                {
-                    throw new System.Exception("Invalid action for the command.");
-                }
+                return this.roles;
             }
         }
 
         /// <summary>
-        /// Gets the space permissions.
+        /// Gets the database users.
         /// </summary>
-        public List<Tuple<string, SystemObjectEnum>> UsersAndRoles
+        public HashSet<CommandObject> Users
         {
             get
             {
-                return this.usersAndRoles;
-            }
-        }
-
-        /// <summary>
-        /// Gets the space object to assign the permission.
-        /// </summary>
-        public string ToIdentifier
-        {
-            get
-            {
-                return this.toIdentifier;
-            }
-        }
-
-        /// <inheritdoc />
-        public override HashSet<SystemObjectEnum> GetUsedSpaceObjectTypes()
-        {
-            HashSet<SystemObjectEnum> listOfUsedObjects = base.GetUsedSpaceObjectTypes();
-
-            this.usersAndRoles
-                .Where(x => !string.IsNullOrWhiteSpace(x.Item1))
-                .Select(x => x.Item2)
-                .Except(listOfUsedObjects)
-                .ToList()
-                .ForEach(objectType =>
-                {
-                    listOfUsedObjects.Add(objectType);
-                });
-
-            return listOfUsedObjects;
-        }
-
-        /// <inheritdoc />
-        public override HashSet<Tuple<SystemObjectEnum, string>> GetUsedSpaceObjects()
-        {
-            HashSet<Tuple<SystemObjectEnum, string>> listOfUsedObjects = base.GetUsedSpaceObjects();
-
-            this.usersAndRoles
-                .Where(x => !string.IsNullOrWhiteSpace(x.Item1))
-                .Distinct(new PermissionComparer())
-                .ToList()
-                .ForEach(permission =>
-                {
-                    listOfUsedObjects.Add(Tuple.Create(permission.Item2, permission.Item1));
-                });
-
-            return listOfUsedObjects;
-        }
-
-        /// <summary>
-        /// Object used comparer class.
-        /// </summary>
-        private class PermissionComparer : IEqualityComparer<Tuple<string, SystemObjectEnum>>
-        {
-            /// <inheritdoc />
-            public bool Equals(Tuple<string, SystemObjectEnum> x, Tuple<string, SystemObjectEnum> y)
-            {
-                if (x.Item1 == y.Item1 && x.Item2 == y.Item2)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            /// <inheritdoc />
-            public int GetHashCode(Tuple<string, SystemObjectEnum> obj)
-            {
-                return obj.Item1.GetHashCode() + obj.Item2.GetHashCode();
+                return this.users;
             }
         }
     }

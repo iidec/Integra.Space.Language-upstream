@@ -16,6 +16,15 @@ namespace Integra.Space.Language
         /// Initializes a new instance of the <see cref="PermissionNode"/> class.
         /// </summary>
         /// <param name="permission">Space permission.</param>
+        public PermissionNode(PermissionsEnum permission)
+        {
+            this.Permission = permission;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PermissionNode"/> class.
+        /// </summary>
+        /// <param name="permission">Space permission.</param>
         /// <param name="objectType">Space objet type.</param>
         /// <param name="objectName">Object name.</param>
         public PermissionNode(PermissionsEnum permission, SystemObjectEnum objectType, string objectName)
@@ -31,13 +40,13 @@ namespace Integra.Space.Language
         public PermissionsEnum Permission { get; private set; }
 
         /// <summary>
-        /// Gets the object type.
+        /// Gets or sets the object type.
         /// </summary>
-        public SystemObjectEnum ObjectType { get; private set; }
+        public SystemObjectEnum? ObjectType { get; set; }
 
         /// <summary>
-        /// Gets the object name.
+        /// Gets or sets the object name.
         /// </summary>
-        public string ObjectName { get; private set; }
+        public string ObjectName { get; set; }
     }
 }

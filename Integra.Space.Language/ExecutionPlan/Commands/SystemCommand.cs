@@ -8,6 +8,7 @@ namespace Integra.Space.Language
     using System;
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using System.Linq;
     using Common;
 
     /// <summary>
@@ -21,57 +22,76 @@ namespace Integra.Space.Language
         private ActionCommandEnum action;
 
         /// <summary>
-        /// Space object type.
+        /// Objects specified in the command.
         /// </summary>
-        private SystemObjectEnum spaceObjectType;
-
-        /// <summary>
-        /// Space object name.
-        /// </summary>
-        private string objectName;
+        private HashSet<CommandObject> commandObjects;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemCommand"/> class.
         /// </summary>
         /// <param name="action">Space command action.</param>
-        /// <param name="spaceObjectType">Space object type.</param>
-        /// <param name="objectName">Object name.</param>
-        public SystemCommand(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string objectName)
-        {
-            Contract.Assert(!string.IsNullOrWhiteSpace(objectName));
-
-            this.action = action;
-            this.spaceObjectType = spaceObjectType;
-            this.objectName = objectName;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SystemCommand"/> class.
-        /// </summary>
-        /// <param name="action">Space command action.</param>
-        /// <param name="spaceObjectType">Space object type.</param>
-        /// <param name="objectName">Object name.</param>
+        /// <param name="commandObject">Command object.</param>
         /// <param name="schemaName">Schema name for the command execution.</param>
         /// <param name="databaseName">Database name for the command execution.</param>
-        public SystemCommand(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string objectName, string schemaName = null, string databaseName = null)
+        public SystemCommand(ActionCommandEnum action, CommandObject commandObject, string schemaName, string databaseName)
         {
-            Contract.Assert(!string.IsNullOrWhiteSpace(objectName));
+            Contract.Assert(commandObject != null);
 
             this.action = action;
-            this.spaceObjectType = spaceObjectType;
-            this.objectName = objectName;
             this.SchemaName = schemaName;
             this.DatabaseName = databaseName;
+            this.MainCommandObject = commandObject;
+            this.commandObjects = new HashSet<CommandObject>(new CommandObjectComparer());
+            this.commandObjects.Add(commandObject);
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                this.commandObjects.Add(new CommandObject(SystemObjectEnum.Schema, schemaName, PermissionsEnum.None, false));
+            }
+
+            if (!string.IsNullOrWhiteSpace(databaseName))
+            {
+                this.commandObjects.Add(new CommandObject(SystemObjectEnum.Database, databaseName, PermissionsEnum.Connect, false));
+            }
         }
 
         /// <summary>
-        /// Gets the permission value needed to execute the command.
+        /// Initializes a new instance of the <see cref="SystemCommand"/> class.
         /// </summary>
-        public virtual PermissionsEnum PermissionValue
+        /// <param name="action">Space command action.</param>
+        /// <param name="commandObjects">Command objects.</param>
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public SystemCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, string schemaName, string databaseName)
+        {
+            Contract.Assert(commandObjects != null);
+            Contract.Assert(commandObjects.Count > 0);
+            Contract.Assert(commandObjects.All(x => !string.IsNullOrWhiteSpace(x.Name)));
+
+            this.action = action;
+            this.SchemaName = schemaName;
+            this.DatabaseName = databaseName;
+            this.commandObjects = commandObjects;
+
+            if (!string.IsNullOrWhiteSpace(schemaName))
+            {
+                this.commandObjects.Add(new CommandObject(SystemObjectEnum.Schema, schemaName, PermissionsEnum.None, false));
+            }
+
+            if (!string.IsNullOrWhiteSpace(databaseName))
+            {
+                this.commandObjects.Add(new CommandObject(SystemObjectEnum.Database, databaseName, PermissionsEnum.Connect, false));
+            }
+        }
+
+        /// <summary>
+        /// Gets the objects specified in the command.
+        /// </summary>
+        public virtual HashSet<CommandObject> CommandObjects
         {
             get
             {
-                throw new NotImplementedException();
+                return this.commandObjects;
             }
         }
 
@@ -87,28 +107,6 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
-        /// Gets the space object type.
-        /// </summary>
-        public SystemObjectEnum SpaceObjectType
-        {
-            get
-            {
-                return this.spaceObjectType;
-            }
-        }
-
-        /// <summary>
-        /// Gets the object name.
-        /// </summary>
-        public string ObjectName
-        {
-            get
-            {
-                return this.objectName;
-            }
-        }
-
-        /// <summary>
         /// Gets the schema of the object.
         /// </summary>
         public string SchemaName { get; private set; }
@@ -119,64 +117,8 @@ namespace Integra.Space.Language
         public string DatabaseName { get; private set; }
 
         /// <summary>
-        /// Gets the list of used space object types by the command.
+        /// Gets the main command object.
         /// </summary>
-        /// <returns>The list of used objects by the command.</returns>
-        public virtual HashSet<SystemObjectEnum> GetUsedSpaceObjectTypes()
-        {
-            HashSet<SystemObjectEnum> listOfUsedObjectTypes = new HashSet<SystemObjectEnum>();
-            listOfUsedObjectTypes.Add(this.spaceObjectType);
-
-            return listOfUsedObjectTypes;
-        }
-
-        /// <summary>
-        /// Gets the list of used space objects by the command.
-        /// </summary>
-        /// <returns>The list of used objects by the command.</returns>
-        public virtual HashSet<Tuple<SystemObjectEnum, string>> GetUsedSpaceObjects()
-        {
-            HashSet<Tuple<SystemObjectEnum, string>> listOfUsedObjects = new HashSet<Tuple<SystemObjectEnum, string>>(new ObjectUsedComparer());
-            if (this.action == ActionCommandEnum.Create)
-            {
-                listOfUsedObjects.Add(Tuple.Create<SystemObjectEnum, string>(this.spaceObjectType, this.SchemaName));
-            }
-            else
-            {
-                listOfUsedObjects.Add(Tuple.Create(this.spaceObjectType, this.objectName));
-            }
-
-            return listOfUsedObjects;
-        }
-
-        /// <summary>
-        /// Object used comparer class.
-        /// </summary>
-        private class ObjectUsedComparer : IEqualityComparer<Tuple<SystemObjectEnum, string>>
-        {
-            /// <inheritdoc />
-            public bool Equals(Tuple<SystemObjectEnum, string> x, Tuple<SystemObjectEnum, string> y)
-            {
-                if (x.Item1 == y.Item1 && x.Item2 == y.Item2)
-                {
-                    return true;
-                }
-
-                return false;
-            }
-
-            /// <inheritdoc />
-            public int GetHashCode(Tuple<SystemObjectEnum, string> obj)
-            {
-                if (obj.Item2 != null)
-                {
-                    return obj.Item1.GetHashCode() + obj.Item2.GetHashCode();
-                }
-                else
-                {
-                    return obj.Item1.GetHashCode();
-                }
-            }
-        }
+        public CommandObject MainCommandObject { get; private set; }
     }
 }

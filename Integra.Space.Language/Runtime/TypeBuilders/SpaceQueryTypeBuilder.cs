@@ -43,7 +43,7 @@ namespace Integra.Space.Language.Runtime
         {
             TypeBuilder typeBuilder = this.CreateType();
             this.CreateConstructor(typeBuilder);
-            
+
             this.CreateMethodForFunction(typeBuilder);
             Type newType = typeBuilder.CreateType();
 
@@ -66,11 +66,12 @@ namespace Integra.Space.Language.Runtime
             QueryInformationTypeBuilder qitb = new QueryInformationTypeBuilder(this.AsmBuilder, this.queryId, newType);
             qitb.CreateNewType();
 
-            this.SaveAssembly(this.AsmBuilder);
+            /*string assemblyPath = this.SaveAssembly(this.AsmBuilder);
+            Assembly assemblyReloaded = Assembly.LoadFile(assemblyPath);*/
 
             return newType.Assembly;
         }
-                        
+
         /// <inheritdoc />
         protected override void CreateConstructor(TypeBuilder typeBuilder)
         {
@@ -97,8 +98,27 @@ namespace Integra.Space.Language.Runtime
         /// <returns>The assembly path.</returns>
         private string SaveAssembly(AssemblyBuilder asmBuilder)
         {
-            string assemblyPath = asmBuilder.GetName().Name + SpaceAssemblyBuilder.FILEEXTENSION;
-            asmBuilder.Save(assemblyPath); // , PortableExecutableKinds.PE32Plus, ImageFileMachine.IA64);
+            string assemblyFileName = asmBuilder.GetName().Name + SpaceAssemblyBuilder.FILEEXTENSION;
+            asmBuilder.Save(assemblyFileName); // , PortableExecutableKinds.PE32Plus, ImageFileMachine.IA64);
+
+            string assemblyDirectoryPath = System.IO.Path.Combine(Environment.CurrentDirectory, "TempQueryAssemblies");
+            System.IO.Directory.CreateDirectory(assemblyDirectoryPath);
+            string assemblyPath = System.IO.Path.Combine(assemblyDirectoryPath, assemblyFileName);
+
+            if (System.IO.File.Exists(assemblyPath))
+            {
+                try
+                {
+                    System.IO.File.Delete(assemblyPath);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(string.Format("Cannot delete the assembly '{0}'.", assemblyFileName), ex);
+                }
+            }
+
+            System.IO.File.Move(System.IO.Path.Combine(Environment.CurrentDirectory, assemblyFileName), assemblyPath);
+
             return assemblyPath;
         }
 

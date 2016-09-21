@@ -69,7 +69,7 @@ namespace Integra.Space.Language.Metadata
 
             // se obtiene el agrupamiento     
             SpaceParseTreeNode groupBy = parseTreeNode.FindNode(SpaceParseTreeNodeTypeEnum.GROUP_BY_OP).SingleOrDefault();
-            if (groupBy != null && groupBy.ChildNodes.Count != 0l)
+            if (groupBy != null && groupBy.ChildNodes.Count != 0)
             {
                 SpaceMetadataTreeNode metadataGroupBy = new SpaceMetadataTreeNode(SpaceMetadataTreeNodeTypeEnum.GroupBy);
                 metadataGroupBy.ChildNodes = this.CreateMetadataColumnNodes(groupBy.FindNode(SpaceParseTreeNodeTypeEnum.VALUES_WITH_ALIAS), null);

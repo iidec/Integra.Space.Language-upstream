@@ -12,7 +12,6 @@ namespace Integra.Space.Language.Grammars
     using ASTNodes.Identifier;
     using ASTNodes.Lists;
     using ASTNodes.QuerySections;
-    using ASTNodes.Root;
     using ASTNodes.UserQuery;
     using Irony.Interpreter;
     using Irony.Parsing;
@@ -27,17 +26,7 @@ namespace Integra.Space.Language.Grammars
         /// Expression grammar
         /// </summary>
         private ExpressionGrammar expressionGrammar;
-
-        /// <summary>
-        /// Projection grammar
-        /// </summary>
-        private ProjectionGrammar projectionGrammar;
-
-        /// <summary>
-        /// Group by grammar
-        /// </summary>
-        private GroupByGrammar groupByGrammar;
-
+                
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryGrammar"/> class
         /// </summary>
@@ -45,8 +34,6 @@ namespace Integra.Space.Language.Grammars
             : base(false)
         {
             this.expressionGrammar = new ExpressionGrammar();
-            this.projectionGrammar = new ProjectionGrammar();
-            this.groupByGrammar = new GroupByGrammar();
             this.CreateGrammar();
         }
 
@@ -76,6 +63,9 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalOn = ToTerm("on", "on");
             KeyTerm terminalTimeout = ToTerm("timeout", "timeout");
             KeyTerm terminalWith = ToTerm("with", "with");
+            KeyTerm terminalgroup = ToTerm("group", "group");
+            KeyTerm terminalSelect = ToTerm("select", "select");
+            KeyTerm terminalTop = ToTerm("top", "top");
 
             // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
@@ -87,6 +77,9 @@ namespace Integra.Space.Language.Grammars
             Terminal terminalDateTimeValue = new QuotedValueLiteral("datetimeValue", "'", TypeCode.String);
             terminalDateTimeValue.AstConfig.NodeType = null;
             terminalDateTimeValue.AstConfig.DefaultNodeCreator = () => new DateTimeOrTimespanNode();
+            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
+            terminalNumero.AstConfig.NodeType = null;
+            terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
 
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
             terminalId.Name = "identifier";
@@ -101,8 +94,6 @@ namespace Integra.Space.Language.Grammars
 
             /* NO TERMINALES */
             NonTerminal nt_LOGIC_EXPRESSION = this.expressionGrammar.LogicExpression;
-            NonTerminal nt_SELECT = this.projectionGrammar.ProjectionList;
-            NonTerminal nt_GROUP_BY = this.groupByGrammar.GroupList;
 
             NonTerminal nt_GROUP_BY_OP = new NonTerminal("GROUP_BY_OP", typeof(PassNode));
             nt_GROUP_BY_OP.AstConfig.NodeType = null;
@@ -153,6 +144,31 @@ namespace Integra.Space.Language.Grammars
             nt_JOIN_TYPE.AstConfig.NodeType = null;
             nt_JOIN_TYPE.AstConfig.DefaultNodeCreator = () => new PassNode();
 
+            /* GROUP BY */
+            NonTerminal nt_VALUES_WITH_ALIAS_FOR_GROUP_BY = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.NodeType = null;
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_GROUP_BY = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
+            NonTerminal nt_GROUP_BY = new NonTerminal("GROUP_BY", typeof(GroupByNode));
+            nt_GROUP_BY.AstConfig.NodeType = null;
+            nt_GROUP_BY.AstConfig.DefaultNodeCreator = () => new GroupByNode();
+
+            /* PROJECTION */
+            NonTerminal nt_VALUES_WITH_ALIAS_FOR_PROJECTION = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_PROJECTION = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
+            NonTerminal nt_SELECT = new NonTerminal("SELECT", typeof(SelectNode));
+            nt_SELECT.AstConfig.NodeType = null;
+            nt_SELECT.AstConfig.DefaultNodeCreator = () => new SelectNode();
+            NonTerminal nt_TOP = new NonTerminal("TOP", typeof(TopNode));
+            nt_TOP.AstConfig.NodeType = null;
+            nt_TOP.AstConfig.DefaultNodeCreator = () => new TopNode();
+
             /* USER QUERY */
             nt_USER_QUERY.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT
                                     | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY;
@@ -182,6 +198,10 @@ namespace Integra.Space.Language.Grammars
             /* WITH */
             nt_WITH.Rule = terminalWith + nt_ID_OR_ID_WITH_ALIAS;
             /* **************************** */
+            /* ID OR ID WITH ALIAS */
+            nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
+                                            | terminalId;
+            /* **************************** */
             /* JOIN */
             nt_JOIN.Rule = nt_JOIN_TYPE + nt_JOIN_SOURCE + nt_WHERE + nt_WITH + nt_WHERE + nt_ON + nt_TIMEOUT;
             /* **************************** */
@@ -205,12 +225,30 @@ namespace Integra.Space.Language.Grammars
             /* OPTIONAL GROUP BY */
             nt_GROUP_BY_OP.Rule = nt_GROUP_BY
                                     | this.Empty;
+            /* **************************** */            
+            /* GROUP BY */
+            nt_GROUP_BY.Rule = terminalgroup + terminalBy + nt_LIST_OF_VALUES_FOR_GROUP_BY;
             /* **************************** */
-            
-            /* ID OR ID WITH ALIAS */
-            nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
-                                            | terminalId;
+            /* LISTA DE VALORES */
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.Rule = nt_LIST_OF_VALUES_FOR_GROUP_BY + terminalComa + nt_VALUES_WITH_ALIAS_FOR_GROUP_BY
+                                    | nt_VALUES_WITH_ALIAS_FOR_GROUP_BY;
             /* **************************** */
+            /* VALORES CON ALIAS */
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.Rule = this.expressionGrammar.Values + terminalAs + terminalId;
+
+            /* SELECT */
+            nt_SELECT.Rule = terminalSelect + nt_TOP + nt_LIST_OF_VALUES_FOR_PROJECTION
+                                        | terminalSelect + nt_LIST_OF_VALUES_FOR_PROJECTION;
+            /* **************************** */
+            /* TOP */
+            nt_TOP.Rule = terminalTop + terminalNumero;
+            /* **************************** */
+            /* LISTA DE VALORES */
+            nt_LIST_OF_VALUES_FOR_PROJECTION.Rule = nt_LIST_OF_VALUES_FOR_PROJECTION + terminalComa + nt_VALUES_WITH_ALIAS_FOR_PROJECTION
+                                    | nt_VALUES_WITH_ALIAS_FOR_PROJECTION;
+            /* **************************** */
+            /* VALORES CON ALIAS */
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = this.expressionGrammar.ProjectionValue + terminalAs + terminalId;
 
             this.Root = nt_USER_QUERY;
 

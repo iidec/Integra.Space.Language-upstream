@@ -15,29 +15,14 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="DropObjectNode"/> class.
         /// </summary>
-        /// <param name="spaceObjectType">Space object type.</param>
-        /// <param name="name">Space object name.</param>
+        /// <param name="commandObject">Command object.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public DropObjectNode(SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(ActionCommandEnum.Drop, spaceObjectType, name, line, column, nodeText)
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public DropObjectNode(CommandObject commandObject, int line, int column, string nodeText, string schemaName, string databaseName) : base(ActionCommandEnum.Drop, commandObject, line, column, nodeText, schemaName, databaseName)
         {
-        }
-
-        /// <inheritdoc />
-        public override PermissionsEnum PermissionValue
-        {
-            get
-            {
-                if (this.Action == ActionCommandEnum.Drop)
-                {
-                    return PermissionsEnum.Drop;
-                }
-                else
-                {
-                    throw new System.Exception("Invalid action for the command.");
-                }
-            }
         }
     }
 }

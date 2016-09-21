@@ -77,28 +77,6 @@ namespace Integra.Space.Language.Grammars
         }
 
         /// <summary>
-        /// Gets the nonterminal for non constant values
-        /// </summary>
-        public NonTerminal NonConstantValues
-        {
-            get
-            {
-                return this.nonConstantValues;
-            }
-        }
-
-        /// <summary>
-        /// Gets the nonterminal for other values
-        /// </summary>
-        public NonTerminal OtherValues
-        {
-            get
-            {
-                return this.otherValues;
-            }
-        }
-
-        /// <summary>
         /// Gets the projection value
         /// </summary>
         public NonTerminal ProjectionValue

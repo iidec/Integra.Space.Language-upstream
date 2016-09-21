@@ -13,42 +13,17 @@ namespace Integra.Space.Language
     internal class StatusCommandNode : CompiledCommand
     {
         /// <summary>
-        /// Space object identifier.
-        /// </summary>
-        private string identifier;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="StatusCommandNode"/> class.
         /// </summary>
         /// <param name="action">Space command action.</param>
-        /// <param name="spaceObjectType">Space object type.</param>
-        /// <param name="name">Space object identifier.</param>
+        /// <param name="commandObject">Command object.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public StatusCommandNode(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string name, int line, int column, string nodeText) : base(action, spaceObjectType, name, line, column, nodeText)
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public StatusCommandNode(ActionCommandEnum action, CommandObject commandObject, int line, int column, string nodeText, string schemaName = null, string databaseName = null) : base(action, commandObject, line, column, nodeText, schemaName, databaseName)
         {
-            this.identifier = name;
-        }
-
-        /// <inheritdoc />
-        public override PermissionsEnum PermissionValue
-        {
-            get
-            {
-                if (this.Action == ActionCommandEnum.Start)
-                {
-                    return PermissionsEnum.Start;
-                }
-                else if (this.Action == ActionCommandEnum.Stop)
-                {
-                    return PermissionsEnum.Stop;
-                }
-                else
-                {
-                    throw new System.Exception("Invalid action for the command.");
-                }
-            }
         }
     }
 }

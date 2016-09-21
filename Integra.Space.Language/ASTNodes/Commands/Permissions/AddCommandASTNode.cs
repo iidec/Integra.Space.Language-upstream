@@ -7,10 +7,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
+    using Irony.Interpreter.Ast;
     using Irony.Parsing;
 
     /// <summary>
@@ -21,7 +23,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space permission list.
         /// </summary>
-        private ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>> listOfUsersOrRoles;
+        private StatementListNode users;
 
         /// <summary>
         /// Terminal to.
@@ -31,7 +33,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space user or role.
         /// </summary>
-        private AstNodeBase userOrRole;
+        private StatementListNode roles;
 
         /// <summary>
         /// First method called
@@ -43,8 +45,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.terminalAdd = ChildrenNodes[0].Token.Text;
-            this.listOfUsersOrRoles = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "PermissionList", ChildrenNodes[1]) as ListASTNode<SpaceObjectWithIdASTNode, Tuple<string, SystemObjectEnum>>;
-            this.userOrRole = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "UserOrRole", ChildrenNodes[3]) as AstNodeBase;
+            this.users = AddChild(NodeUseType.ValueRead, "Users", ChildrenNodes[1]) as StatementListNode;
+            this.roles = AddChild(NodeUseType.ValueRead, "Roles", ChildrenNodes[3]) as StatementListNode;
         }
 
         /// <summary>
@@ -56,13 +58,34 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
+
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
+
             ActionCommandEnum actionAux;
             Enum.TryParse<ActionCommandEnum>(this.terminalAdd, true, out actionAux);
-            List<Tuple<string, SystemObjectEnum>> userOrRolesListAux = (List<Tuple<string, SystemObjectEnum>>)this.listOfUsersOrRoles.Evaluate(thread);
-            Tuple<string, SystemObjectEnum> userOrRoleAux = (Tuple<string, SystemObjectEnum>)this.userOrRole.Evaluate(thread);
-            this.EndEvaluate(thread);
+
+            HashSet<CommandObject> usersAux = new HashSet<CommandObject>(new CommandObjectComparer());
+            foreach (IdentifierNode child in this.users.GetChildNodes())
+            {
+                if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, child.Symbol, PermissionsEnum.Control, false)))
+                {
+                    throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
+                }
+            }
+
+            HashSet<CommandObject> rolesAux = new HashSet<CommandObject>(new CommandObjectComparer());
+            foreach (IdentifierNode child in this.roles.GetChildNodes())
+            {
+                if (!rolesAux.Add(new CommandObject(SystemObjectEnum.DatabaseRole, child.Symbol, PermissionsEnum.Control, false)))
+                {
+                    throw new Exceptions.SyntaxException(string.Format("The role '{0}' is specified more than once."));
+                }
+            }
             
-            return new AddCommandNode(actionAux, userOrRoleAux.Item2, userOrRoleAux.Item1, userOrRolesListAux, this.Location.Line, this.Location.Column, this.AsString);
+            this.EndEvaluate(thread);
+
+            return new AddCommandNode(actionAux, rolesAux, usersAux, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
         }
     }
 }

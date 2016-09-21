@@ -52,7 +52,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             SystemObjectEnum @object = (SystemObjectEnum)this.spaceObject.Evaluate(thread);         
             this.EndEvaluate(thread);
 
-            return new System.Tuple<string, SystemObjectEnum>(this.identifier, @object);            
+            return new CommandObject(@object, this.identifier, PermissionsEnum.ControlServer, null);            
         }
     }
 }

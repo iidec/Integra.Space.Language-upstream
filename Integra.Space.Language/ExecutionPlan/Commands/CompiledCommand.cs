@@ -32,12 +32,30 @@ namespace Integra.Space.Language
         /// Initializes a new instance of the <see cref="CompiledCommand"/> class.
         /// </summary>
         /// <param name="action">Space command action.</param>
-        /// <param name="spaceObjectType">Space object type..</param>
-        /// <param name="objectName">Object name.</param>
+        /// <param name="commandObject">Command object.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        public CompiledCommand(ActionCommandEnum action, SystemObjectEnum spaceObjectType, string objectName, int line, int column, string commandText) : base(action, spaceObjectType, objectName)
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public CompiledCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText, string schemaName = null, string databaseName = null) : base(action, commandObject, schemaName, databaseName)
+        {
+            this.line = line;
+            this.column = column;
+            this.commandText = commandText;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CompiledCommand"/> class.
+        /// </summary>
+        /// <param name="action">Space command action.</param>
+        /// <param name="commandObjects">Command objects.</param>
+        /// <param name="line">Line of the evaluated sentence.</param>
+        /// <param name="column">Column evaluated sentence column.</param>
+        /// <param name="commandText">Text of the actual node.</param>
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public CompiledCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, int line, int column, string commandText, string schemaName = null, string databaseName = null) : base(action, commandObjects, schemaName, databaseName)
         {
             this.line = line;
             this.column = column;

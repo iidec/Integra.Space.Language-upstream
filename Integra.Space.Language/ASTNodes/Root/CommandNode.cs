@@ -42,7 +42,7 @@ namespace Integra.Space.Language.ASTNodes.Root
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SystemCommand context = (SystemCommand)this.command.Evaluate(thread);
+            var context = this.command.Evaluate(thread);
             this.EndEvaluate(thread);
             
             return context;
