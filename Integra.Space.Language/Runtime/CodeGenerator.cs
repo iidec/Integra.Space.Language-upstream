@@ -199,10 +199,10 @@ namespace Integra.Space.Language.Runtime
                                         );
 
             LambdaExpression lambda = Expression.Lambda(rootBlock, this.parameterList.ToArray());
-
+            
             SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.context.AsmBuilder, this.context.QueryName, lambda);
             Assembly assembly = sqtb.CreateNewAssembly();
-            
+
             this.actualScope = null;
             this.parameterList.Clear();
             this.sources.Clear();
@@ -213,6 +213,27 @@ namespace Integra.Space.Language.Runtime
 
             Console.WriteLine("El assembly fue creado exitosamente.");
             return assembly;
+        }
+
+        /// <summary>
+        /// Compile the result function.
+        /// </summary>
+        /// <param name="plan">Execution plan.</param>
+        /// <returns>Result function.</returns>
+        public Delegate CompileDelegate(PlanNode plan)
+        {
+            Delegate funcResult = this.CreateLambda(plan).Compile();
+
+            this.actualScope = null;
+            this.parameterList.Clear();
+            this.sources.Clear();
+            this.projectionWithDispose = false;
+            this.scopeLevel = 0;
+            this.isInConditionOn = false;
+            this.IsSecondSource = false;
+
+            Console.WriteLine("La función fue compilada exitosamente.");
+            return funcResult;
         }
 
         /// <summary>
@@ -237,7 +258,7 @@ namespace Integra.Space.Language.Runtime
             Console.WriteLine("La función fue compilada exitosamente.");
             return funcResult;
         }
-        
+
         /// <summary>
         /// Compile the result function.
         /// </summary>
@@ -267,6 +288,37 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Creates a lambda expression
         /// </summary>
+        /// <param name="plan">Execution plan</param>
+        /// <returns>Expression lambda</returns>
+        public LambdaExpression CreateLambda(PlanNode plan)
+        {
+            Expression rootExpression = this.GenerateExpressionTree(plan);
+            
+            Expression setSchedulerExp = null;
+            if (this.context.IsTestMode)
+            {
+                ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
+                this.parameterList.Add(schedulerParam);
+            }
+            else
+            {
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
+            }
+
+            Expression rootBlock = Expression.Block(
+                                        new[] { this.schedulerExpression },
+                                        setSchedulerExp,
+                                        rootExpression
+                                        );
+
+            LambdaExpression result = Expression.Lambda(rootBlock, this.parameterList.ToArray());
+            return result;
+        }
+
+        /// <summary>
+        /// Creates a lambda expression
+        /// </summary>
         /// <typeparam name="In">Input type</typeparam>
         /// <typeparam name="Out">Output type</typeparam>
         /// <param name="plan">Execution plan</param>
@@ -274,7 +326,7 @@ namespace Integra.Space.Language.Runtime
         public Expression<Func<In, Out>> CreateLambda<In, Out>(PlanNode plan)
         {
             Expression rootExpression = this.GenerateExpressionTree(plan);
-
+            
             Expression rootBlock = Expression.Block(
                                         new[] { this.schedulerExpression },
                                         Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
@@ -284,7 +336,7 @@ namespace Integra.Space.Language.Runtime
             Expression<Func<In, Out>> result = Expression.Lambda<Func<In, Out>>(rootBlock, this.parameterList.ToArray());
             return result;
         }
-        
+
         /// <summary>
         /// Creates a lambda expression
         /// </summary>
@@ -293,7 +345,7 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public Expression<Func<Out>> CreateLambda<Out>(PlanNode plan)
         {
-            Expression rootExpression = this.GenerateExpressionTree(plan); 
+            Expression rootExpression = this.GenerateExpressionTree(plan);
 
             Expression rootBlock = Expression.Block(
                                         new[] { this.schedulerExpression },
@@ -365,11 +417,6 @@ namespace Integra.Space.Language.Runtime
             switch (nodeType)
             {
                 case PlanNodeTypeEnum.Constant:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE74, actualNode.NodeText));
-                    }
-
                     expResult = this.GenerateConstant(actualNode);
                     break;
                 case PlanNodeTypeEnum.Identifier:
@@ -575,67 +622,27 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.Equal:
                     return this.GenerarEqual(actualNode, leftNode, rightNode);
                 case PlanNodeTypeEnum.NotEqual:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("not equal operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarNotEqual(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.LessThan:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("less than operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarLessThan(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.LessThanOrEqual:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("less than or equal operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarLessThanOrEqual(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.GreaterThan:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("greater than operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarGreaterThan(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.GreaterThanOrEqual:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("greater than or equal operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarGreaterThanOrEqual(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.Not:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE76("logical negation"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarNot(actualNode, leftNode);
                     break;
                 case PlanNodeTypeEnum.Like:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE75("like operator"), actualNode.NodeText));
-                    }
-
                     expResult = this.GenerarLike(actualNode, leftNode, rightNode);
                     break;
                 case PlanNodeTypeEnum.Or:
-                    if (this.isInConditionOn)
-                    {
-                        throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE76("logical disjunction"), actualNode.NodeText));
-                    }
-
                     return this.GenerateOr(actualNode, leftNode, rightNode);
                 case PlanNodeTypeEnum.And:
                     return this.GenerateAnd(actualNode, leftNode, rightNode);
@@ -666,6 +673,8 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.Property:
                 case PlanNodeTypeEnum.EventProperty:
                     return this.GenerateProperty(actualNode, leftNode);
+                case PlanNodeTypeEnum.ObservableToEnumerable:
+                    return this.ObservableToEnumerable(actualNode, leftNode);
                 default:
                     throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Resources.COMPILATION_ERRORS.CE1(nodeType.ToString()), actualNode.NodeText));
             }
@@ -976,7 +985,7 @@ namespace Integra.Space.Language.Runtime
                                             .Single().MakeGenericMethod(genericType);
 
             Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(null, methodNever), new List<Expression>(), result, true, "Start of the observable never.", "End of the observable never.", RUNTIME_ERRORS.RE65);
-            
+
             return resultExpression;
         }
 
@@ -996,7 +1005,7 @@ namespace Integra.Space.Language.Runtime
                                             .Single().MakeGenericMethod(genericType);
 
             Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(null, methodEmpty, this.schedulerExpression), new List<Expression>(), result, true, "Start of the observable empty.", "End of the observable empty.", RUNTIME_ERRORS.RE66);
-            
+
             return resultExpression;
         }
 
@@ -1033,7 +1042,7 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, valueResult, new List<Expression>(), result, true, "Start of the observable timeout.", "End of the observable timeout.", RUNTIME_ERRORS.RE67);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1088,7 +1097,7 @@ namespace Integra.Space.Language.Runtime
                 this.PopScope();
 
                 Expression callToSetTimeoutMethod = this.GenerateEventBlock(actualNode, new ParameterExpression[] { }, Expression.Call(toList, methodForEach, lambdaSetTimeout), new List<Expression>(), null, false, "Start of the enumerable foreach for call SetTimeout method.", "End of the enumerable foreach for call SetTimeout method.", RUNTIME_ERRORS.RE63);
-                
+
                 MethodInfo onNextMethod = this.observer.Type.GetMethod("OnNext");
 
                 Expression body = null;
@@ -1124,7 +1133,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(catchMethod, incomingObservable, lambdaOfTheOnNext), new List<Expression>(), result, true, "Start of the observable catch.", "End of the observable catch.", RUNTIME_ERRORS.RE63);
-                
+
                 this.PopScope();
 
                 return resultExpression;
@@ -1158,7 +1167,7 @@ namespace Integra.Space.Language.Runtime
             ParameterExpression paramException2 = Expression.Variable(typeof(Exception), "ObservableJoinException");
 
             Expression tryCatchExprObvJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { obvJoinResult }, Expression.Call(methodObservableJoin, source1, source2, leftDurationLambda, rightDurationLambda, lambdaEnumerableJoin), new List<Expression>(), obvJoinResult, true, "Start of the observable join.", "End of the observable join.", RUNTIME_ERRORS.RE70);
-            
+
             return tryCatchExprObvJoin;
         }
 
@@ -1180,14 +1189,14 @@ namespace Integra.Space.Language.Runtime
                 // left key
                 ParameterExpression leftKeyParam = Expression.Parameter(source1Type.GetGenericArguments()[0]);
                 Expression leftKey = leftKeyParam;
-                
+
                 Type delegateTypeLeftKey = typeof(Func<,>).MakeGenericType(leftKeyParam.Type, leftKeyParam.Type);
                 LambdaExpression lambdaLeftKey = Expression.Lambda(delegateTypeLeftKey, leftKey, new ParameterExpression[] { leftKeyParam });
 
                 // right key
                 ParameterExpression rightKeyParam = Expression.Parameter(source2Type.GetGenericArguments()[0]);
                 Expression rightKey = rightKeyParam;
-                
+
                 Type delegateTypeRightKey = typeof(Func<,>).MakeGenericType(rightKeyParam.Type, rightKeyParam.Type);
                 LambdaExpression lambdaRightKey = Expression.Lambda(delegateTypeRightKey, rightKey, new ParameterExpression[] { rightKeyParam });
 
@@ -1234,7 +1243,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramExp = Expression.Variable(typeof(Exception), "EnumerableJoinException");
 
                 Expression tryCatchExprEnumJoin = this.GenerateEventBlock(actualNode, new ParameterExpression[] { enumerableJoinResult }, Expression.Call(methodEnumerableJoin, source1, source2, lambdaLeftKey, lambdaRightKey, lambdaEnumerableSelector), new List<Expression>(), enumerableJoinResult, true, "Start of the select for enumerable join.", "End of the select for enumerable join.", RUNTIME_ERRORS.RE69);
-                
+
                 this.CreateNewScope(actualNode, tryCatchExprEnumJoin);
                 ParameterExpression projectionResult = this.actualScope.GetParameterByIndex(0);
                 Expression whereBlock = Expression.Block(
@@ -1419,7 +1428,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expSelect).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodSelect, incomingObservable, expSelect), new List<Expression>(), result, true, "Start of the observable select for result.", "End of the observable select for result.", RUNTIME_ERRORS.RE77);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1467,7 +1476,7 @@ namespace Integra.Space.Language.Runtime
                     this.sources.Add(RIGHTSOURCE, parameterName);
                 }
 
-                currentParameter = Expression.Parameter(typeof(IObservable<EventObject>), parameterName);
+                currentParameter = Expression.Parameter((Type)actualNode.Properties["SourceType"], parameterName);
                 this.parameterList.Add(currentParameter);
             }
 
@@ -1486,6 +1495,7 @@ namespace Integra.Space.Language.Runtime
             {
                 if (actualNode.Properties.ContainsKey("ParameterType") && this.isInConditionOn)
                 {
+                    // a esta condición se entra cuando creando el código para la condición 'on' de la consulta
                     return this.actualScope.GetParameterByType((Type)actualNode.Properties["ParameterType"]);
                 }
                 else if (actualNode.Properties.ContainsKey("ParameterGenericType"))
@@ -1676,7 +1686,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(cadenaResultante, incomingObservable));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { cadenaResultante, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the 'left' function", "End of the 'left' function", RUNTIME_ERRORS.RE1);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1721,7 +1731,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(cadenaResultante, incomingObservable));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { cadenaResultante, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the 'right' function", "End of the 'right' function", RUNTIME_ERRORS.RE10);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1761,7 +1771,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(cadenaResultante, incomingObservable));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { cadenaResultante, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the 'upper' function", "End of the 'upper' function", RUNTIME_ERRORS.RE11);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1801,7 +1811,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(cadenaResultante, incomingObservable));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { cadenaResultante, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the 'lower' function", "End of the 'lower' function", RUNTIME_ERRORS.RE12);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1846,7 +1856,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(auxL, this.StandardizeType(leftNode, leftNode.Type)));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { param, auxL }, mainAction, actionsBeforeMainAction, param, false, "Start of the get property of a date type operation: " + propiedad, "End of the get property of a date type operation: " + propiedad, RUNTIME_ERRORS.RE49);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1904,7 +1914,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(valorResultante, incomingObservable));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { valorResultante, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the 'Abs' function", "End of the 'Abs' function", RUNTIME_ERRORS.RE64);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -1970,7 +1980,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(isNullFunctionRightParameterAux, auxValueToReplace));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result, isNullFunctionLeftParameterAux, isNullFunctionRightParameterAux }, mainAction, actionsBeforeMainAction, result, false, "Start of the 'isnull' function", "End of the 'isnull' function", RUNTIME_ERRORS.RE81);
-                                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2006,7 +2016,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(publishMethod, incomingObservable), new List<Expression>(), result, true, "Start of the observable publish.", "End of the observable publish.", RUNTIME_ERRORS.RE71);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2044,7 +2054,7 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(refCountMethod, incomingObservable), new List<Expression>(), result, true, string.Format("{0}. Start of the observable RefCount", sourceName), string.Format("{0}. End of the observable RefCount", sourceName), RUNTIME_ERRORS.RE72);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2080,7 +2090,7 @@ namespace Integra.Space.Language.Runtime
                                             .Single().MakeGenericMethod(this.observer.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodCreate, lambdaOfTheSubscribe), new List<Expression>(), result, true, "Start of the observable create.", "End of the observable create.", RUNTIME_ERRORS.RE73);
-                
+
                 return resultExpression; // this.CreateObserveOn(actualNode, tryCatchExpr);
             }
             catch (Exception e)
@@ -2175,7 +2185,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(observeOnMethod, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of ObserveOn.", "End of ObserveOn.", RUNTIME_ERRORS.RE75);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2202,7 +2212,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeOnMethod, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of SubscribeOn.", "End of Subscribe.", RUNTIME_ERRORS.RE76);
-               
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2270,7 +2280,7 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, function, new List<Expression>(), result, true, "Start of the 'observable buffer' function.", "End of the 'observable buffer' function.", RUNTIME_ERRORS.RE15);
-                
+
                 this.PopScope();
 
                 return resultExpression;
@@ -2302,7 +2312,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodTake, incomingObservable, takeSize, this.schedulerExpression), new List<Expression>(), result, true, "Start of the observable 'top' function", "End of the observable 'top' function", RUNTIME_ERRORS.RE16);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2338,7 +2348,7 @@ namespace Integra.Space.Language.Runtime
                 MethodInfo get2 = bufferTimeAndSize.Type.GetProperty("IntegerValue").GetMethod;
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodBuffer, incomingObservable, Expression.Call(bufferTimeAndSize, get1), Expression.Call(bufferTimeAndSize, get2), this.schedulerExpression), new List<Expression>(), result, true, "Start of the expression observable buffer with time and size", "End of the expression observable buffer with time and size", RUNTIME_ERRORS.RE18);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2375,7 +2385,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(typeof(I));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodWhere, incomingObservable, selectorLambda), new List<Expression>(), result, true, "Start of the expression observable where", "End of the expression observable where", RUNTIME_ERRORS.RE19);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2407,7 +2417,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(typeof(I), typeof(O));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodGroupBy, incomingObservable, keySelector, Expression.New(typeof(GroupByKeyComparer<O>))), new List<Expression>(), result, true, "Start of the observable group by", "End of the observable group by", RUNTIME_ERRORS.RE24);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -2469,7 +2479,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expSelect).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodSelectMany, incomingObservable, expSelect), new List<Expression>(), result, true, "Start of the select for observable group by", "End of the select for observable group by", RUNTIME_ERRORS.RE2);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -2503,7 +2513,7 @@ namespace Integra.Space.Language.Runtime
                                                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expProjection).ReturnType);
 
                     Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodSelect, incomingObservable, expProjection), new List<Expression>(), result, true, "Start of the select for observable buffer con lambda", "End of the select for observable buffer con lambda", RUNTIME_ERRORS.RE21);
-                    
+
                     // pop del ámbito
                     this.PopScope();
 
@@ -2522,13 +2532,35 @@ namespace Integra.Space.Language.Runtime
                     }
                     else
                     {
+                        Expression disposeEventsExp = null;
+
+                        /* se evaluan estas condiciones ya que el generador de código se utiliza para consultas a flujos de eventos y para consultas a la metadata de 
+                         * los objetos del sistema, por lo tanto cuando se usa para consultar la metadata de los objetos no se debe crear la expresión que llama al
+                         * método Dispose de cada evento ya que no son objetos tipo evento con los que se trabajan.
+                         */
+                        if (actualNode.Properties.ContainsKey("ForMetadata"))
+                        {
+                            if ((bool)actualNode.Properties["ForMetadata"] == true)
+                            {
+                                disposeEventsExp = Expression.Empty();
+                            }
+                            else
+                            {
+                                disposeEventsExp = this.DisposeEvents(actualNode);
+                            }
+                        }
+                        else
+                        {
+                            disposeEventsExp = this.DisposeEvents(actualNode);
+                        }
+
                         selectBlock = Expression.Block(
                                     new[] { resultSelectBlock },
                                         Expression.TryCatch(
                                             Expression.Block(
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Inicia llamada a Dispose fuera de la proyección")),
                                                 Expression.Assign(resultSelectBlock, expProjection),
-                                                this.DisposeEvents(actualNode),
+                                                disposeEventsExp,
                                                 Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Termina llamada a Dispose fuera de la proyección"))
                                                 ),
                                             Expression.Catch(
@@ -2554,26 +2586,6 @@ namespace Integra.Space.Language.Runtime
                                                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], selectBlock.Type);
 
                     Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodSelect, incomingObservable, selectorLambda), new List<Expression>(), result, true, "Start of the select for observable buffer sin lambda", "End of the select for observable buffer sin lambda", RUNTIME_ERRORS.RE22);
-
-                    /*Expression resultExpression =
-                        Expression.Block(
-                            new[] { result },
-                                Expression.TryCatch(
-                                    Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the select for observable buffer sin lambda"))),
-                                        Expression.Assign(result, Expression.Call(methodSelect, incomingObservable, selectorLambda)),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the select for observable buffer sin lambda")))
-                                        ),
-                                    Expression.Catch(
-                                        paramException,
-                                         Expression.Block(
-                                            Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                            Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE22, actualNode.NodeText), typeof(string)), paramException))
-                                        )
-                                    )
-                                ),
-                            result
-                            );*/
 
                     // pop del ámbito
                     this.PopScope();
@@ -2607,7 +2619,7 @@ namespace Integra.Space.Language.Runtime
                 }).MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0].GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodSwitch, incomingObservable), new List<Expression>(), result, true, "Start of the observable switch.", "End of the observable switch.", RUNTIME_ERRORS.RE59);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2636,12 +2648,61 @@ namespace Integra.Space.Language.Runtime
                 }).MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0].GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodConcat, incomingObservable), new List<Expression>(), result, true, "Start of the observable concat.", "End of the observable concat.", RUNTIME_ERRORS.RE62);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
             {
                 throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE69, actualNode.NodeText), e);
+            }
+        }
+
+        /// <summary>
+        /// Call enumerable ToList extension.
+        /// </summary>
+        /// <param name="actualNode">Actual execution plan node.</param>
+        /// <param name="incomingObservable">Incoming observable.</param>
+        /// <returns>Result expression ToList.</returns>
+        private Expression ObservableToEnumerable(PlanNode actualNode, Expression incomingObservable)
+        {
+            try
+            {
+                Type paramGenericType = null;
+                if (incomingObservable.Type.Name.Equals("IGroupedObservable`2") || incomingObservable.Type.Name.Equals("IGrouping`2"))
+                {
+                    paramGenericType = incomingObservable.Type.GetGenericArguments()[1];
+                }
+                else
+                {
+                    paramGenericType = incomingObservable.Type.GetGenericArguments()[0];
+                }
+
+                ParameterExpression result = Expression.Variable(typeof(IEnumerable<>).MakeGenericType(new Type[] { paramGenericType }), "ToListParam");
+                ParameterExpression paramException = Expression.Variable(typeof(Exception));
+                ParameterExpression objetoAConvertir = Expression.Variable(incomingObservable.Type, "ObjetoAConvertirALista");
+
+                MethodInfo methodToEnumerable = typeof(System.Reactive.Linq.Observable).GetMethods().Where(m =>
+                {
+                    return m.Name == "ToEnumerable";
+                })
+                .Single().MakeGenericMethod(paramGenericType);
+
+                Expression mainExpression = Expression.IfThen(
+                                                Expression.NotEqual(objetoAConvertir, Expression.Constant(null, objetoAConvertir.Type)),
+                                                Expression.Assign(result, Expression.Call(methodToEnumerable, objetoAConvertir))
+                                            );
+
+                List<Expression> otherActions = new List<Expression>();
+                otherActions.Add(Expression.Assign(objetoAConvertir, incomingObservable));
+
+                // aqui el IfThen que compara si el objeto entrante es nulo no se hace.
+                Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { objetoAConvertir, result }, mainExpression, otherActions, result, false, "Start of the enumerable ToList.", "End of the enumerable ToList.", RUNTIME_ERRORS.RE54);
+
+                return resultExpression;
+            }
+            catch (Exception e)
+            {
+                throw new CompilationException(Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE55, actualNode.NodeText), e);
             }
         }
 
@@ -2860,7 +2921,7 @@ namespace Integra.Space.Language.Runtime
 
                 // aqui el IfThen que compara si el objeto entrante es nulo no se hace.
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { objetoAConvertir, result }, mainExpression, otherActions, result, false, "Start of the enumerable ToList.", "End of the enumerable ToList.", RUNTIME_ERRORS.RE54);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2900,7 +2961,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(paramGenericType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodToArray, incomingObservable), new List<Expression>(), result, true, "Start of the enumerable to array.", "End of the enumerable to array.", RUNTIME_ERRORS.RE6);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2929,7 +2990,7 @@ namespace Integra.Space.Language.Runtime
                     .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(methodToObservable, incomingObservable, this.schedulerExpression), new List<Expression>(), result, true, "Start of the enumerable to observable", "End of the enumerable to observable", RUNTIME_ERRORS.RE61);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2959,7 +3020,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodGroupBy, incomingObservable, takeSize), new List<Expression>(), result, true, "Start of the enumerable 'enumerable take' function.", "End of the enumerable 'enumerable take' function.", RUNTIME_ERRORS.RE17);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -2996,7 +3057,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incommingGenericArgument);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodWhere, incomingObservable, selectorLambda), new List<Expression>(), result, true, "Start of the expression observable where", "End of the expression observable where", RUNTIME_ERRORS.RE79);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -3026,7 +3087,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)keySelector).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodGroupBy, incomingObservable, keySelector, Expression.New(typeof(GroupByKeyComparer<>).MakeGenericType(((LambdaExpression)keySelector).ReturnType))), new List<Expression>(), result, true, "Start of the enumerable group by", "End of the enumerable group by", RUNTIME_ERRORS.RE25);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -3070,7 +3131,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)keySelector).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodGroupBy, incomingObservable, keySelector, Expression.New(typeof(OrderByKeyComparer<>).MakeGenericType(((LambdaExpression)keySelector).ReturnType))), new List<Expression>(), result, true, "Start of the enumerable order by", "End of the enumerable order by", RUNTIME_ERRORS.RE26);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -3101,7 +3162,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expSelect).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodSelect, incomingObservable, expSelect), new List<Expression>(), result, true, "Start of the select for enumerable group by", "End of the select for enumerable group by", RUNTIME_ERRORS.RE20);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -3132,7 +3193,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0], ((LambdaExpression)expProjection).ReturnType);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodSelectMany, incomingObservable, expProjection), new List<Expression>(), result, true, "Start the select for enumerable", "End the select for enumerable", RUNTIME_ERRORS.RE23);
-                
+
                 // pop del ámbito
                 this.PopScope();
 
@@ -3168,7 +3229,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single();
 
                 Expression lockBlock = this.GenerateEventBlock(actualNode, new ParameterExpression[] { lambdaResult }, Expression.Call(this.actualScope.GetFirstParameter(), lockMethod, Expression.Constant(this.context.QueryName)), new List<Expression>(), lambdaResult, true, "Start call event lock method.", "End call event lock method.", RUNTIME_ERRORS.RE78);
-                
+
                 Type delegateType = typeof(Func<,>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0], lockBlock.Type);
                 LambdaExpression lambdaSelect = Expression.Lambda(delegateType, lockBlock, new ParameterExpression[] { this.actualScope.GetFirstParameter() });
 
@@ -3179,7 +3240,7 @@ namespace Integra.Space.Language.Runtime
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodWhere, incomingObservable, lambdaSelect), new List<Expression>(), result, true, "Start the select for lock event", "End the select for lock event", RUNTIME_ERRORS.RE57);
-                
+
                 // pop del ambito
                 this.PopScope();
 
@@ -3524,11 +3585,11 @@ namespace Integra.Space.Language.Runtime
                     methodCreate = methodCreate.MakeGenericMethod(leftType, rightType);
                     valueToReturn = Expression.Call(methodCreate, Expression.Constant(null, leftType), rightItem);
                 }
-                
+
                 result = Expression.Variable(typeof(Tuple<,>).MakeGenericType(leftType, rightType), "JoinProjection");
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, valueToReturn, new List<Expression>(), result, true, "Start the join projection", "End the join projection", RUNTIME_ERRORS.RE80);
-                
+
                 Type delegateType = null;
                 LambdaExpression lambda = null;
                 if (actualNode.Properties["ProjectionType"].Equals(PlanNodeTypeEnum.JoinLeftDuration))
@@ -3610,7 +3671,7 @@ namespace Integra.Space.Language.Runtime
                     LambdaExpression lambda = Expression.Lambda(delegateType, dispose, new ParameterExpression[] { evento });
 
                     Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { }, Expression.Call(toList, methodForEach, lambda), new List<Expression>(), null, false, "Start of the enumerable foreach.", "End of the enumerable foreach.", RUNTIME_ERRORS.RE53);
-                    
+
                     return resultExpression;
                 }
                 catch (Exception e)
@@ -3636,7 +3697,7 @@ namespace Integra.Space.Language.Runtime
                     );
 
                     Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { }, disposeAction, new List<Expression>(), null, false, "Start call event unlock method.", "End call event unlock method.", RUNTIME_ERRORS.RE58);
-                    
+
                     return resultExpression;
                 }
                 catch (Exception e)
@@ -3723,7 +3784,7 @@ namespace Integra.Space.Language.Runtime
                                         );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { f, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the get object value method.", "End of the get object value method.", Resources.RUNTIME_ERRORS.RE28(actualNode.NodeText));
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -3758,7 +3819,7 @@ namespace Integra.Space.Language.Runtime
                                         );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { evt, param }, mainAction, actionsBeforeMainAction, param, false, "You will get the message.", "The message was obtained.", Resources.RUNTIME_ERRORS.RE29);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -3938,7 +3999,7 @@ namespace Integra.Space.Language.Runtime
                                         );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { f, v }, mainAction, actionsBeforeMainAction, v, false, "Start of the get subfield method.", "End of the get subfield method.", Resources.RUNTIME_ERRORS.RE3(actualNode.NodeText));
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -3989,7 +4050,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { p, v }, mainAction, actionsBeforeMainAction, v, false, "Start of the get field method.", "End of the get field method.", Resources.RUNTIME_ERRORS.RE30(actualNode.NodeText));
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -4040,7 +4101,7 @@ namespace Integra.Space.Language.Runtime
                                         );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { m, v }, mainAction, actionsBeforeMainAction, v, false, "Start of the get part method.", "End of the get part method.", Resources.RUNTIME_ERRORS.RE31(actualNode.NodeText));
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -4083,37 +4144,25 @@ namespace Integra.Space.Language.Runtime
             {
                 List<Expression> actionsBeforeMainAction = new List<Expression>();
                 actionsBeforeMainAction.Add(Expression.Assign(valorACastear, leftNode));
+                Expression mainAction = null;
 
-                Expression mainAction = Expression.IfThen(
-                                            Expression.NotEqual(Expression.Convert(valorACastear, this.ConvertToNullable(leftNode.Type)), Expression.Constant(null)),
-                                            Expression.Assign(retorno, Expression.Convert(valorACastear, this.ConvertToNullable(typeToCast)))
-                                        );
+                if (leftNode.Type.IsGenericType && leftNode.Type.GetGenericArguments()[0].Equals(typeof(System.Guid)))
+                {
+                    MethodInfo toStringMethod = typeof(object).GetMethod("ToString");
+                    mainAction = Expression.IfThen(
+                                                Expression.NotEqual(Expression.Convert(valorACastear, this.ConvertToNullable(leftNode.Type)), Expression.Constant(null)),
+                                                Expression.Assign(retorno, Expression.Call(valorACastear, toStringMethod))
+                                            );
+                }
+                else
+                {
+                    mainAction = Expression.IfThen(
+                                                Expression.NotEqual(Expression.Convert(valorACastear, this.ConvertToNullable(leftNode.Type)), Expression.Constant(null)),
+                                                Expression.Assign(retorno, Expression.Convert(valorACastear, this.ConvertToNullable(typeToCast)))
+                                            );
+                }
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { valorACastear, retorno }, mainAction, actionsBeforeMainAction, retorno, false, "Start of the convert operation to type " + typeToCast, "End of the 'Convert' operation to type " + typeToCast, RUNTIME_ERRORS.RE33);
-
-                /*Expression resultExpression =
-                Expression.Block(
-                    new[] { valorACastear, retorno },
-                    Expression.Assign(valorACastear, leftNode),
-                    Expression.IfThen(
-                        Expression.NotEqual(Expression.Convert(valorACastear, this.ConvertToNullable(leftNode.Type)), Expression.Constant(null)),
-                        Expression.TryCatch(
-                            Expression.Block(
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Convert a " + typeToCast + " of the following value: "))),
-                                Expression.Assign(retorno, Expression.Convert(valorACastear, this.ConvertToNullable(typeToCast))),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'Convert' operation to type " + typeToCast)))
-                                ),
-                            Expression.Catch(
-                                paramException,
-                                Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("No fue castear (convert) el valor u objeto, error en la linea: " + actualNode.Line + " columna: " + actualNode.Column + " con " + actualNode.NodeText)),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE33, actualNode.NodeText), typeof(string)), paramException))
-                                )
-                            )
-                        )
-                    ),
-                    retorno
-                );*/
 
                 return resultExpression;
             }
@@ -4152,7 +4201,7 @@ namespace Integra.Space.Language.Runtime
                 }
 
                 Type tipo = (Type)plan.Properties["DataType"];
-                
+
                 if (tipo.Equals(typeof(TimeSpan)) || tipo.Equals(typeof(DateTime)))
                 {
                     return Expression.Call(null, tipo.GetMethod("Parse", new Type[] { typeof(string) }), Expression.Constant(plan.Properties["Value"].ToString()));
@@ -4378,7 +4427,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the greater than or equal operation '>='.", "End of the greater than or equal operation '>='.", RUNTIME_ERRORS.RE39);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4414,7 +4463,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the greater than operation '>'.", "End of the greater than operation '>'.", RUNTIME_ERRORS.RE4);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4450,7 +4499,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the less than or equal operation '<='.", "End of the less than or equal operation '<='.", RUNTIME_ERRORS.RE40);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4486,7 +4535,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the less than operation '<'.", "End of the less than operation '<'.", RUNTIME_ERRORS.RE41);
-                                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4510,7 +4559,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param }, Expression.NotEqual(this.StandardizeType(leftNode, leftNode.Type), this.StandardizeType(rightNode, rightNode.Type)), new List<Expression>(), param, true, "Start of the not equal operation '!='.", "End of the not equal operation '!='.", RUNTIME_ERRORS.RE42);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4534,7 +4583,7 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression paramException = Expression.Variable(typeof(Exception));
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param }, Expression.Equal(this.StandardizeType(leftNode, leftNode.Type), this.StandardizeType(rightNode, rightNode.Type)), new List<Expression>(), param, true, "Start of the equal operation '=='.", "End of the equal operation '=='.", RUNTIME_ERRORS.RE43);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4598,7 +4647,7 @@ namespace Integra.Space.Language.Runtime
                                                 );
 
                     Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, leftAux, rightAux }, mainExpression, actionsBeforeMainAction, param, false, "Start of the substract operation '-' for timespan.", "End of the substract operation '-' for timespan.", RUNTIME_ERRORS.RE44);
-                    
+
                     return expresionResult;
                 }
                 catch (Exception e)
@@ -4622,7 +4671,7 @@ namespace Integra.Space.Language.Runtime
                                                 );
 
                     Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, leftAux, rightAux }, mainExpression, actionsBeforeMainAction, param, false, "Start of the substract operation '-'.", "End of the substract operation '-'.", RUNTIME_ERRORS.RE45);
-                    
+
                     return expresionResult;
                 }
                 catch (Exception e)
@@ -4737,7 +4786,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the and operation 'and'.", "End of the and operation 'and'.", RUNTIME_ERRORS.RE47);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4781,7 +4830,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { param, auxl, auxr }, mainExpression, actionsBeforeMainAction, param, false, "Start of the and operation 'or'.", "End of the and operation 'or'.", RUNTIME_ERRORS.RE48);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4819,7 +4868,7 @@ namespace Integra.Space.Language.Runtime
                                                         );
 
                 Expression expresionResult = this.GenerateEventBlock(actualNode, new ParameterExpression[] { aux, param }, mainExpression, actionsBeforeMainAction, param, false, "Start of the 'not' operation.", "End of the 'not' operation.", RUNTIME_ERRORS.RE38);
-                
+
                 return expresionResult;
             }
             catch (Exception e)
@@ -4861,7 +4910,7 @@ namespace Integra.Space.Language.Runtime
                                             );
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { param }, mainAction, new List<Expression>(), param, false, "Start of the get group key operation: " + propiedad, "End of the get group key operation: " + propiedad, RUNTIME_ERRORS.RE50);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -4898,7 +4947,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(g, leftNode));
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { g, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the get group key property operation: " + propiedad, "End of the get group key property operation: " + propiedad, RUNTIME_ERRORS.RE51);
-                
+
                 return resultExpression;
             }
             catch (Exception e)
@@ -4947,7 +4996,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeMainAction.Add(Expression.Assign(gkp, groupKeyProperty));
 
                 Expression resultAction = this.GenerateEventBlock(actualNode, new[] { gkp, param }, mainAction, actionsBeforeMainAction, param, false, "Start of the get group property value method.", "End of the get group property value method.", RUNTIME_ERRORS.RE52);
-                
+
                 return resultAction;
             }
             catch (Exception e)
@@ -4998,7 +5047,7 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                if (type.Equals(typeof(TimeSpan)))
+                if (type.Equals(typeof(TimeSpan)) || type.Equals(typeof(System.Guid)))
                 {
                     return Expression.Convert(exp, this.ConvertToNullable(type));
                 }

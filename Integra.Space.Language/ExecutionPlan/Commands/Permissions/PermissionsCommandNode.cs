@@ -14,7 +14,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal class PermissionsCommandNode : CompiledCommand
+    internal class PermissionsCommandNode : DDLCommand
     {
         /// <summary>
         /// Space permissions.

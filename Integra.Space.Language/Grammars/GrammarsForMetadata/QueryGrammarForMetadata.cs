@@ -11,8 +11,8 @@ namespace Integra.Space.Language.Grammars
     using ASTNodes.Constants;
     using ASTNodes.Identifier;
     using ASTNodes.Lists;
+    using ASTNodes.MetadataQuery;
     using ASTNodes.QuerySections;
-    using ASTNodes.UserQuery;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -63,20 +63,11 @@ namespace Integra.Space.Language.Grammars
             /* PALABRAS RESERVADAS */
             KeyTerm terminalFrom = ToTerm("from", "from");
             KeyTerm terminalWhere = ToTerm("where", "where");
-            KeyTerm terminalOf = ToTerm("of", "of");
             KeyTerm terminalOrder = ToTerm("order", "order");
             KeyTerm terminalAsc = ToTerm("asc", "asc");
             KeyTerm terminalDesc = ToTerm("desc", "desc");
             KeyTerm terminalBy = ToTerm("by", "by");
             KeyTerm terminalAs = ToTerm("as", "as");
-            KeyTerm terminalLeft = ToTerm("left", "left");
-            KeyTerm terminalRight = ToTerm("right", "right");
-            KeyTerm terminalCross = ToTerm("cross", "cross");
-            KeyTerm terminalInner = ToTerm("inner", "inner");
-            KeyTerm terminalJoin = ToTerm("join", "join");
-            KeyTerm terminalOn = ToTerm("on", "on");
-            KeyTerm terminalWith = ToTerm("with", "with");
-            KeyTerm terminalgroup = ToTerm("group", "group");
             KeyTerm terminalSelect = ToTerm("select", "select");
             KeyTerm terminalTop = ToTerm("top", "top");
 
@@ -87,9 +78,6 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalComa = ToTerm(",", "coma");
 
             /* CONSTANTES E IDENTIFICADORES */
-            Terminal terminalDateTimeValue = new QuotedValueLiteral("datetimeValue", "'", TypeCode.String);
-            terminalDateTimeValue.AstConfig.NodeType = null;
-            terminalDateTimeValue.AstConfig.DefaultNodeCreator = () => new DateTimeOrTimespanNode();
             Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
             terminalNumero.AstConfig.NodeType = null;
             terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
@@ -107,61 +95,29 @@ namespace Integra.Space.Language.Grammars
 
             /* NO TERMINALES */
             NonTerminal nt_LOGIC_EXPRESSION = this.expressionGrammar.LogicExpression;
-
-            NonTerminal nt_GROUP_BY_OP = new NonTerminal("GROUP_BY_OP", typeof(PassNode));
-            nt_GROUP_BY_OP.AstConfig.NodeType = null;
-            nt_GROUP_BY_OP.AstConfig.DefaultNodeCreator = () => new PassNode();
+            
             NonTerminal nt_WHERE = new NonTerminal("WHERE", typeof(WhereNode));
             nt_WHERE.AstConfig.NodeType = null;
             nt_WHERE.AstConfig.DefaultNodeCreator = () => new WhereNode();
-            NonTerminal nt_FROM = new NonTerminal("FROM", typeof(SourceNode));
+            NonTerminal nt_FROM = new NonTerminal("FROM", typeof(SourceForMetadataASTNode));
             nt_FROM.AstConfig.NodeType = null;
-            nt_FROM.AstConfig.DefaultNodeCreator = () => new SourceNode(0);
-            NonTerminal nt_WITH = new NonTerminal("WITH", typeof(SourceNode));
-            nt_WITH.AstConfig.NodeType = null;
-            nt_WITH.AstConfig.DefaultNodeCreator = () => new SourceNode(1);
-            NonTerminal nt_JOIN_SOURCE = new NonTerminal("JOIN_SOURCE", typeof(SourceNode));
-            nt_JOIN_SOURCE.AstConfig.NodeType = null;
-            nt_JOIN_SOURCE.AstConfig.DefaultNodeCreator = () => new SourceNode(0);
+            nt_FROM.AstConfig.DefaultNodeCreator = () => new SourceForMetadataASTNode(0);
             NonTerminal nt_ORDER_BY = new NonTerminal("ORDER_BY", typeof(OrderByNode));
             nt_ORDER_BY.AstConfig.NodeType = null;
             nt_ORDER_BY.AstConfig.DefaultNodeCreator = () => new OrderByNode();
             NonTerminal nt_LIST_OF_VALUES_FOR_ORDER_BY = new NonTerminal("LIST_OF_VALUES", typeof(ListNodeOrderBy));
             nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.NodeType = null;
             nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.DefaultNodeCreator = () => new ListNodeOrderBy();
-            this.queryForMetadata = new NonTerminal("USER_QUERY", typeof(UserQueryNode));
+            this.queryForMetadata = new NonTerminal("METADATA_QUERY", typeof(QueryForMetadataASTNode));
             this.queryForMetadata.AstConfig.NodeType = null;
-            this.queryForMetadata.AstConfig.DefaultNodeCreator = () => new UserQueryNode();            
-            NonTerminal nt_ID_WITH_ALIAS = new NonTerminal("ID_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
-            nt_ID_WITH_ALIAS.AstConfig.NodeType = null;
-            nt_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
-            NonTerminal nt_JOIN = new NonTerminal("JOIN", typeof(JoinNode));
-            nt_JOIN.AstConfig.NodeType = null;
-            nt_JOIN.AstConfig.DefaultNodeCreator = () => new JoinNode();
-            NonTerminal nt_ON = new NonTerminal("ON", typeof(OnNode));
-            nt_ON.AstConfig.NodeType = null;
-            nt_ON.AstConfig.DefaultNodeCreator = () => new OnNode();
+            this.queryForMetadata.AstConfig.DefaultNodeCreator = () => new QueryForMetadataASTNode();
             NonTerminal nt_SOURCE_DEFINITION = new NonTerminal("SOURCE_DEFINITION", typeof(PassNode));
             nt_SOURCE_DEFINITION.AstConfig.NodeType = null;
             nt_SOURCE_DEFINITION.AstConfig.DefaultNodeCreator = () => new PassNode();
             NonTerminal nt_ID_OR_ID_WITH_ALIAS = new NonTerminal("ID_OR_ID_WITH_ALIAS", typeof(ConstantValueWithOptionalAliasNode));
             nt_ID_OR_ID_WITH_ALIAS.AstConfig.NodeType = null;
             nt_ID_OR_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithOptionalAliasNode();
-            NonTerminal nt_JOIN_TYPE = new NonTerminal("JOIN_TYPE", typeof(PassNode));
-            nt_JOIN_TYPE.AstConfig.NodeType = null;
-            nt_JOIN_TYPE.AstConfig.DefaultNodeCreator = () => new PassNode();
-
-            /* GROUP BY */
-            NonTerminal nt_VALUES_WITH_ALIAS_FOR_GROUP_BY = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
-            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.NodeType = null;
-            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
-            NonTerminal nt_LIST_OF_VALUES_FOR_GROUP_BY = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
-            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.NodeType = null;
-            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
-            NonTerminal nt_GROUP_BY = new NonTerminal("GROUP_BY", typeof(GroupByNode));
-            nt_GROUP_BY.AstConfig.NodeType = null;
-            nt_GROUP_BY.AstConfig.DefaultNodeCreator = () => new GroupByNode();
-
+            
             /* PROJECTION */
             NonTerminal nt_VALUES_WITH_ALIAS_FOR_PROJECTION = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
             nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.NodeType = null;
@@ -177,8 +133,7 @@ namespace Integra.Space.Language.Grammars
             nt_TOP.AstConfig.DefaultNodeCreator = () => new TopNode();
 
             /* USER QUERY */
-            this.queryForMetadata.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT
-                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY;
+            this.queryForMetadata.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_ORDER_BY;
             /* **************************** */
             /* ORDER BY */
             nt_ORDER_BY.Rule = terminalOrder + terminalBy + nt_LIST_OF_VALUES_FOR_ORDER_BY
@@ -190,52 +145,19 @@ namespace Integra.Space.Language.Grammars
                                                     | terminalId;
             /* **************************** */
             /* SOURCE DEFINITION */
-            nt_SOURCE_DEFINITION.Rule = nt_FROM
-                                        | nt_JOIN;
+            nt_SOURCE_DEFINITION.Rule = nt_FROM;
             /* **************************** */
             /* FROM */
             nt_FROM.Rule = terminalFrom + nt_ID_OR_ID_WITH_ALIAS;
-            /* **************************** */
-            /* JOIN SOURCE */
-            nt_JOIN_SOURCE.Rule = terminalJoin + nt_ID_OR_ID_WITH_ALIAS;
-            /* **************************** */
-            /* WITH */
-            nt_WITH.Rule = terminalWith + nt_ID_OR_ID_WITH_ALIAS;
             /* **************************** */
             /* ID OR ID WITH ALIAS */
             nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
                                             | terminalId;
             /* **************************** */
-            /* JOIN */
-            nt_JOIN.Rule = nt_JOIN_TYPE + nt_JOIN_SOURCE + nt_WHERE + nt_WITH + nt_WHERE + nt_ON;
-            /* **************************** */
-            /* JOIN TYPE */
-            nt_JOIN_TYPE.Rule = terminalLeft
-                                | terminalRight
-                                | terminalCross
-                                | terminalInner
-                                | this.Empty;
-            /* **************************** */
-            /* ON */
-            nt_ON.Rule = terminalOn + nt_LOGIC_EXPRESSION;
-            /* **************************** */
             /* WHERE */
             nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION
                             | this.Empty;
             /* **************************** */
-            /* OPTIONAL GROUP BY */
-            nt_GROUP_BY_OP.Rule = nt_GROUP_BY
-                                    | this.Empty;
-            /* **************************** */            
-            /* GROUP BY */
-            nt_GROUP_BY.Rule = terminalgroup + terminalBy + nt_LIST_OF_VALUES_FOR_GROUP_BY;
-            /* **************************** */
-            /* LISTA DE VALORES */
-            nt_LIST_OF_VALUES_FOR_GROUP_BY.Rule = nt_LIST_OF_VALUES_FOR_GROUP_BY + terminalComa + nt_VALUES_WITH_ALIAS_FOR_GROUP_BY
-                                    | nt_VALUES_WITH_ALIAS_FOR_GROUP_BY;
-            /* **************************** */
-            /* VALORES CON ALIAS */
-            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.Rule = this.expressionGrammar.Values + terminalAs + terminalId;
 
             /* SELECT */
             nt_SELECT.Rule = terminalSelect + nt_TOP + nt_LIST_OF_VALUES_FOR_PROJECTION

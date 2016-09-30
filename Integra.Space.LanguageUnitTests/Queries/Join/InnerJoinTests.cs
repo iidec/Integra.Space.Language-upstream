@@ -855,7 +855,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 173, "\"constant\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -885,7 +885,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 201, "\"constant\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -920,7 +920,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("not equal operator")));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -950,7 +950,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, "t1.@event.Message.#1.#32 < t2.@event.Message.#1.#32", Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("less than operator")));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -981,7 +981,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("less than or equal operator")));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -1012,7 +1012,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("greater than or equal operator")));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -1043,7 +1043,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 198, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE75("greater than operator")));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -1074,7 +1074,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(e.InnerException.Message, string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 203, "\"491381\"", Integra.Space.Language.COMPILATION_ERRORS.CE74));
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -1105,7 +1105,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 226, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE76("logical disjunction")), e.InnerException.Message);
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 
@@ -1136,7 +1136,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 230, condition, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE76("logical negation")), e.InnerException.Message);
+                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
                 return;
             }
 

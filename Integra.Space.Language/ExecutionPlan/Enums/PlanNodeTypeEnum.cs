@@ -803,6 +803,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Buffer size for join type.
         /// </summary>
-        BufferSizeForJoin = 710
+        BufferSizeForJoin = 710,
+
+        /// <summary>
+        /// Observable to enumerable type.
+        /// </summary>
+        ObservableToEnumerable = 711
     }
 }

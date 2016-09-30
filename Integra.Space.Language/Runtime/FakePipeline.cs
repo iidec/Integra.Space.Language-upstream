@@ -67,5 +67,32 @@ namespace Integra.Space.Language.Runtime
 
             return te.Compile(executionPlan);
         }
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        /// <typeparam name="T">Entity type.</typeparam>
+        /// <param name="context">Compilation context.</param>
+        /// <param name="script">EQL query.</param>
+        /// <param name="schedulerFactory">Scheduler factory.</param>
+        /// <returns>The assembly created.</returns>
+        public Delegate ProcessWithMetadataQueryParser<T>(CompileContext context, string script, IQuerySchedulerFactory schedulerFactory)
+        {
+            MetadataQueryParser parser = new MetadataQueryParser(script);
+            PlanNode executionPlan = parser.Evaluate();
+
+            SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + context.QueryName);
+            AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(asmBuilder);
+            modBuilder.CreateModuleBuilder();
+
+            TreeTransformations tf = new TreeTransformations(asmBuilder, executionPlan);
+            tf.Transform();
+
+            context.AsmBuilder = asmBuilder;
+            CodeGenerator te = new CodeGenerator(context);
+            
+            return te.CompileDelegate(executionPlan);
+        }
     }
 }

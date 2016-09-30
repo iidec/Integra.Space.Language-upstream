@@ -1,10 +1,11 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CommandNode.cs" company="Integra.Space.Language">
+// <copyright file="NonConstantForMetadataASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.ASTNodes.Root
+namespace Integra.Space.Language.ASTNodes.MetadataQuery
 {
+    using System.Collections.Generic;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -12,14 +13,14 @@ namespace Integra.Space.Language.ASTNodes.Root
     using Irony.Parsing;
 
     /// <summary>
-    /// Command node class
+    /// IdentifierNode class
     /// </summary>
-    internal sealed class CommandNode : AstNodeBase
+    internal sealed class NonConstantForMetadataASTNode : AstNodeBase
     {
         /// <summary>
-        /// result of the evaluated constant
+        /// Identifier AST node.
         /// </summary>
-        private AstNodeBase command;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// First method called
@@ -29,7 +30,7 @@ namespace Integra.Space.Language.ASTNodes.Root
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.command = AddChild(NodeUseType.ValueRead, "COMMAND", ChildrenNodes[0]) as AstNodeBase;
+            this.identifier = AddChild(NodeUseType.Parameter, "Identifier", ChildrenNodes[0]) as AstNodeBase;
         }
 
         /// <summary>
@@ -41,10 +42,21 @@ namespace Integra.Space.Language.ASTNodes.Root
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            var command = this.command.Evaluate(thread);
+            PlanNode identifierNode = (PlanNode)this.identifier.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            return command;
+            PlanNode fromForLambda = new PlanNode();
+            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+
+            PlanNode property = new PlanNode();
+            property.NodeType = PlanNodeTypeEnum.Property;
+            property.NodeText = identifierNode.Properties["Value"].ToString();
+            property.Properties.Add("Property", identifierNode.Properties["Value"]);
+            property.Properties.Add("IsConstant", false);
+            property.Children = new List<PlanNode>();
+            property.Children.Add(fromForLambda);
+
+            return property;
         }
     }
 }

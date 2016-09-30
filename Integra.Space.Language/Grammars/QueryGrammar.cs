@@ -94,6 +94,7 @@ namespace Integra.Space.Language.Grammars
 
             /* NO TERMINALES */
             NonTerminal nt_LOGIC_EXPRESSION = this.expressionGrammar.LogicExpression;
+            NonTerminal nt_LOGIC_EXPRESSION_FOR_ON_CONDITION = this.expressionGrammar.LogicExpressionForOnCondition;
 
             NonTerminal nt_GROUP_BY_OP = new NonTerminal("GROUP_BY_OP", typeof(PassNode));
             nt_GROUP_BY_OP.AstConfig.NodeType = null;
@@ -213,7 +214,7 @@ namespace Integra.Space.Language.Grammars
                                 | this.Empty;
             /* **************************** */
             /* ON */
-            nt_ON.Rule = terminalOn + nt_LOGIC_EXPRESSION;
+            nt_ON.Rule = terminalOn + nt_LOGIC_EXPRESSION_FOR_ON_CONDITION;
             /* **************************** */
             /* TIMEOUT */
             nt_TIMEOUT.Rule = terminalTimeout + terminalDateTimeValue;

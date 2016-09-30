@@ -1,36 +1,32 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CreateStreamASTNode.cs" company="Integra.Space.Language">
+// <copyright file="CommandQueryForMetadataASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.ASTNodes.Commands
+namespace Integra.Space.Language.ASTNodes.MetadataQuery
 {
-    using System;
     using System.Collections.Generic;
-    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
+    using Irony.Interpreter.Ast;
     using Irony.Parsing;
+    using Runtime;
 
     /// <summary>
-    /// Space command AST node class.
+    /// JoinNode class
     /// </summary>
-    internal class CreateStreamASTNode : CreateCommandASTNode<StreamOptionEnum>
+    internal sealed class CommandQueryForMetadataASTNode : AstNodeBase
     {
         /// <summary>
-        /// Space query.
+        /// on node
         /// </summary>
-        private string query;
+        private AstNodeBase metadataQuery;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CreateStreamASTNode"/> class.
+        /// result plan
         /// </summary>
-        public CreateStreamASTNode() : base(PermissionsEnum.CreateStream)
-        {
-            this.NotAllowedOptions.Add(StreamOptionEnum.Name);
-            this.NotAllowedOptions.Add(StreamOptionEnum.Query);
-        }
+        private PlanNode result;
 
         /// <summary>
         /// First method called
@@ -40,7 +36,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.query = ChildrenNodes[3].Token.Value.ToString().Trim();
+            this.metadataQuery = AddChild(NodeUseType.Parameter, "MetadataQuery", ChildrenNodes[0]) as AstNodeBase;
+
+            this.result = new PlanNode();
         }
 
         /// <summary>
@@ -51,17 +49,13 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
-
             this.BeginEvaluate(thread);
+            PlanNode query = (PlanNode)this.metadataQuery.Evaluate(thread);
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            QueryParser parser = new QueryParser(this.query);
-            PlanNode executionPlan = parser.Evaluate();
-
-            return new CreateStreamNode(commandObject, this.query, executionPlan, new Dictionary<StreamOptionEnum, object>(), this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            return new QueryCommandForMetadataNode(Common.ActionCommandEnum.ViewDefinition, query, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
         }
     }
 }

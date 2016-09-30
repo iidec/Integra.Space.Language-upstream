@@ -194,6 +194,14 @@ namespace Integra.Space
                     {
                         resultComparer = string.Compare(valIz.ToString(), valDer.ToString());
                     }
+                    else if(propIz.PropertyType.Equals(typeof(Guid?)))
+                    {
+                        resultComparer = ((Guid?)valIz).Value.CompareTo(((Guid?)valDer).Value);
+                    }
+                    else if (propIz.PropertyType.Equals(typeof(Guid)))
+                    {
+                        resultComparer = ((Guid)valIz).CompareTo(((Guid)valDer));
+                    }
                     else
                     {
                         throw new ArgumentException("Invalid 'order by' argument.", propIz.Name);

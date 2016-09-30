@@ -5,6 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
+    using System.Linq;
     using Exceptions;
     using Irony.Interpreter;
     using Irony.Parsing;
@@ -83,17 +84,26 @@ namespace Integra.Space.Language
         {
             TGrammar grammar = new TGrammar();
             LanguageData language = new LanguageData(grammar);
-            Parser parser = new Parser(language);
-            ParseTree parseTree = parser.Parse(this.commandText);
-            if (parseTree.HasErrors())
+            ParseTree parseTreeAux = null;
+            if (language.ErrorLevel == GrammarErrorLevel.NoError)
             {
-                foreach (var parserMessage in parseTree.ParserMessages)
+                Parser parser = new Parser(language);
+                parseTreeAux = parser.Parse(this.commandText);
+                if (parseTreeAux.HasErrors())
                 {
-                    throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                    foreach (var parserMessage in parseTreeAux.ParserMessages)
+                    {
+                        throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                    }
                 }
             }
+            else
+            {
+                string errorString = string.Join(",", language.Errors);
+                throw new System.Exception(string.Format("The language data has the following grammar error level '{0}'. Errors:\n{1}", language.ErrorLevel, errorString));
+            }
 
-            return parseTree;
+            return parseTreeAux;
         }
     }
 }

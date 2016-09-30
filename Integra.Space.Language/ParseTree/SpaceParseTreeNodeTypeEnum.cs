@@ -21,6 +21,11 @@ namespace Integra.Space.Language
         USER_QUERY = 1,
 
         /// <summary>
+        /// Metadata query type.
+        /// </summary>
+        METADATA_QUERY = 2,
+
+        /// <summary>
         /// Id or id with alias type
         /// </summary>
         ID_OR_ID_WITH_ALIAS = 10,
@@ -594,5 +599,75 @@ namespace Integra.Space.Language
         /// terminal from type
         /// </summary>
         from = 174,
+
+        /// <summary>
+        /// logic expression
+        /// </summary>
+        LOGIC_EXPRESSION_FOR_ON_CONDITION = 175,
+
+        /// <summary>
+        /// comparative expression type
+        /// </summary>
+        COMPARATIVE_EXPRESSION_FOR_ON_CONDITION = 176,
+
+        /// <summary>
+        /// Explicit cast for on condition type.
+        /// </summary>
+        EXPLICIT_CAST_FOR_ON_CONDITION = 177,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        LOGIC_EXPRESSION_FOR_METADATA = 178,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        COMPARATIVE_EXPRESSION_FOR_METADATA = 179,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        ARITHMETIC_EXPRESSION_FOR_METADATA = 180,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        UNARY_ARITHMETIC_EXPRESSION_FOR_METADATA = 181,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        VALUE_FOR_METADATA = 182,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        EXPLICIT_CAST_FOR_METADATA = 183,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        NON_CONSTANT_VALUES_FOR_METADATA = 184,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        OTHER_VALUES_FOR_METADATA = 185,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        PROJECTION_VALUES_FOR_METADATA = 186,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        PROJECTION_FUNCTION_FOR_METADATA = 187,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        NUMERIC_VALUES_FOR_METADATA = 188
     }
 }

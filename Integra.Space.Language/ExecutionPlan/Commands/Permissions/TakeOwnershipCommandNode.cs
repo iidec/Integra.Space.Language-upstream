@@ -14,7 +14,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal class TakeOwnershipCommandNode : CompiledCommand
+    internal class TakeOwnershipCommandNode : DDLCommand
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="TakeOwnershipCommandNode"/> class.

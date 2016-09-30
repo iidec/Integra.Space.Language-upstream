@@ -192,7 +192,15 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void CreateStream()
         {
-            string command = "create stream stream123 { la consulta va aqui 0123456789abcdefghijklmnñopqrstuvwxyz°!\"#$%&/()=?¡´+[],.-;:_¨*¬^`~ }";
+            string eql = "cross " +
+                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "TIMEOUT '00:00:02' " +
+                                   //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"create stream stream123 {{ {eql} }}";
             this.Process(command);
         }
 
@@ -868,8 +876,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "deny alter on stream Stream1 to role RoleX";
             this.Process(command);
-
-
         }
 
         [TestMethod]

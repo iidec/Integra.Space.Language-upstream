@@ -59,6 +59,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
     </Reference>
+    <Reference Include="Integra.Space.Database, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Integra.Space\Integra.Space.Database\bin\Debug\Integra.Space.Database.dll</HintPath>
+    </Reference>
     <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
       <Private>True</Private>
@@ -172,6 +176,7 @@
     <Compile Include="Queries\Join\InnerJoinTests.cs" />
     <Compile Include="Queries\Join\CrossJoinTests.cs" />
     <Compile Include="Queries\Others.cs" />
+    <Compile Include="Queries\MetadataQueriesTests.cs" />
     <Compile Include="Queries\UserQueryNodeTests.cs" />
     <Compile Include="SchedulerTypeEnum.cs" />
     <Compile Include="TestObjects.cs" />

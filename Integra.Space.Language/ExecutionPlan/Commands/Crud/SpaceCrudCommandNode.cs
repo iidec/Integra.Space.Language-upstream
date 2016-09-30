@@ -13,7 +13,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class SpaceCrudCommandNode : CompiledCommand
+    internal abstract class SpaceCrudCommandNode : DDLCommand
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SpaceCrudCommandNode"/> class.

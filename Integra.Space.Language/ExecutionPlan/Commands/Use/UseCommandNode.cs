@@ -10,7 +10,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command object class.
     /// </summary>
-    internal sealed class UseCommandNode : CompiledCommand
+    internal sealed class UseCommandNode : DDLCommand
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UseCommandNode"/> class.

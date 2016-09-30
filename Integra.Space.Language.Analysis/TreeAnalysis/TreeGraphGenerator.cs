@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
 
 namespace Integra.Space.Language.Analysis
 {
     class TreeGraphGenerator
     {
-        private const string PATH = @"Graphs\";
         private string fileName;
         private string outputFile;
         private int nodeCount;
@@ -19,7 +19,9 @@ namespace Integra.Space.Language.Analysis
         public TreeGraphGenerator(string fileName)
         {
             this.fileName = fileName;
-            this.outputFile = PATH + fileName + ".png";
+            string dirPath = Path.Combine(Environment.CurrentDirectory, "Graph");
+            DirectoryInfo dir = Directory.CreateDirectory(dirPath);
+            this.outputFile =  Path.Combine(dirPath, fileName + ".png");
             nodeCount = 0;
         }
 

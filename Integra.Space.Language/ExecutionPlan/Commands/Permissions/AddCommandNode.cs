@@ -14,7 +14,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal class AddCommandNode : CompiledCommand
+    internal class AddCommandNode : DDLCommand
     {
         /// <summary>
         /// Database users.

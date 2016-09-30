@@ -115,7 +115,7 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                if (type.Equals(typeof(TimeSpan)))
+                if (type.Equals(typeof(TimeSpan)) || type.Equals(typeof(System.Guid)))
                 {
                     return typeof(Nullable<>).MakeGenericType(type);
                 }

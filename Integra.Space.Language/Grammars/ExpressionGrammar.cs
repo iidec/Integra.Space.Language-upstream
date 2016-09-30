@@ -33,6 +33,11 @@ namespace Integra.Space.Language.Grammars
         private NonTerminal logicExpression;
 
         /// <summary>
+        /// Grammar to add the expression rules
+        /// </summary>
+        private NonTerminal logicExpressionForOnCondition;
+
+        /// <summary>
         /// All values
         /// </summary>
         private NonTerminal values;
@@ -95,6 +100,17 @@ namespace Integra.Space.Language.Grammars
             get
             {
                 return this.logicExpression;
+            }
+        }
+
+        /// <summary>
+        /// Gets the nonterminal for 'on' conditions
+        /// </summary>
+        public NonTerminal LogicExpressionForOnCondition
+        {
+            get
+            {
+                return this.logicExpressionForOnCondition;
             }
         }
 
@@ -238,6 +254,7 @@ namespace Integra.Space.Language.Grammars
             this.RegisterBracePair("(", ")");
             this.RegisterBracePair("[", "]");
             this.RegisterOperators(40, Associativity.Right, terminalParentesisIz, terminalParentesisDer, terminalCorcheteIz, terminalCorcheteDer);
+            this.RegisterOperators(35, Associativity.Right, terminalMas, terminalMenos);
             this.RegisterOperators(30, Associativity.Right, terminalIgualIgual, terminalNoIgual, terminalMayorIgual, terminalMayorQue, terminalMenorIgual, terminalMenorQue, terminalLike);
             this.RegisterOperators(20, Associativity.Right, terminalAnd);
             this.RegisterOperators(10, Associativity.Right, terminalOr);
@@ -248,9 +265,15 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_COMPARATIVE_EXPRESSION = new NonTerminal("COMPARATIVE_EXPRESSION", typeof(ComparativeExpressionNode));
             nt_COMPARATIVE_EXPRESSION.AstConfig.NodeType = null;
             nt_COMPARATIVE_EXPRESSION.AstConfig.DefaultNodeCreator = () => new ComparativeExpressionNode();
+            NonTerminal nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION = new NonTerminal("COMPARATIVE_EXPRESSION_FOR_ON_CONDITION", typeof(ComparativeExpressionNode));
+            nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION.AstConfig.NodeType = null;
+            nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION.AstConfig.DefaultNodeCreator = () => new ComparativeExpressionNode();
             this.logicExpression = new NonTerminal("LOGIC_EXPRESSION", typeof(LogicExpressionNode));
             this.logicExpression.AstConfig.NodeType = null;
             this.logicExpression.AstConfig.DefaultNodeCreator = () => new LogicExpressionNode();
+            this.logicExpressionForOnCondition = new NonTerminal("LOGIC_EXPRESSION_FOR_ON_CONDITION", typeof(LogicExpressionNode));
+            this.logicExpressionForOnCondition.AstConfig.NodeType = null;
+            this.logicExpressionForOnCondition.AstConfig.DefaultNodeCreator = () => new LogicExpressionNode();
             this.values = new NonTerminal("VALUE", typeof(PassNode));
             this.values.AstConfig.NodeType = null;
             this.values.AstConfig.DefaultNodeCreator = () => new PassNode();
@@ -270,7 +293,10 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_EXPLICIT_CAST = new NonTerminal("EXPLICIT_CAST", typeof(ExplicitCast));
             nt_EXPLICIT_CAST.AstConfig.NodeType = null;
             nt_EXPLICIT_CAST.AstConfig.DefaultNodeCreator = () => new ExplicitCast();
-            
+            NonTerminal nt_EXPLICIT_CAST_FOR_ON_CONDITION = new NonTerminal("EXPLICIT_CAST_FOR_ON_CONDITION", typeof(ExplicitCast));
+            nt_EXPLICIT_CAST_FOR_ON_CONDITION.AstConfig.NodeType = null;
+            nt_EXPLICIT_CAST_FOR_ON_CONDITION.AstConfig.DefaultNodeCreator = () => new ExplicitCast();
+
             NonTerminal nt_VALUES_WITH_ALIAS = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
             nt_VALUES_WITH_ALIAS.AstConfig.NodeType = null;
             nt_VALUES_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
@@ -329,6 +355,11 @@ namespace Integra.Space.Language.Grammars
                                     | terminalParentesisIz + this.logicExpression + terminalParentesisDer
                                     | terminalNot + terminalParentesisIz + this.logicExpression + terminalParentesisDer
                                     | nt_COMPARATIVE_EXPRESSION;
+
+            this.logicExpressionForOnCondition.Rule = this.logicExpressionForOnCondition + terminalAnd + this.logicExpressionForOnCondition
+                                                    | terminalParentesisIz + this.logicExpressionForOnCondition + terminalParentesisDer
+                                                    | nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION;
+
             /* **************************** */
             /* EXPRESIONES COMPARATIVAS */
             nt_COMPARATIVE_EXPRESSION.Rule = nt_ARITHMETIC_EXPRESSION + terminalIgualIgual + nt_ARITHMETIC_EXPRESSION
@@ -341,6 +372,12 @@ namespace Integra.Space.Language.Grammars
                                             | terminalParentesisIz + nt_COMPARATIVE_EXPRESSION + terminalParentesisDer
                                             | terminalNot + terminalParentesisIz + nt_COMPARATIVE_EXPRESSION + terminalParentesisDer
                                             | nt_ARITHMETIC_EXPRESSION;
+
+            nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION.Rule = this.nonConstantValues + terminalIgualIgual + this.nonConstantValues
+                                                                | nt_EXPLICIT_CAST_FOR_ON_CONDITION + terminalIgualIgual + nt_EXPLICIT_CAST_FOR_ON_CONDITION
+                                                                | terminalParentesisIz + nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION + terminalParentesisDer
+                                                                | this.nonConstantValues
+                                                                | nt_EXPLICIT_CAST_FOR_ON_CONDITION;
             /* **************************** */
             /* EXPRESIONES ARITMETICAS */
             nt_ARITHMETIC_EXPRESSION.Rule = nt_ARITHMETIC_EXPRESSION + terminalMenos + nt_ARITHMETIC_EXPRESSION
@@ -356,7 +393,6 @@ namespace Integra.Space.Language.Grammars
 
             /* PROJECTION VALUES */
             this.projectionValue.Rule = nt_PROJECTION_FUNCTIONS
-                                        | nt_ISNULL_FUNCTION
                                         | nt_GROUP_KEY_VALUE
                                         | nt_ARITHMETIC_EXPRESSION;
             /* **************************** */
@@ -378,6 +414,8 @@ namespace Integra.Space.Language.Grammars
                                 | terminalParentesisIz + this.values + terminalParentesisDer;
 
             nt_EXPLICIT_CAST.Rule = terminalParentesisIz + terminalType + terminalParentesisDer + this.values;
+
+            nt_EXPLICIT_CAST_FOR_ON_CONDITION.Rule = terminalParentesisIz + terminalType + terminalParentesisDer + this.nonConstantValues;
             /* **************************** */
             /* NO CONSTANTES */
             this.nonConstantValues.Rule = nt_OBJECT_VALUE

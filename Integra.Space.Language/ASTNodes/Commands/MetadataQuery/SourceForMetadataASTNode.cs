@@ -1,12 +1,13 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SourceNode.cs" company="Integra.Space.Language">
+// <copyright file="SourceForMetadataASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.ASTNodes.QuerySections
+namespace Integra.Space.Language.ASTNodes.MetadataQuery
 {
     using System.Collections.Generic;
     using System.Linq;
+    using System.Reactive.Linq;
     using Integra.Space.Language.ASTNodes.Base;    
     using Irony.Ast;
     using Irony.Interpreter;
@@ -16,7 +17,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
     /// <summary>
     /// FromNode class
     /// </summary>
-    internal class SourceNode : AstNodeBase
+    internal class SourceForMetadataASTNode : AstNodeBase
     {
         /// <summary>
         /// identifier node of the from node
@@ -34,10 +35,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         private PlanNode result;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SourceNode"/> class.
+        /// Initializes a new instance of the <see cref="SourceForMetadataASTNode"/> class.
         /// </summary>
         /// <param name="sourcePosition">Position of the source in the query.</param>
-        public SourceNode(int sourcePosition)
+        public SourceForMetadataASTNode(int sourcePosition)
         {
             this.result = new PlanNode();
             this.result.Properties.Add("SourcePosition", sourcePosition);
@@ -83,25 +84,23 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.result.Children.Add(idFrom);
             }
 
-            this.result.Properties.Add("SourceType", typeof(System.IObservable<EventObject>));
-            this.result.Properties.Add("SourceName", idFrom.Children[0].Properties["Value"]);
+            if (idFrom.Children[0].Properties["Value"].ToString().Equals("servers", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Server>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("streams", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Stream>));
+            }
+            else
+            {
+                throw new Exceptions.SyntaxException("Invalid source name. Valid sources are: 'Servers'.");
+            }
 
+            this.result.Properties.Add("SourceName", idFrom.Children[0].Properties["Value"]);
             this.result.NodeText = string.Format("{0} {1}", this.from, idFrom.NodeText);
             
-            PlanNode scopeWhereForEventLock = new PlanNode();
-            scopeWhereForEventLock.NodeType = PlanNodeTypeEnum.NewScope;
-            scopeWhereForEventLock.Children = new List<PlanNode>();
-
-            scopeWhereForEventLock.Children.Add(this.result);
-
-            PlanNode whereForEventLock = new PlanNode();
-            whereForEventLock.NodeType = PlanNodeTypeEnum.ObservableWhereForEventLock;
-            whereForEventLock.Properties.Add("Source", idFrom.Children.Last().Properties["Value"]);
-            whereForEventLock.NodeText = this.result.NodeText;
-            whereForEventLock.Children = new List<PlanNode>();
-            whereForEventLock.Children.Add(scopeWhereForEventLock);
-
-            return whereForEventLock;
+            return this.result;
         }
     }
 }

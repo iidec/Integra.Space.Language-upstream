@@ -51,6 +51,12 @@ namespace Integra.Space
         void WriteValue(Guid value);
 
         /// <summary>
+        /// Serialize a unique nullable identifier value.
+        /// </summary>
+        /// <param name="value">Value to serialize.</param>
+        void WriteValue(Guid? value);
+
+        /// <summary>
         /// Serialize a char[] value.
         /// </summary>
         /// <param name="value">Value to serialize.</param>

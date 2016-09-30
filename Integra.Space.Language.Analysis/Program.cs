@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -120,7 +121,7 @@ namespace Integra.Space.Language.Analysis
                                 "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#0.#0 == \"0100\"" +
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
                                                                   //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#0.#0 != t2.@event.Message.#1.#43 " +
+                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#43 " +
                                 "TIMEOUT '00:00:01' " +
                                 // "EVENTLIFETIME '00:00:10' " +
                                 //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
@@ -132,11 +133,14 @@ namespace Integra.Space.Language.Analysis
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
                                                                                             "(decimal)@event.Message.#1.#4");
                                                                                             */
+
+                        eql = "from Streams as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest";
+                        eql = "from Streams as x select ServerId as servId, max(1) as maxTest";
                     }
 
-                    QueryParser parser = new QueryParser(eql);
+                    MetadataQueryParser parser = new MetadataQueryParser(eql);
+                    //QueryParser parser = new QueryParser(eql);
                     ParseTree parseTree = parser.ParseTree;
-
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating metadata...");
 
@@ -148,10 +152,15 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Transforming plan...");
 
                     PlanNode executionPlanNode = parser.Evaluate();
-                    /*
-                    TreeTransformations tf = new TreeTransformations(executionPlanNode);
+
+                    SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + string.Empty);
+                    AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+                    SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(asmBuilder);
+                    modBuilder.CreateModuleBuilder();
+
+                    TreeTransformations tf = new TreeTransformations(asmBuilder, executionPlanNode);
                     tf.Transform();
-                    */
+                    
                     Console.WriteLine("Plan transformed.");
                     Console.WriteLine("Creating graph...");
 

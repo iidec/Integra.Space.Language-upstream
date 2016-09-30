@@ -38,6 +38,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Integra.Common, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Integra.Common.Debug.2.1.0.0\lib\net45\Integra.Common.dll</HintPath>
       <Private>True</Private>
@@ -49,6 +57,9 @@
     <Reference Include="Integra.Space.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Integra.Space.Database">
+      <HintPath>..\..\Integra.Space\Integra.Space.Database\bin\Debug\Integra.Space.Database.dll</HintPath>
     </Reference>
     <Reference Include="Irony">
       <HintPath>..\packages\Irony.0.9.0\lib\net45\Irony.dll</HintPath>
@@ -68,6 +79,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
@@ -135,6 +147,11 @@
     <Compile Include="ASTNodes\Commands\Use\UseASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ValueASTNode.cs" />
     <Compile Include="ASTNodes\Lists\ListNodeOrderBy.cs" />
+    <Compile Include="ASTNodes\Commands\MetadataQuery\JoinNodeForMetadataASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\MetadataQuery\NonConstantForMetadataASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\MetadataQuery\CommandQueryForMetadataASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\MetadataQuery\QueryForMetadataASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\MetadataQuery\SourceForMetadataASTNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\TopNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Windows\TimeStatementNode.cs" />
     <Compile Include="ASTNodes\Values\Cast\ExplicitCast.cs" />
@@ -186,6 +203,7 @@
     <Compile Include="Exceptions\SyntaxException.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandObject.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandObjectComparer.cs" />
+    <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSourceNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSchemaNone.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterRoleNode.cs" />
@@ -205,13 +223,15 @@
     <Compile Include="ExecutionPlan\Commands\Crud\DropObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
+    <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Metadata\QueryCommandForMetadataNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\AddCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\PermissionNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\TakeOwnershipCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\PermissionsCommandNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Status\StatusCommandNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\DDLCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Use\UseCommandNode.cs" />
     <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
     <Compile Include="Grammars\GrammarsForMetadata\ExpressionGrammarForMetadata.cs" />
@@ -220,6 +240,7 @@
     <Compile Include="Grammars\GrammarsForMetadata\QueryLanguageForMetadataRuntime.cs" />
     <Compile Include="Parsers\CommandParser.cs" />
     <Compile Include="Parsers\ExpressionForMetadataParser.cs" />
+    <Compile Include="Parsers\MetadataQueryParser.cs" />
     <Compile Include="Parsers\SpaceParser.cs" />
     <Compile Include="Runtime\Scope\ScopeParameter.cs" />
     <Compile Include="ExecutionPlan\SpaceASTNode.cs" />

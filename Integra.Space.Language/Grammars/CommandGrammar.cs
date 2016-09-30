@@ -6,8 +6,14 @@
 namespace Integra.Space.Language.Grammars
 {
     using System;
+    using System.Linq;
+    using ASTNodes;
     using ASTNodes.Commands;
+    using ASTNodes.Constants;
     using ASTNodes.Identifier;
+    using ASTNodes.Lists;
+    using ASTNodes.MetadataQuery;
+    using ASTNodes.QuerySections;
     using ASTNodes.Root;
     using Common;
     using Irony.Interpreter;
@@ -23,7 +29,7 @@ namespace Integra.Space.Language.Grammars
         /// Expression grammar
         /// </summary>
         private QueryGrammarForMetadata queryGrammarForMetadata;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandGrammar"/> class.
         /// </summary>
@@ -85,7 +91,6 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalEqual = ToTerm("=", "equal");
             KeyTerm terminalOn = ToTerm("on", "on");
             KeyTerm terminalAuthorization = ToTerm("authorization", "authorization");
-            KeyTerm terminalAs = ToTerm("as", "as");
 
             /* OPCIONES DEL OBJETO LOGIN */
             KeyTerm terminalDefaultDatabase = ToTerm("default_database", "default_database");
@@ -105,8 +110,8 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalAdd = ToTerm("add", "add");
 
             /* PARA MODIFICAR NOMBRE DE OBJETOS */
-            Terminal terminalModify = ToTerm("modify", "modify");
-            Terminal terminalName = ToTerm("name", "name");
+            KeyTerm terminalModify = ToTerm("modify", "modify");
+            KeyTerm terminalName = ToTerm("name", "name");
 
             /* IDENTIFICADOR */
             IdentifierTerminal terminalId = new IdentifierTerminal("identifier", IdOptions.None);
@@ -136,13 +141,17 @@ namespace Integra.Space.Language.Grammars
             CommentTerminal comentarioBloque = new CommentTerminal("block_coment", "/*", "*/");
             NonGrammarTerminals.Add(comentarioLinea);
             NonGrammarTerminals.Add(comentarioBloque);
-            
+
             /* NON TERMINALS */
 
-            NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND_NODE", typeof(CommandNode));
+            NonTerminal nt_METADATA_QUERY = new NonTerminal("METADATA_QUERY", typeof(CommandQueryForMetadataASTNode));
+            nt_METADATA_QUERY.AstConfig.NodeType = null;
+            nt_METADATA_QUERY.AstConfig.DefaultNodeCreator = () => new CommandQueryForMetadataASTNode();
+
+            NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND", typeof(CommandNode));
             nt_COMMAND_NODE.AstConfig.NodeType = null;
             nt_COMMAND_NODE.AstConfig.DefaultNodeCreator = () => new CommandNode();
-            NonTerminal nt_COMMAND_NODE_LIST = new NonTerminal("COMMAND_NODE_LIST", typeof(CommandListASTNode));
+            NonTerminal nt_COMMAND_NODE_LIST = new NonTerminal("COMMAND_LIST", typeof(CommandListASTNode));
             nt_COMMAND_NODE_LIST.AstConfig.NodeType = null;
             nt_COMMAND_NODE_LIST.AstConfig.DefaultNodeCreator = () => new CommandListASTNode();
 
@@ -527,7 +536,11 @@ namespace Integra.Space.Language.Grammars
             /* TAKE OWNERSHIP */
 
             nt_TAKE_OWNERSHIP.Rule = terminalTake + terminalOwnership + terminalOn + nt_OBJECTS_TO_TAKE_OWNERSHIP + terminalId;
-             
+
+            /************************************************/
+
+            /* QUERY METADATA */
+            nt_METADATA_QUERY.Rule = this.CreateQueryForMetadataGrammar();
             /************************************************/
 
             nt_COMMAND_NODE.Rule = nt_STATUS_COMMANDS
@@ -549,13 +562,139 @@ namespace Integra.Space.Language.Grammars
                                     | nt_ALTER_SOURCE
                                     | nt_ALTER_STREAM
                                     | nt_USE
-                                    | nt_TAKE_OWNERSHIP;
+                                    | nt_TAKE_OWNERSHIP
+                                    | nt_METADATA_QUERY;
 
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
 
             this.Root = nt_COMMAND_NODE_LIST;
 
             this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;
+        }
+
+        /// <summary>
+        /// Creates the query for metadata grammar.
+        /// </summary>
+        /// <returns>Query for metadata root node.</returns>
+        public NonTerminal CreateQueryForMetadataGrammar()
+        {
+            /*** TERMINALES DE LA GRAMATICA ***/
+
+            /* PALABRAS RESERVADAS */
+            KeyTerm terminalFrom = ToTerm("from", "from");
+            KeyTerm terminalWhere = ToTerm("where", "where");
+            KeyTerm terminalOrder = ToTerm("order", "order");
+            KeyTerm terminalAsc = ToTerm("asc", "asc");
+            KeyTerm terminalDesc = ToTerm("desc", "desc");
+            KeyTerm terminalBy = ToTerm("by", "by");
+            KeyTerm terminalAs = ToTerm("as", "as");
+            KeyTerm terminalSelect = ToTerm("select", "select");
+            KeyTerm terminalTop = ToTerm("top", "top");
+
+            // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
+            this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
+
+            /* SIMBOLOS */
+            KeyTerm terminalComa = ToTerm(",", "coma");
+
+            /* CONSTANTES E IDENTIFICADORES */
+            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
+            terminalNumero.AstConfig.NodeType = null;
+            terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
+
+            RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
+            terminalId.Name = "identifier";
+            terminalId.AstConfig.NodeType = null;
+            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
+
+            /* COMENTARIOS */
+            CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");
+            CommentTerminal comentarioBloque = new CommentTerminal("block_coment", "/*", "*/");
+            NonGrammarTerminals.Add(comentarioLinea);
+            NonGrammarTerminals.Add(comentarioBloque);
+
+            /* NO TERMINALES */
+            ExpressionGrammarForMetadata expressionGrammar = new ExpressionGrammarForMetadata();
+            NonTerminal nt_LOGIC_EXPRESSION = expressionGrammar.LogicExpression;
+
+            NonTerminal nt_WHERE = new NonTerminal("WHERE", typeof(WhereNode));
+            nt_WHERE.AstConfig.NodeType = null;
+            nt_WHERE.AstConfig.DefaultNodeCreator = () => new WhereNode();
+            NonTerminal nt_FROM = new NonTerminal("FROM", typeof(SourceForMetadataASTNode));
+            nt_FROM.AstConfig.NodeType = null;
+            nt_FROM.AstConfig.DefaultNodeCreator = () => new SourceForMetadataASTNode(0);
+            NonTerminal nt_ORDER_BY = new NonTerminal("ORDER_BY", typeof(OrderByNode));
+            nt_ORDER_BY.AstConfig.NodeType = null;
+            nt_ORDER_BY.AstConfig.DefaultNodeCreator = () => new OrderByNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_ORDER_BY = new NonTerminal("LIST_OF_VALUES", typeof(ListNodeOrderBy));
+            nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.DefaultNodeCreator = () => new ListNodeOrderBy();
+            NonTerminal nt_QUERY_FOR_METADATA = new NonTerminal("METADATA_QUERY", typeof(QueryForMetadataASTNode));
+            nt_QUERY_FOR_METADATA.AstConfig.NodeType = null;
+            nt_QUERY_FOR_METADATA.AstConfig.DefaultNodeCreator = () => new QueryForMetadataASTNode();
+            NonTerminal nt_SOURCE_DEFINITION = new NonTerminal("SOURCE_DEFINITION", typeof(PassNode));
+            nt_SOURCE_DEFINITION.AstConfig.NodeType = null;
+            nt_SOURCE_DEFINITION.AstConfig.DefaultNodeCreator = () => new PassNode();
+            NonTerminal nt_ID_OR_ID_WITH_ALIAS = new NonTerminal("ID_OR_ID_WITH_ALIAS", typeof(ConstantValueWithOptionalAliasNode));
+            nt_ID_OR_ID_WITH_ALIAS.AstConfig.NodeType = null;
+            nt_ID_OR_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithOptionalAliasNode();
+
+            /* PROJECTION */
+            NonTerminal nt_VALUES_WITH_ALIAS_FOR_PROJECTION = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_PROJECTION = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
+            NonTerminal nt_SELECT = new NonTerminal("SELECT", typeof(SelectNode));
+            nt_SELECT.AstConfig.NodeType = null;
+            nt_SELECT.AstConfig.DefaultNodeCreator = () => new SelectNode();
+            NonTerminal nt_TOP = new NonTerminal("TOP", typeof(TopNode));
+            nt_TOP.AstConfig.NodeType = null;
+            nt_TOP.AstConfig.DefaultNodeCreator = () => new TopNode();
+
+            /* USER QUERY */
+            nt_QUERY_FOR_METADATA.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_ORDER_BY;
+            /* **************************** */
+            /* ORDER BY */
+            nt_ORDER_BY.Rule = terminalOrder + terminalBy + nt_LIST_OF_VALUES_FOR_ORDER_BY
+                                | terminalOrder + terminalBy + terminalAsc + nt_LIST_OF_VALUES_FOR_ORDER_BY
+                                | terminalOrder + terminalBy + terminalDesc + nt_LIST_OF_VALUES_FOR_ORDER_BY
+                                | this.Empty;
+
+            nt_LIST_OF_VALUES_FOR_ORDER_BY.Rule = nt_LIST_OF_VALUES_FOR_ORDER_BY + terminalComa + terminalId
+                                                    | terminalId;
+            /* **************************** */
+            /* SOURCE DEFINITION */
+            nt_SOURCE_DEFINITION.Rule = nt_FROM;
+            /* **************************** */
+            /* FROM */
+            nt_FROM.Rule = terminalFrom + nt_ID_OR_ID_WITH_ALIAS;
+            /* **************************** */
+            /* ID OR ID WITH ALIAS */
+            nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
+                                            | terminalId;
+            /* **************************** */
+            /* WHERE */
+            nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION
+                            | this.Empty;
+            /* **************************** */
+
+            /* SELECT */
+            nt_SELECT.Rule = terminalSelect + nt_TOP + nt_LIST_OF_VALUES_FOR_PROJECTION
+                                        | terminalSelect + nt_LIST_OF_VALUES_FOR_PROJECTION;
+            /* **************************** */
+            /* TOP */
+            nt_TOP.Rule = terminalTop + terminalNumero;
+            /* **************************** */
+            /* LISTA DE VALORES */
+            nt_LIST_OF_VALUES_FOR_PROJECTION.Rule = nt_LIST_OF_VALUES_FOR_PROJECTION + terminalComa + nt_VALUES_WITH_ALIAS_FOR_PROJECTION
+                                    | nt_VALUES_WITH_ALIAS_FOR_PROJECTION;
+            /* **************************** */
+            /* VALORES CON ALIAS */
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = expressionGrammar.ProjectionValue + terminalAs + terminalId;
+
+            return nt_QUERY_FOR_METADATA;
         }
     }
 }
