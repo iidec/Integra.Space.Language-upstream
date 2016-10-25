@@ -84,7 +84,7 @@ namespace Integra.Space.Language.Grammars
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
             terminalId.Name = "identifier";
             terminalId.AstConfig.NodeType = null;
-            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
+            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierASTNode();
 
             /* COMENTARIOS */
             CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");

@@ -21,9 +21,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public CreateSourceNode(CommandObject commandObject, Dictionary<SourceOptionEnum, object> options, int line, int column, string nodeText, string schemaName, string databaseName) : base(commandObject, options, line, column, nodeText, schemaName, databaseName)
+        public CreateSourceNode(CommandObject commandObject, Dictionary<SourceOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
         }
     }

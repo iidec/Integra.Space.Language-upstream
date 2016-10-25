@@ -15,7 +15,7 @@ namespace Integra.Space.Language
         /// <inheritdoc />
         public override bool Equals(CommandObject x, CommandObject y)
         {
-            if (x.Name == y.Name && x.SecurableClass == y.SecurableClass)
+            if (x.Name == y.Name && x.SecurableClass == y.SecurableClass && x.DatabaseName == y.DatabaseName && x.SchemaName == y.SchemaName && x.GranularPermission == y.GranularPermission)
             {
                 return true;
             }
@@ -26,7 +26,19 @@ namespace Integra.Space.Language
         /// <inheritdoc />
         public override int GetHashCode(CommandObject obj)
         {
-            return obj.SecurableClass.GetHashCode() + obj.Name.GetHashCode();
+            int result = obj.SecurableClass.GetHashCode() + obj.GranularPermission.GetHashCode();
+
+            if (!string.IsNullOrWhiteSpace(obj.DatabaseName))
+            {
+                result = result + obj.DatabaseName.GetHashCode();
+            }
+
+            if (!string.IsNullOrWhiteSpace(obj.SchemaName))
+            {
+                result = result + obj.SchemaName.GetHashCode();
+            }
+
+            return result + obj.Name.GetHashCode();
         }
     }
 }

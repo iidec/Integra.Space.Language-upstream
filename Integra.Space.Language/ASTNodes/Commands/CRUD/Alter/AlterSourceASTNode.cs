@@ -19,15 +19,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class AlterSourceASTNode : AlterCommandASTNode<SourceOptionEnum>
     {
         /// <summary>
-        /// Space object.
+        /// Options AST node.
         /// </summary>
-        private string spaceUserOption;
-
-        /// <summary>
-        /// Space object identifier.
-        /// </summary>
-        private object optionValue;
-
+        private DictionaryCommandOptionASTNode<SourceOptionEnum> options;
+        
         /// <summary>
         /// Reserved word with.
         /// </summary>
@@ -49,8 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.with = (string)ChildrenNodes[3].Token.Value;
-            this.spaceUserOption = (string)ChildrenNodes[4].Token.Value;
-            this.optionValue = ChildrenNodes[6].Token.Value;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<SourceOptionEnum>;
         }
 
         /// <summary>
@@ -62,26 +56,17 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
-            Dictionary<SourceOptionEnum, object> optionsAux = new Dictionary<SourceOptionEnum, object>();
-            CommandOption<SourceOptionEnum> commandOption = null;
-            SourceOptionEnum userOptionAux;
-            if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
-            {
-                commandOption = new CommandOption<SourceOptionEnum>(userOptionAux, this.optionValue);
-            }
-            else
-            {
-                throw new Exceptions.SyntaxException(string.Format("Invalid user option {0}.", this.spaceUserOption));
-            }
-            
-            this.AddCommandOption(optionsAux, commandOption);
 
             this.BeginEvaluate(thread);
-            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
-            string databaseName = (string)databaseBinding.GetValueRef(thread);
+            Dictionary<SourceOptionEnum, object> optionsAux = new Dictionary<SourceOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<SourceOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
             this.EndEvaluate(thread);
 
-            return new AlterSourceNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            return new AlterSourceNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

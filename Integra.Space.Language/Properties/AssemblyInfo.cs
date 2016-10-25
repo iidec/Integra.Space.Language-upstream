@@ -49,3 +49,4 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Integra.Space.Language.Tests")]
 [assembly: InternalsVisibleTo("Integra.Space.Language.Explorables")]
 [assembly: InternalsVisibleTo("Integra.Space")]
+[assembly: InternalsVisibleTo("csharp-pub-sub")]

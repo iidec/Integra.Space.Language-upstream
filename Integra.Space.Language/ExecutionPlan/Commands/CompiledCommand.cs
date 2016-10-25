@@ -36,9 +36,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public CompiledCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, int line, int column, string commandText, string schemaName = null, string databaseName = null) : base(action, commandObjects, schemaName, databaseName)
+        public CompiledCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, int line, int column, string commandText) : base(action, commandObjects)
         {
             this.line = line;
             this.column = column;

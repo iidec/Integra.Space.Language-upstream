@@ -77,11 +77,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.AddCommandOption(optionsAux, commandOption);
 
             this.BeginEvaluate(thread);
-            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
-            string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            return new AlterSchemaNone(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), databaseName);
+            return new AlterSchemaNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

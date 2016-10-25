@@ -37,11 +37,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// Granular permission.
         /// </summary>
         private PermissionsEnum granularPermission;
-        
+
         /// <summary>
         /// Object identifier.
         /// </summary>
-        private string identifier;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlterCommandASTNode{TOption}"/> class.
@@ -83,7 +83,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
             this.systemObjectTypeName = (string)ChildrenNodes[1].Token.Value;
-            this.identifier = (string)ChildrenNodes[2].Token.Value;
+
+            // this.identifier = (string)ChildrenNodes[2].Token.Value;
+            this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[2]) as AstNodeBase;
         }
 
         /// <summary>
@@ -95,6 +97,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
+            System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)this.identifier.Evaluate(thread);
+
+            // gets the database if it was defined.
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
             if (this.systemObjectTypeName.Equals("role", System.StringComparison.InvariantCultureIgnoreCase) | this.systemObjectTypeName.Equals("user", System.StringComparison.InvariantCultureIgnoreCase))
@@ -102,13 +109,18 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 this.systemObjectTypeName = "database" + this.systemObjectTypeName;
             }
 
-            SystemObjectEnum systemObjectType;            
+            SystemObjectEnum systemObjectType;
             if (!System.Enum.TryParse(this.systemObjectTypeName, true, out systemObjectType))
             {
                 throw new Exceptions.SyntaxException(string.Format("Invalid object {0}.", this.systemObjectTypeName));
             }
 
-            return new CommandObject(systemObjectType, this.identifier, this.granularPermission, false);
+            if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+            {
+                databaseName = identifierWithPath.Item1;
+            }
+
+            return new CommandObject(systemObjectType, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, this.granularPermission, false);
         }
 
         /// <summary>

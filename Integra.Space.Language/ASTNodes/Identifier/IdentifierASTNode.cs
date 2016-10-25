@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IdentifierNode.cs" company="Integra.Space.Language">
+// <copyright file="IdentifierASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -13,7 +13,7 @@ namespace Integra.Space.Language.ASTNodes.Identifier
     /// <summary>
     /// IdentifierNode class
     /// </summary>
-    internal sealed class IdentifierNode : AstNodeBase
+    internal sealed class IdentifierASTNode : AstNodeBase
     {
         /// <summary>
         /// result plan

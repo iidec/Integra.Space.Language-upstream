@@ -52,8 +52,8 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.from = (string)ChildrenNodes[0].Token.Value;
-            this.idFromNode = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[1]) as AstNodeBase;
+            this.from = (string)ChildrenNodes[0].Token.Value;            
+            this.idFromNode = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[3]) as AstNodeBase;
 
             this.result.Column = ChildrenNodes[0].Token.Location.Column;
             this.result.Line = ChildrenNodes[0].Token.Location.Line;
@@ -88,9 +88,45 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
             {
                 this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Server>));
             }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("endpoints", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Endpoint>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("logins", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Login>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("serverroles", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.ServerRole>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("databases", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Database>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("users", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.DatabaseUser>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("databaseroles", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.DatabaseRole>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("schemas", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Schema>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("sources", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Source>));
+            }
             else if (idFrom.Children[0].Properties["Value"].ToString().Equals("streams", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.Stream>));
+            }
+            else if (idFrom.Children[0].Properties["Value"].ToString().Equals("views", System.StringComparison.InvariantCultureIgnoreCase))
+            {
+                this.result.Properties.Add("SourceType", typeof(System.IObservable<Database.View>));
             }
             else
             {
@@ -98,7 +134,7 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
             }
 
             this.result.Properties.Add("SourceName", idFrom.Children[0].Properties["Value"]);
-            this.result.NodeText = string.Format("{0} {1}", this.from, idFrom.NodeText);
+            this.result.NodeText = this.GetNodeText();
             
             return this.result;
         }

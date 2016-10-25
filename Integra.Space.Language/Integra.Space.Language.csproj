@@ -133,7 +133,7 @@
     <Compile Include="ASTNodes\Commands\DictionaryCommandOptionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CommandListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
-    <Compile Include="ASTNodes\Commands\Permissions\AddCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\PermissionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\TakeOwnershipASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\PermissionOptionASTNode.cs" />
@@ -146,6 +146,9 @@
     <Compile Include="ASTNodes\Commands\Permissions\GranularPermissionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Use\UseASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ValueASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\SecondLevelIdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\ThirdLevelIdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\FourthLevelIdentifierASTNode.cs" />
     <Compile Include="ASTNodes\Lists\ListNodeOrderBy.cs" />
     <Compile Include="ASTNodes\Commands\MetadataQuery\JoinNodeForMetadataASTNode.cs" />
     <Compile Include="ASTNodes\Commands\MetadataQuery\NonConstantForMetadataASTNode.cs" />
@@ -163,7 +166,7 @@
     <Compile Include="ASTNodes\Values\Constants\StringFunctionNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\DateFunctionNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\DateTimeOrTimespanNode.cs" />
-    <Compile Include="ASTNodes\Identifier\IdentifierNode.cs" />
+    <Compile Include="ASTNodes\Identifier\IdentifierASTNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\NullValueNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\NumberNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\StringNode.cs" />
@@ -205,7 +208,7 @@
     <Compile Include="ExecutionPlan\Commands\CommandObjectComparer.cs" />
     <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSourceNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSchemaNone.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSchemaNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterRoleNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterDatabaseNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterObjectNode.cs" />
@@ -226,7 +229,7 @@
     <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Metadata\QueryCommandForMetadataNode.cs" />
-    <Compile Include="ExecutionPlan\Commands\Permissions\AddCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Permissions\AddOrRemoveCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\PermissionNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\TakeOwnershipCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\PermissionsCommandNode.cs" />

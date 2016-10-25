@@ -21,7 +21,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Options AST node.
         /// </summary>
-        private CommandOptionListASTNode<LoginOptionEnum> options;
+        private DictionaryCommandOptionASTNode<LoginOptionEnum> options;
         
         /// <summary>
         /// Reserved word with.
@@ -44,8 +44,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
 
-            this.with = (string)ChildrenNodes[3].Token.Value;            
-            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<LoginOptionEnum>;
+            this.with = (string)ChildrenNodes[3].Token.Value;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<LoginOptionEnum>;
         }
 
         /// <summary>

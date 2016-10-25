@@ -11,6 +11,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
+    using Irony.Interpreter.Ast;
     using Irony.Parsing;
 
     /// <summary>
@@ -19,14 +20,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class AlterRoleASTNode : AlterCommandASTNode<RoleOptionEnum>
     {
         /// <summary>
-        /// Space object.
+        /// Options AST node.
         /// </summary>
-        private string spaceUserOption;
-
-        /// <summary>
-        /// Space object identifier.
-        /// </summary>
-        private object optionValue;
+        private DictionaryCommandOptionASTNode<RoleOptionEnum> options;
 
         /// <summary>
         /// Reserved word with.
@@ -49,8 +45,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.with = (string)ChildrenNodes[3].Token.Value;
-            this.spaceUserOption = (string)ChildrenNodes[4].Token.Value;
-            this.optionValue = ChildrenNodes[6].Token.Value;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<RoleOptionEnum>;
         }
 
         /// <summary>
@@ -62,26 +57,61 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
-            Dictionary<RoleOptionEnum, object> optionsAux = new Dictionary<RoleOptionEnum, object>();
-            CommandOption<RoleOptionEnum> commandOption = null;
-            RoleOptionEnum userOptionAux;
-            if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
-            {
-                commandOption = new CommandOption<RoleOptionEnum>(userOptionAux, this.optionValue);
-            }
-            else
-            {
-                throw new Exceptions.SyntaxException(string.Format("Invalid user option {0}.", this.spaceUserOption));
-            }
             
-            this.AddCommandOption(optionsAux, commandOption);
-
             this.BeginEvaluate(thread);
+            Dictionary<RoleOptionEnum, object> optionsAux = new Dictionary<RoleOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<RoleOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            return new AlterRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), databaseName);
+            HashSet<CommandObject> usersToAdd = new HashSet<CommandObject>(new CommandObjectComparer());
+            if (optionsAux.ContainsKey(RoleOptionEnum.Add))
+            {
+                IEnumerable<AstNode> identifiersWithPath = (IEnumerable<AstNode>)optionsAux[RoleOptionEnum.Add];
+                foreach (AstNode child in identifiersWithPath)
+                {
+                    System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)child.Evaluate(thread);
+                    if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                    {
+                        databaseName = identifierWithPath.Item1;
+                    }
+
+                    if (!usersToAdd.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
+                    {
+                        throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
+                    }
+                }
+
+                optionsAux[RoleOptionEnum.Add] = usersToAdd;
+            }
+            
+            HashSet<CommandObject> usersToRemove = new HashSet<CommandObject>(new CommandObjectComparer());
+            if (optionsAux.ContainsKey(RoleOptionEnum.Remove))
+            {
+                IEnumerable<AstNode> identifiersWithPath = (IEnumerable<AstNode>)optionsAux[RoleOptionEnum.Remove];
+                foreach (AstNode child in identifiersWithPath)
+                {
+                    System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)child.Evaluate(thread);
+                    if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                    {
+                        databaseName = identifierWithPath.Item1;
+                    }
+
+                    if (!usersToRemove.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
+                    {
+                        throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
+                    }
+                }
+
+                optionsAux[RoleOptionEnum.Remove] = usersToRemove;
+            }
+            
+            return new AlterRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

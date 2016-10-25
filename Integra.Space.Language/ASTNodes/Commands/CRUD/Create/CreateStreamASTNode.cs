@@ -19,6 +19,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class CreateStreamASTNode : CreateCommandASTNode<StreamOptionEnum>
     {
         /// <summary>
+        /// Options AST node.
+        /// </summary>
+        private CommandOptionListASTNode<StreamOptionEnum> options;
+
+        /// <summary>
         /// Space query.
         /// </summary>
         private string query;
@@ -41,6 +46,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.query = ChildrenNodes[3].Token.Value.ToString().Trim();
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<StreamOptionEnum>;
         }
 
         /// <summary>
@@ -54,14 +60,22 @@ namespace Integra.Space.Language.ASTNodes.Commands
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
 
             this.BeginEvaluate(thread);
+            Dictionary<StreamOptionEnum, object> optionsAux = new Dictionary<StreamOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<StreamOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
             QueryParser parser = new QueryParser(this.query);
             PlanNode executionPlan = parser.Evaluate();
+            
+            this.CheckAllowedOptions(optionsAux);
 
-            return new CreateStreamNode(commandObject, this.query, executionPlan, new Dictionary<StreamOptionEnum, object>(), this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            return new CreateStreamNode(commandObject, this.query, executionPlan, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

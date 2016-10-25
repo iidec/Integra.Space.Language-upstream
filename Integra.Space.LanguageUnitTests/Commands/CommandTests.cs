@@ -19,23 +19,23 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region take ownership
 
         [TestMethod]
-        public void TakeOwnershipOnDbRole()
+        public void TakeOwnershipOnEndpoint()
         {
-            string command = "take ownership on role Role1";
+            string command = "take ownership on endpoint Endpoint1";
             this.Process(command);
         }
 
         [TestMethod]
         public void TakeOwnershipOnDatabase()
         {
-            string command = "take ownership on database Database1";
+            string command = "use Database1; take ownership on database Database1";
             this.Process(command);
         }
 
         [TestMethod]
-        public void TakeOwnershipOnEndpoint()
+        public void TakeOwnershipOnDbRole()
         {
-            string command = "take ownership on endpoint Endpoint1";
+            string command = "take ownership on role Role1";
             this.Process(command);
         }
 
@@ -78,67 +78,94 @@ namespace Integra.Space.LanguageUnitTests.Commands
             this.Process(command);
         }
 
-        [TestMethod]
-        public void UseCommandTest2()
-        {
-            string command = "use Database1; create source source1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void UseCommandTest3()
-        {
-            string command = "use Database1; create source source123; use Database2; alter stream StreamXXX with query = { adsifjalkjdfalkdfalkjdhfaljdkhfadjkfhajkdsfhl }; use Database3; drop source source1";
-            this.Process(command);
-        }
-
         #endregion use
 
-        #region Status
-        #region Start
-        [TestMethod]
-        public void StartSource()
-        {
-            string command = "start source fuente1";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void StartStream()
-        {
-            string command = "start stream fuente1";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion Start
-
-        #region Stop
-        [TestMethod]
-        public void StopSource()
-        {
-            string command = "stop source fuente1";
-            this.Process(command);
-            
-            
-        }
-
-        [TestMethod]
-        public void StopStream()
-        {
-            string command = "stop stream fuente1";
-            this.Process(command);
-            
-            
-        }
-
-        #endregion Stop
-        #endregion Status
-
         #region drop
+
+        [TestMethod]
+        public void DropEndpoint()
+        {
+            string command = "drop endpoint Enpoint1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropEndpoints()
+        {
+            string command = "drop endpoint Enpoint1, endpoint2, endpoint3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropLogin()
+        {
+            string command = "drop login Login1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropLogins()
+        {
+            string command = "drop login Login1, login2, login3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropDatabase()
+        {
+            string command = "drop database database1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropDatabases()
+        {
+            string command = "drop database database1, database2, database3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropUser()
+        {
+            string command = "drop user user1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropUsers()
+        {
+            string command = "drop user user1, user2, user3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropDatabaseRole()
+        {
+            string command = "drop role role1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropDatabaseRoles()
+        {
+            string command = "drop role role1, role2, role3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropSchema()
+        {
+            string command = "drop schema schema1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void DropSchemas()
+        {
+            string command = "drop schema schema1, schema2, schema3";
+            this.Process(command);
+        }
+
         [TestMethod]
         public void DropSource()
         {
@@ -147,41 +174,212 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
+        public void DropSources()
+        {
+            string command = "drop source Source1, source2, source3";
+            this.Process(command);
+        }
+
+        [TestMethod]
         public void DropStream()
         {
-            string command = "drop stream Source1";
+            string command = "drop stream stream1";
             this.Process(command);
         }
 
         [TestMethod]
-        public void DropUser()
+        public void DropStreams()
         {
-            string command = "drop user Usuario1";
+            string command = "drop stream stream1, stream2, stream3";
             this.Process(command);
-            
-            
         }
 
         [TestMethod]
-        public void DropRole()
+        public void DropView()
         {
-            string command = "drop role myRole";
+            string command = "drop view view1";
             this.Process(command);
-            
-            
         }
 
-        #endregion role
+        [TestMethod]
+        public void DropViews()
+        {
+            string command = "drop view view1, view2, view3";
+            this.Process(command);
+        }
+
+        #endregion drop
 
         #region create
 
         [TestMethod]
-        public void DropSchema()
+        public void CreateEndpoint()
         {
-            string command = "drop schema schema1, schema2, schema3";
+            string command = "create endpoint endpoint1";
             this.Process(command);
         }
 
+        [TestMethod]
+        public void CreateEndpointWithStatusOn()
+        {
+            string command = "create endpoint endpoint1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateEndpointWithStatusOff()
+        {
+            string command = "create endpoint endpoint1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLogin()
+        {
+            string command = "create login endpoint1 with password = \"pass123\"";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLoginWithStatusOn()
+        {
+            string command = "create login login1 with password = \"pass123\", status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLoginWithStatusOff()
+        {
+            string command = "create login login2 with password = \"pass123\", status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLoginWithDefaultDatabase()
+        {
+            string command = "create login login2 with password = \"pass123\", default_database = db1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLoginWithDefaultDatabaseAndStatusOn()
+        {
+            string command = "create login login2 with password = \"pass123\", default_database = db1, status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateLoginWithDefaultDatabaseAndStatusOff()
+        {
+            string command = "create login login2 with password = \"pass123\", default_database = db1, status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateDatabase()
+        {
+            string command = "create database databaese1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateDatabaseWithStatusOn()
+        {
+            string command = "create database databaese1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateDatabaseWithStatusOff()
+        {
+            string command = "create database databaese1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUser()
+        {
+            string command = "create user user1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithDefaultSchema()
+        {
+            string command = "create user user1 with default_schema = schema1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithLogin()
+        {
+            string command = "create user user1 with login = login1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithStatusOn()
+        {
+            string command = "create user user1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithStatusOff()
+        {
+            string command = "create user user1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithDefaultSchemaLoginStatusOff()
+        {
+            string command = "create user user1 with default_schema = schema1, login = login1, status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateUserWithDefaultSchemaLoginStatusOon()
+        {
+            string command = "create user user1 with default_schema = schema1, login = login1, status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateRole()
+        {
+            string command = "create role role1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateRoleWithStatusOn()
+        {
+            string command = "create role role1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateRoleWithStatusOff()
+        {
+            string command = "create role role1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateRoleAddUser()
+        {
+            string command = $"Create role role1 with add = User1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateRoleAddUsers()
+        {
+            string command = $"Create role role1 with add = User1 User2 user3";
+            this.Process(command);
+        }
+        
         [TestMethod]
         public void CreateSchema()
         {
@@ -205,6 +403,36 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
+        public void CreateStreamWithStatusOn()
+        {
+            string eql = "cross " +
+                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "TIMEOUT '00:00:02' " +
+                                   //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"create stream stream123 {{ {eql} }} with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateStreamWithStatusOff()
+        {
+            string eql = "cross " +
+                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "TIMEOUT '00:00:02' " +
+                                   //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"create stream stream123 {{ {eql} }} with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
         public void CreateSource()
         {
             string command = "create source source123";
@@ -212,51 +440,16 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
-        public void CreateRole()
+        public void CreateSourceWithStatusOn()
         {
-            string command = "create role role123";
+            string command = "create source source123 with status = on";
             this.Process(command);
         }
 
         [TestMethod]
-        public void CreateUser()
+        public void CreateSourceWithStatusOff()
         {
-            string command = "create user user123";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateUserWithDefaultSchema()
-        {
-            string command = "Create user user123 with default_schema = Schema1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateDatabase()
-        {
-            string command = "create database database123";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateLogin()
-        {
-            string command = "create login Login123 with password = \"abc\"";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateLoginWithDefaultDatabase()
-        {
-            string command = "create login Login123 with password = \"abc\", default_database = Database123";
-            this.Process(command);
-        }
-                
-        [TestMethod]
-        public void CreateUserDefaultSchema()
-        {
-            string command = "create user User1 with default_schema = Schema1";
+            string command = "create source source123 with status = off";
             this.Process(command);
         }
 
@@ -264,38 +457,139 @@ namespace Integra.Space.LanguageUnitTests.Commands
 
         #region alter
 
+
+        #region alter
+
+        [TestMethod]
+        public void AlterEndpoint()
+        {
+            string command = "alter endpoint endpoint1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterEndpointWithStatusOn()
+        {
+            string command = "alter endpoint endpoint1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterEndpointWithStatusOff()
+        {
+            string command = "alter endpoint endpoint1 with status = off";
+            this.Process(command);
+        }
+
         [TestMethod]
         public void AlterLogin()
         {
-            string command = "alter login LoginXXX with default_database = Database1, name = LoginYYY";
+            string command = "alter login endpoint1 with password = \"pass123\"";
             this.Process(command);
         }
 
         [TestMethod]
-        public void AlterUserNameAndDefaultSchema()
+        public void AlterLoginWithStatusOn()
         {
-            string command = "alter user oscar with name = roberto, default_schema = Schema1";
+            string command = "alter login login1 with password = \"pass123\", status = on";
             this.Process(command);
         }
 
         [TestMethod]
-        public void AlterUserName()
+        public void AlterLoginWithStatusOff()
         {
-            string command = "alter user oscar with name = roberto";
+            string command = "alter login login2 with password = \"pass123\", status = off";
             this.Process(command);
         }
 
         [TestMethod]
-        public void AlterUserDefaultSchema()
+        public void AlterLoginWithDefaultDatabase()
         {
-            string command = "alter user oscar with default_schema = Schema1";
+            string command = "alter login login2 with password = \"pass123\", default_database = db1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterLoginWithDefaultDatabaseAndStatusOn()
+        {
+            string command = "alter login login2 with password = \"pass123\", default_database = db1, status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterLoginWithDefaultDatabaseAndStatusOff()
+        {
+            string command = "alter login login2 with password = \"pass123\", default_database = db1, status = off";
             this.Process(command);
         }
 
         [TestMethod]
         public void AlterDatabaseName()
         {
-            string command = "alter database db1 with name = db2";
+            string command = "use Databasexxxxxx; alter database databaese1 with name = database2";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterDatabaseWithStatusOn()
+        {
+            string command = "alter database databaese1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterDatabaseWithStatusOff()
+        {
+            string command = "alter database databaese1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserName()
+        {
+            string command = "alter user user1 with name = user3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithDefaultSchema()
+        {
+            string command = "alter user user1 with default_schema = schema1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithLogin()
+        {
+            string command = "alter user user1 with login = login1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithStatusOn()
+        {
+            string command = "alter user user1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithStatusOff()
+        {
+            string command = "alter user user1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithDefaultSchemaLoginStatusOff()
+        {
+            string command = "alter user user1 with default_schema = schema1, login = login1, status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterUserWithDefaultSchemaLoginStatusOon()
+        {
+            string command = "alter user user1 with default_schema = schema1, login = login1, status = on";
             this.Process(command);
         }
 
@@ -307,9 +601,81 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
+        public void AlterRoleWithStatusOn()
+        {
+            string command = "alter role role1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleWithStatusOff()
+        {
+            string command = "alter role role1 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleAddUser()
+        {
+            string command = $"Alter role role1 with add = User1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleAddUsers()
+        {
+            string command = $"Alter role role1 with add = User1 User2 user3";
+            this.Process(command);
+        }
+        
+        [TestMethod]
         public void AlterSchemaName()
         {
-            string command = "alter schema schema1 with name = schema2";
+            string command = "alter schema schema123 with name = schema456";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterStreamWithStatusOn()
+        {
+            string command = $"alter stream stream123 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterStreamWithStatusOff()
+        {
+            string command = $"alter stream stream123 with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterStreamWithQueryStatusOn()
+        {
+            string eql = "cross " +
+                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "TIMEOUT '00:00:02' " +
+                                   //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"alter stream stream123 with query = {{ {eql} }}, status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterStreamWithQueryStatusOff()
+        {
+            string eql = "cross " +
+                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "TIMEOUT '00:00:02' " +
+                                   //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"alter stream stream123 with query = {{ {eql} }}, status = off";
             this.Process(command);
         }
 
@@ -321,16 +687,90 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
+        public void AlterSourceWithStatusOn()
+        {
+            string command = "alter source source123 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterSourceWithStatusOff()
+        {
+            string command = "alter source source123 with status = off";
+            this.Process(command);
+        }
+
+        #endregion alter
+        
+        [TestMethod]
+        public void AlterUserNameAndDefaultSchema()
+        {
+            string command = "alter user oscar with name = roberto, default_schema = Schema1";
+            this.Process(command);
+        }
+        
+        [TestMethod]
+        public void AlterUserDefaultSchema()
+        {
+            string command = "alter user oscar with default_schema = Schema1";
+            this.Process(command);
+        }
+                
+        [TestMethod]
+        public void AlterRoleRemoveUser()
+        {
+            string command = $"alter role role1 with remove = User1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleRemoveUsers()
+        {
+            string command = $"alter role role1 with remove = User1 User2 user3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleStatusOn()
+        {
+            string command = $"alter role role1 with status = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterRoleStatusOff()
+        {
+            string command = $"alter role role1 with status = off";
+            this.Process(command);
+        }
+        
+        [TestMethod]
         public void AlterStreamQueryAndName()
         {
-            string command = "alter stream Stream1 with query = { 0123456789abcdefghijklmnñopqrstuvwxyz°!\"#$%&/()=?¡´+[],.-;:_¨*¬^`~ }, name = Stream2";
+            string eql = "cross " +
+                                      "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                      "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                      "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                      "TIMEOUT '00:00:02' " +
+                                      //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"alter stream Stream1 with query = {{ {eql} }}, name = Stream2";
             this.Process(command);
         }
 
         [TestMethod]
         public void AlterStreamQuery()
         {
-            string command = "alter stream Stream1 with query = { 0123456789abcdefghijklmnñopqrstuvwxyz°!\"#$%&/()=?¡´+[],.-;:_¨*¬^`~ }";
+            string eql = "cross " +
+                                      "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
+                                      "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                      "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                      "TIMEOUT '00:00:02' " +
+                                      //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
+                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+
+            string command = $"alter stream Schema1.Stream1 with query = {{ {eql} }}";
             this.Process(command);
         }
 
@@ -344,6 +784,25 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion alter
 
         #region grant
+
+        [TestMethod]
+        public void GrantAlterAnyRole()
+        {
+            string roleName = "roleAux";
+            string databaseName = "newDatabase";
+            string userName = "newUser";
+            string otherLogin = "LoginAux";
+            string command = $"create database {databaseName}; use {databaseName}; create role {roleName}; create user {userName} with login = {otherLogin}; grant alter any role to user {userName}";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void GrantAlterAnyLoginToLogin()
+        {
+            string command = "grant connect on database Database1 to login Login123";
+            command = $"create login Login12345 with password = \"abc\", default_database = Database1";
+            this.Process(command);
+        }
 
         #region lists of permissions
 
@@ -495,14 +954,18 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant alter on user User1 to user oscar";
             this.Process(command);
-            
-            
         }
-        
+        [TestMethod]
+        public void GrantAlterAnyUserToUser()
+        {
+            string command = "grant alter any user to user oscar";
+            this.Process(command);
+        }
+
         #endregion to user
 
         #region to role
-        
+
         [TestMethod]
         public void GrantAlterStreamToRole()
         {
@@ -903,12 +1366,58 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
+        public void AddUserToRoles()
+        {
+            string command = "add User1 to Role1, role2, role3";
+            this.Process(command);
+        }
+
+        [TestMethod]
         public void AddUserListToRole()
         {
             string command = "add User1, User2, User3, User4 to Role1";
             this.Process(command);
         }
 
+        [TestMethod]
+        public void AddUserListToRoles()
+        {
+            string command = "add User1, User2, User3, User4 to Role1, role2, role3";
+            this.Process(command);
+        }
+
         #endregion add
+
+        #region remove
+
+        [TestMethod]
+        public void RemoveUserToRole()
+        {
+            string command = "remove User1 to Role1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void RemoveUserToRoles()
+        {
+            string command = "remove User1 to Role1, role2, role3";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void RemoveUserListToRole()
+        {
+            string command = "remove User1, User2, User3, User4 to Role1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void RemoveUserListToRoles()
+        {
+            string command = "remove User1, User2, User3, User4 to Role1, role2, role3";
+            this.Process(command);
+        }
+
+        #endregion remove
     }
 }

@@ -25,7 +25,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space object identifier.
         /// </summary>
-        private string identifier;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// First method called
@@ -37,7 +37,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.spaceObject = AddChild(NodeUseType.ValueRead, "SpaceObject", ChildrenNodes[0]) as AstNodeBase;
-            this.identifier = (string)ChildrenNodes[1].Token.Value;
+            this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[1]) as AstNodeBase; // (string)ChildrenNodes[1].Token.Value;
         }
 
         /// <summary>
@@ -49,10 +49,20 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            SystemObjectEnum @object = (SystemObjectEnum)this.spaceObject.Evaluate(thread);         
-            this.EndEvaluate(thread);
+            SystemObjectEnum @object = (SystemObjectEnum)this.spaceObject.Evaluate(thread);
+            System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)this.identifier.Evaluate(thread);
 
-            return new CommandObject(@object, this.identifier, PermissionsEnum.ControlServer, null);            
+            // gets the database if it was defined.
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
+            this.EndEvaluate(thread);
+            
+            if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+            {
+                databaseName = identifierWithPath.Item1;
+            }
+
+            return new CommandObject(@object, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.ControlServer, null); // new CommandObject(@object, this.identifier, PermissionsEnum.ControlServer, null);            
         }
     }
 }

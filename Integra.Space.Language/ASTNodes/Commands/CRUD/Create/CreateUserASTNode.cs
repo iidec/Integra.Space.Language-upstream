@@ -65,7 +65,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.CheckAllowedOptions(optionsAux);
 
             this.EndEvaluate(thread);
-            return new CreateUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), databaseName);
+            return new CreateUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

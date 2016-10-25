@@ -19,6 +19,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class CreateSourceASTNode : CreateCommandASTNode<SourceOptionEnum>
     {
         /// <summary>
+        /// Options AST node.
+        /// </summary>
+        private CommandOptionListASTNode<SourceOptionEnum> options;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CreateSourceASTNode"/> class.
         /// </summary>
         public CreateSourceASTNode() : base(PermissionsEnum.CreateSource)
@@ -33,7 +38,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <param name="treeNode">Contains the tree of the context</param>
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
-            base.Init(context, treeNode);            
+            base.Init(context, treeNode);
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[3]) as CommandOptionListASTNode<SourceOptionEnum>;
         }
 
         /// <summary>
@@ -47,11 +53,19 @@ namespace Integra.Space.Language.ASTNodes.Commands
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
 
             this.BeginEvaluate(thread);
+            Dictionary<SourceOptionEnum, object> optionsAux = new Dictionary<SourceOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<SourceOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
-                        
-            return new CreateSourceNode(commandObject, new Dictionary<SourceOptionEnum, object>(), this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+
+            this.CheckAllowedOptions(optionsAux);
+
+            return new CreateSourceNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

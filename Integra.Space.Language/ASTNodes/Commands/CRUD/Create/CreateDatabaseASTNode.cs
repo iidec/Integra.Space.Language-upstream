@@ -19,10 +19,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class CreateDatabaseASTNode : CreateCommandASTNode<DatabaseOptionEnum>
     {
         /// <summary>
-        /// Reserved word with.
+        /// Options AST node.
         /// </summary>
-        private string with;
-
+        private CommandOptionListASTNode<DatabaseOptionEnum> options;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateDatabaseASTNode"/> class.
         /// </summary>
@@ -39,6 +39,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[3]) as CommandOptionListASTNode<DatabaseOptionEnum>;
         }
 
         /// <summary>
@@ -52,9 +53,19 @@ namespace Integra.Space.Language.ASTNodes.Commands
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
 
             this.BeginEvaluate(thread);
+            Dictionary<DatabaseOptionEnum, object> optionsAux = new Dictionary<DatabaseOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<DatabaseOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
+
+            this.CheckAllowedOptions(optionsAux);
             
-            return new CreateDatabaseNode(commandObject, new Dictionary<DatabaseOptionEnum, object>(), this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

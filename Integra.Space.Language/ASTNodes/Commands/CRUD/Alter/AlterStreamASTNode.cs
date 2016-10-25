@@ -21,7 +21,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Options AST node.
         /// </summary>
-        private CommandOptionListASTNode<StreamOptionEnum> options;
+        private DictionaryCommandOptionASTNode<StreamOptionEnum> options;
         
         /// <summary>
         /// Reserved word with.
@@ -45,7 +45,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.with = (string)ChildrenNodes[3].Token.Value;            
-            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<StreamOptionEnum>;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<StreamOptionEnum>;
         }
 
         /// <summary>
@@ -59,8 +59,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
 
             this.BeginEvaluate(thread);
-            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
-            string databaseName = (string)databaseBinding.GetValueRef(thread);
 
             Dictionary<StreamOptionEnum, object> optionsAux = new Dictionary<StreamOptionEnum, object>();
             if (this.options != null)
@@ -68,9 +66,16 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 optionsAux = (Dictionary<StreamOptionEnum, object>)this.options.Evaluate(thread);
             }
 
+            if (optionsAux.ContainsKey(StreamOptionEnum.Query))
+            {
+                QueryParser parser = new QueryParser(optionsAux[StreamOptionEnum.Query].ToString());
+                PlanNode executionPlan = parser.Evaluate();
+                return new AlterStreamNode(commandObject, executionPlan, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            }
+
             this.EndEvaluate(thread);
 
-            return new AlterStreamNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            return new AlterStreamNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

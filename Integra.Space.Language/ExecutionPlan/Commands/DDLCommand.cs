@@ -23,9 +23,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public DDLCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText, string schemaName, string databaseName) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText, schemaName, databaseName)
+        public DDLCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText)
         {
             Contract.Assert(commandObject != null);
             
@@ -41,9 +39,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public DDLCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, int line, int column, string commandText, string schemaName, string databaseName) : base(action, commandObjects, line, column, commandText, schemaName, databaseName)
+        public DDLCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, int line, int column, string commandText) : base(action, commandObjects, line, column, commandText)
         {
             Contract.Assert(commandObjects != null);
             Contract.Assert(commandObjects.Count > 0);

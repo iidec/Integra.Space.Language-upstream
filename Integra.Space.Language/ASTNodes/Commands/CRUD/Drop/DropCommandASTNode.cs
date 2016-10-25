@@ -77,7 +77,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
             this.systemObjectTypeName = AddChild(NodeUseType.ValueRead, "SpaceObject", ChildrenNodes[1]) as AstNodeBase;
-            this.identifiers = AddChild(NodeUseType.ValueRead, "SpaceObject", ChildrenNodes[2]) as StatementListNode;
+            this.identifiers = AddChild(NodeUseType.ValueRead, "SpaceObjectS", ChildrenNodes[2]) as StatementListNode;
         }
 
         /// <summary>
@@ -93,10 +93,16 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             
             SystemObjectEnum objectType = (SystemObjectEnum)this.systemObjectTypeName.Evaluate(thread);
-            HashSet<string> identifiers = new HashSet<string>();
-            foreach (IdentifierNode child in this.identifiers.GetChildNodes())
+            HashSet<CommandObject> commandObjects = new HashSet<CommandObject>(new CommandObjectComparer());
+            foreach (AstNode child in this.identifiers.GetChildNodes())
             {
-                if (!identifiers.Add(child.AsString))
+                System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)child.Evaluate(thread);
+                if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                {
+                    databaseName = identifierWithPath.Item1;
+                }
+                
+                if (!commandObjects.Add(new CommandObject(objectType, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Alter, false)))
                 {
                     throw new Exceptions.SyntaxException(string.Format("The identifier '{0}' is specified more than once."));
                 }
@@ -105,12 +111,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.EndEvaluate(thread);
 
             List<DropObjectNode> listOfDrops = new List<DropObjectNode>();
-
-            CommandObject comandObject = null;
-            foreach (string id in identifiers)
+            
+            foreach (CommandObject commandObject in commandObjects)
             {
-                comandObject = new CommandObject(objectType, id, PermissionsEnum.Alter, false);
-                listOfDrops.Add(new DropObjectNode(comandObject, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName));
+                listOfDrops.Add(new DropObjectNode(commandObject, this.Location.Line, this.Location.Column, this.GetNodeText()));
             }
 
             return listOfDrops.ToArray();

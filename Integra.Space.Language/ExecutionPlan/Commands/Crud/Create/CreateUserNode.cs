@@ -21,12 +21,11 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public CreateUserNode(CommandObject commandObject, Dictionary<UserOptionEnum, object> options, int line, int column, string nodeText, string databaseName) : base(commandObject, options, line, column, nodeText, null, databaseName)
+        public CreateUserNode(CommandObject commandObject, Dictionary<UserOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             if (options.ContainsKey(UserOptionEnum.Default_Schema))
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, options[UserOptionEnum.Default_Schema].ToString(), PermissionsEnum.None, false));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, commandObject.DatabaseName, null, options[UserOptionEnum.Default_Schema].ToString(), PermissionsEnum.None, false));
             }
         }
     }

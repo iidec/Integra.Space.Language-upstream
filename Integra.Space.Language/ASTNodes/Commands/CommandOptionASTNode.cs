@@ -5,10 +5,10 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.Commands
 {
-    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
+    using Irony.Interpreter.Ast;
     using Irony.Parsing;
 
     /// <summary>
@@ -18,14 +18,19 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class CommandOptionASTNode<TOptionEnum> : AstNodeBase where TOptionEnum : struct, System.IConvertible
     {
         /// <summary>
-        /// Space object.
+        /// Space option.
         /// </summary>
         private string spaceUserOption;
 
         /// <summary>
-        /// Space object identifier.
+        /// Option value.
         /// </summary>
         private object optionValue;
+
+        /// <summary>
+        /// Space object identifier.
+        /// </summary>
+        private StatementListNode optionValue2;
 
         /// <summary>
         /// First method called
@@ -37,7 +42,15 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.spaceUserOption = (string)ChildrenNodes[0].Token.Value;
-            this.optionValue = ChildrenNodes[2].Token.Value;
+
+            if (ChildrenNodes[2].Token != null)
+            {
+                this.optionValue = ChildrenNodes[2].Token.Value;
+            }
+            else
+            {
+                this.optionValue2 = AddChild(NodeUseType.ValueRead, "users", ChildrenNodes[2]) as StatementListNode;
+            }
         }
 
         /// <summary>
@@ -48,8 +61,14 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            this.BeginEvaluate(thread);            
+            this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
+
+            // esto es para la opción de agregar usuarioa a roles. 
+            if (ChildrenNodes[2].Token == null)
+            {
+                this.optionValue = this.optionValue2.ChildNodes;
+            }
 
             TOptionEnum userOptionAux;
             if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
@@ -58,7 +77,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid user option {0}.", this.spaceUserOption));
+                throw new Exceptions.SyntaxException(string.Format("Invalid option {0}.", this.spaceUserOption));
             }
         }
     }

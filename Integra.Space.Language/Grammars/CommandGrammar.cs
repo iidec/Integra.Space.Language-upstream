@@ -24,18 +24,12 @@ namespace Integra.Space.Language.Grammars
     /// </summary>
     [Language("CommandGrammar", "0.4", "")]
     internal class CommandGrammar : InterpretedLanguageGrammar
-    {
-        /// <summary>
-        /// Expression grammar
-        /// </summary>
-        private QueryGrammarForMetadata queryGrammarForMetadata;
-        
+    {        
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandGrammar"/> class.
         /// </summary>
         public CommandGrammar() : base(false)
         {
-            this.queryGrammarForMetadata = new QueryGrammarForMetadata();
             this.CreateGrammar();
         }
 
@@ -54,11 +48,6 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalRevoke = ToTerm("revoke", "revoke");
             KeyTerm terminalDeny = ToTerm("deny", "deny");
             KeyTerm terminalUse = ToTerm("use", "use");
-
-            /* VIEWS COMMAND */
-            KeyTerm terminalSelect = ToTerm("select", "select");
-            KeyTerm terminalFrom = ToTerm("from", "from");
-            KeyTerm terminalWhere = ToTerm("where", "where");
 
             /* SPACE OBJECTS */
             KeyTerm terminalServer = ToTerm("server", "server");
@@ -86,6 +75,14 @@ namespace Integra.Space.Language.Grammars
              Otras palabras reservadas para permisos que estan definidas en otras partes: create, alter, start, stop, view
              */
 
+            /* STATUS OPTION */
+            KeyTerm terminalStatus = ToTerm("status", "status");
+            ConstantTerminal terminalStatusValue = new ConstantTerminal("statusValue");
+            terminalStatusValue.Add("on", true);
+            terminalStatusValue.Add("off", false);
+            terminalStatusValue.AstConfig.NodeType = null;
+            terminalStatusValue.AstConfig.DefaultNodeCreator = () => new ValueASTNode<bool>();
+
             /* GENERALES PARA COMANDOS */
             KeyTerm terminalWith = ToTerm("with", "with");
             KeyTerm terminalEqual = ToTerm("=", "equal");
@@ -106,8 +103,9 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalTo = ToTerm("to", "to");
             KeyTerm terminalOption = ToTerm("option", "option");
 
-            /* PARA ASIGNACIÓN DE ROLES */
+            /* PARA AGREGAR O QUITAR USUARIOS DE ROLES */
             KeyTerm terminalAdd = ToTerm("add", "add");
+            KeyTerm terminalRemove = ToTerm("remove", "remove");
 
             /* PARA MODIFICAR NOMBRE DE OBJETOS */
             KeyTerm terminalModify = ToTerm("modify", "modify");
@@ -119,12 +117,13 @@ namespace Integra.Space.Language.Grammars
             /* SIMBOLOS */
             KeyTerm terminalComa = ToTerm(",", "coma");
             KeyTerm terminalPuntoYComa = ToTerm(";", "puntoYComa");
-            this.MarkPunctuation(terminalComa, terminalPuntoYComa);
+            KeyTerm terminalPunto = ToTerm(".", "punto");
+            this.MarkPunctuation(terminalComa, terminalPuntoYComa, terminalPunto);
 
             /* QUERY */
             QuotedValueLiteral terminalQueryScript = new QuotedValueLiteral("terminalQuery", "{", "}", TypeCode.String);
             terminalQueryScript.AstConfig.NodeType = null;
-            terminalQueryScript.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
+            terminalQueryScript.AstConfig.DefaultNodeCreator = () => new IdentifierASTNode();
 
             /* CADENA */
             StringLiteral terminalCadena = new StringLiteral("cadena", "\"", StringOptions.AllowsAllEscapes);
@@ -143,7 +142,7 @@ namespace Integra.Space.Language.Grammars
             NonGrammarTerminals.Add(comentarioBloque);
 
             /* NON TERMINALS */
-
+            
             NonTerminal nt_METADATA_QUERY = new NonTerminal("METADATA_QUERY", typeof(CommandQueryForMetadataASTNode));
             nt_METADATA_QUERY.AstConfig.NodeType = null;
             nt_METADATA_QUERY.AstConfig.DefaultNodeCreator = () => new CommandQueryForMetadataASTNode();
@@ -154,23 +153,41 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_COMMAND_NODE_LIST = new NonTerminal("COMMAND_LIST", typeof(CommandListASTNode));
             nt_COMMAND_NODE_LIST.AstConfig.NodeType = null;
             nt_COMMAND_NODE_LIST.AstConfig.DefaultNodeCreator = () => new CommandListASTNode();
-
-            /* ACTIONS */
-            NonTerminal nt_STATUS_ACTIONS = new NonTerminal("STATUS_ACTIONS", typeof(SpaceActionASTNode));
-            nt_STATUS_ACTIONS.AstConfig.NodeType = null;
-            nt_STATUS_ACTIONS.AstConfig.DefaultNodeCreator = () => new SpaceActionASTNode();
+            
+            /* ID WITH PATH */
+            NonTerminal nt_FOURTH_LEVEL_OBJECT_IDENTIFIER = new NonTerminal("FOURTH_LEVEL_OBJECT_IDENTIFIER", typeof(FourthLevelIdentifierASTNode));
+            nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.AstConfig.NodeType = null;
+            nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.AstConfig.DefaultNodeCreator = () => new FourthLevelIdentifierASTNode();
+            NonTerminal nt_THIRD_LEVEL_OBJECT_IDENTIFIER = new NonTerminal("THIRD_LEVEL_OBJECT_IDENTIFIER", typeof(ThirdLevelIdentifierASTNode));
+            nt_THIRD_LEVEL_OBJECT_IDENTIFIER.AstConfig.NodeType = null;
+            nt_THIRD_LEVEL_OBJECT_IDENTIFIER.AstConfig.DefaultNodeCreator = () => new ThirdLevelIdentifierASTNode();
+            NonTerminal nt_SECOND_LEVEL_OBJECT_IDENTIFIER = new NonTerminal("SECOND_LEVEL_OBJECT_IDENTIFIER", typeof(SecondLevelIdentifierASTNode));
+            nt_SECOND_LEVEL_OBJECT_IDENTIFIER.AstConfig.NodeType = null;
+            nt_SECOND_LEVEL_OBJECT_IDENTIFIER.AstConfig.DefaultNodeCreator = () => new SecondLevelIdentifierASTNode();
             /************************************************/
 
             /* SPACE OBJECTS CATEGORIES */
             NonTerminal nt_SPACE_OBJECTS = new NonTerminal("SPACE_OBJECTS", typeof(SpaceObjectASTNode));
             nt_SPACE_OBJECTS.AstConfig.NodeType = null;
             nt_SPACE_OBJECTS.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
-            NonTerminal nt_OBJECTS_TO_ALTER = new NonTerminal("OBJECTS_TO_ALTER", typeof(SpaceObjectASTNode));
-            nt_OBJECTS_TO_ALTER.AstConfig.NodeType = null;
-            nt_OBJECTS_TO_ALTER.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
-            NonTerminal nt_OBJECTS_TO_TAKE_OWNERSHIP = new NonTerminal("OBJECTS_TO_TAKE_OWNERSHIP", typeof(SpaceObjectASTNode));
-            nt_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.NodeType = null;
-            nt_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+
+            NonTerminal nt_FOURTH_LEVEL_OBJECTS_TO_ALTER = new NonTerminal("FOURTH_LEVEL_OBJECTS_TO_ALTER", typeof(SpaceObjectASTNode));
+            nt_FOURTH_LEVEL_OBJECTS_TO_ALTER.AstConfig.NodeType = null;
+            nt_FOURTH_LEVEL_OBJECTS_TO_ALTER.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+            NonTerminal nt_THIRD_LEVEL_OBJECTS_TO_ALTER = new NonTerminal("THIRD_LEVEL_OBJECTS_TO_ALTER", typeof(SpaceObjectASTNode));
+            nt_THIRD_LEVEL_OBJECTS_TO_ALTER.AstConfig.NodeType = null;
+            nt_THIRD_LEVEL_OBJECTS_TO_ALTER.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+            NonTerminal nt_SECOND_LEVEL_OBJECTS_TO_ALTER = new NonTerminal("SECOND_LEVEL_OBJECTS_TO_ALTER", typeof(SpaceObjectASTNode));
+            nt_SECOND_LEVEL_OBJECTS_TO_ALTER.AstConfig.NodeType = null;
+            nt_SECOND_LEVEL_OBJECTS_TO_ALTER.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+
+            NonTerminal nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP = new NonTerminal("SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP", typeof(SpaceObjectASTNode));
+            nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.NodeType = null;
+            nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+            NonTerminal nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP = new NonTerminal("THRID_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP", typeof(SpaceObjectASTNode));
+            nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.NodeType = null;
+            nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
+
             NonTerminal nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS = new NonTerminal("SPACE_OBJECTS_FOR_STATUS_PERMISSIONS", typeof(SpaceObjectASTNode));
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS.AstConfig.NodeType = null;
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS.AstConfig.DefaultNodeCreator = () => new SpaceObjectASTNode();
@@ -201,15 +218,15 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_GRANULAR_PERMISSION_FOR_ON_2 = new NonTerminal("GRANULAR_PERMISSION_FOR_ON_2", typeof(GranularPermissionASTNode));
             nt_GRANULAR_PERMISSION_FOR_ON_2.AstConfig.NodeType = null;
             nt_GRANULAR_PERMISSION_FOR_ON_2.AstConfig.DefaultNodeCreator = () => new GranularPermissionASTNode();
+            NonTerminal nt_GRANULAR_PERMISSION_FOR_ON_3 = new NonTerminal("GRANULAR_PERMISSION_FOR_ON_3", typeof(GranularPermissionASTNode));
+            nt_GRANULAR_PERMISSION_FOR_ON_3.AstConfig.NodeType = null;
+            nt_GRANULAR_PERMISSION_FOR_ON_3.AstConfig.DefaultNodeCreator = () => new GranularPermissionASTNode();
             NonTerminal nt_PERMISSION = new NonTerminal("PERMISSION", typeof(PermissionASTNode));
             nt_PERMISSION.AstConfig.NodeType = null;
             nt_PERMISSION.AstConfig.DefaultNodeCreator = () => new PermissionASTNode();
             /************************************************/
                         
-            /* OBJECT WITH IDENTIFIER */
-            NonTerminal nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID = new NonTerminal("SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID", typeof(SpaceObjectWithIdASTNode));
-            nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.AstConfig.NodeType = null;
-            nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
+            /* OBJECT WITH IDENTIFIER */           
             NonTerminal nt_SPACE_SERVER_PRINCIPALS_WITH_ID = new NonTerminal("SPACE_USER_OR_ROLE_WITH_ID", typeof(SpaceObjectWithIdASTNode));
             nt_SPACE_SERVER_PRINCIPALS_WITH_ID.AstConfig.NodeType = null;
             nt_SPACE_SERVER_PRINCIPALS_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
@@ -219,9 +236,18 @@ namespace Integra.Space.Language.Grammars
             /************************************************/
 
             /* LIST OF IDENTIFIERS */
-            NonTerminal nt_ID_LIST = new NonTerminal("ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
-            nt_ID_LIST.AstConfig.NodeType = null;
-            nt_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            NonTerminal nt_FOURTH_LEVEL_ID_LIST = new NonTerminal("FOURTH_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_FOURTH_LEVEL_ID_LIST.AstConfig.NodeType = null;
+            nt_FOURTH_LEVEL_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            NonTerminal nt_THIRD_LEVEL_ID_LIST = new NonTerminal("THIRD_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_THIRD_LEVEL_ID_LIST.AstConfig.NodeType = null;
+            nt_THIRD_LEVEL_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            NonTerminal nt_THIRD_LEVEL_ID_LIST_2 = new NonTerminal("THIRD_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_THIRD_LEVEL_ID_LIST_2.AstConfig.NodeType = null;
+            nt_THIRD_LEVEL_ID_LIST_2.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            NonTerminal nt_SECOND_LEVEL_ID_LIST = new NonTerminal("SECOND_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_SECOND_LEVEL_ID_LIST.AstConfig.NodeType = null;
+            nt_SECOND_LEVEL_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
             /************************************************/
 
             /* PERMISSION OPTIONS */
@@ -231,28 +257,64 @@ namespace Integra.Space.Language.Grammars
             /************************************************/
 
             /* LOGIN OPTIONS */
-            NonTerminal nt_LOGIN_OPTION_PASSWORD = new NonTerminal("SPACE_LOGIN_OPTION_PASSWORD", typeof(CommandOptionASTNode<LoginOptionEnum>));
+            NonTerminal nt_LOGIN_OPTION_PASSWORD = new NonTerminal("LOGIN_OPTION_PASSWORD", typeof(CommandOptionASTNode<LoginOptionEnum>));
             nt_LOGIN_OPTION_PASSWORD.AstConfig.NodeType = null;
             nt_LOGIN_OPTION_PASSWORD.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<LoginOptionEnum>();
-            NonTerminal nt_LOGIN_OPTION = new NonTerminal("SPACE_LOGIN_OPTION_DEFAULT_DB", typeof(CommandOptionASTNode<LoginOptionEnum>));
+            NonTerminal nt_LOGIN_OPTION = new NonTerminal("LOGIN_OPTION", typeof(CommandOptionASTNode<LoginOptionEnum>));
             nt_LOGIN_OPTION.AstConfig.NodeType = null;
             nt_LOGIN_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<LoginOptionEnum>();
-            NonTerminal nt_LOGIN_OPTION_LIST = new NonTerminal("SPACE_LOGIN_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<LoginOptionEnum>));
+            NonTerminal nt_LOGIN_OPTION_LIST = new NonTerminal("LOGIN_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<LoginOptionEnum>));
             nt_LOGIN_OPTION_LIST.AstConfig.NodeType = null;
             nt_LOGIN_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<LoginOptionEnum>();
-            NonTerminal nt_LOGIN_OPTION_LIST_AUX = new NonTerminal("PERMISSION_LIST", typeof(CommandOptionListASTNode<LoginOptionEnum>));
+            NonTerminal nt_LOGIN_OPTION_LIST_AUX = new NonTerminal("LOGIN_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<LoginOptionEnum>));
             nt_LOGIN_OPTION_LIST_AUX.AstConfig.NodeType = null;
             nt_LOGIN_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<LoginOptionEnum>();
             /************************************************/
 
+            /* ROLE OPTIONS */
+            NonTerminal nt_DB_ROLE_OPTION = new NonTerminal("DB_ROLE_OPTION", typeof(CommandOptionASTNode<RoleOptionEnum>));
+            nt_DB_ROLE_OPTION.AstConfig.NodeType = null;
+            nt_DB_ROLE_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<RoleOptionEnum>();
+            NonTerminal nt_DB_ROLE_OPTION_LIST = new NonTerminal("DB_ROLE_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<RoleOptionEnum>));
+            nt_DB_ROLE_OPTION_LIST.AstConfig.NodeType = null;
+            nt_DB_ROLE_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<RoleOptionEnum>();
+            NonTerminal nt_DB_ROLE_OPTION_LIST_AUX = new NonTerminal("DB_ROLE_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<RoleOptionEnum>));
+            nt_DB_ROLE_OPTION_LIST_AUX.AstConfig.NodeType = null;
+            nt_DB_ROLE_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<RoleOptionEnum>();
+            /************************************************/
+
+            /* SOURCE OPTIONS */
+            NonTerminal nt_SOURCE_OPTION = new NonTerminal("SOURCE_OPTION", typeof(CommandOptionASTNode<SourceOptionEnum>));
+            nt_SOURCE_OPTION.AstConfig.NodeType = null;
+            nt_SOURCE_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<SourceOptionEnum>();
+            NonTerminal nt_SOURCE_OPTION_LIST = new NonTerminal("SOURCE_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<SourceOptionEnum>));
+            nt_SOURCE_OPTION_LIST.AstConfig.NodeType = null;
+            nt_SOURCE_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<SourceOptionEnum>();
+            NonTerminal nt_SOURCE_OPTION_LIST_AUX = new NonTerminal("SOURCE_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<SourceOptionEnum>));
+            nt_SOURCE_OPTION_LIST_AUX.AstConfig.NodeType = null;
+            nt_SOURCE_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<SourceOptionEnum>();
+            /************************************************/
+
+            /* DATABASE OPTIONS */
+            NonTerminal nt_DATABASE_OPTION = new NonTerminal("DATABASE_OPTION", typeof(CommandOptionASTNode<DatabaseOptionEnum>));
+            nt_DATABASE_OPTION.AstConfig.NodeType = null;
+            nt_DATABASE_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<DatabaseOptionEnum>();
+            NonTerminal nt_DATABASE_OPTION_LIST = new NonTerminal("DATABASE_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<DatabaseOptionEnum>));
+            nt_DATABASE_OPTION_LIST.AstConfig.NodeType = null;
+            nt_DATABASE_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<DatabaseOptionEnum>();
+            NonTerminal nt_DATABASE_OPTION_LIST_AUX = new NonTerminal("DATABASE_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<DatabaseOptionEnum>));
+            nt_DATABASE_OPTION_LIST_AUX.AstConfig.NodeType = null;
+            nt_DATABASE_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<DatabaseOptionEnum>();
+            /************************************************/
+
             /* USER OPTIONS */
-            NonTerminal nt_SPACE_USER_OPTION = new NonTerminal("USER_OPTION", typeof(CommandOptionASTNode<UserOptionEnum>));
-            nt_SPACE_USER_OPTION.AstConfig.NodeType = null;
-            nt_SPACE_USER_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<UserOptionEnum>();
-            NonTerminal nt_SPACE_USER_OPTION_LIST = new NonTerminal("USER_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<UserOptionEnum>));
-            nt_SPACE_USER_OPTION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<UserOptionEnum>();
-            NonTerminal nt_USER_OPTION_LIST_AUX = new NonTerminal("PERMISSION_LIST", typeof(CommandOptionListASTNode<UserOptionEnum>));
+            NonTerminal nt_USER_OPTION = new NonTerminal("USER_OPTION", typeof(CommandOptionASTNode<UserOptionEnum>));
+            nt_USER_OPTION.AstConfig.NodeType = null;
+            nt_USER_OPTION.AstConfig.DefaultNodeCreator = () => new CommandOptionASTNode<UserOptionEnum>();
+            NonTerminal nt_USER_OPTION_LIST = new NonTerminal("USER_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<UserOptionEnum>));
+            nt_USER_OPTION_LIST.AstConfig.NodeType = null;
+            nt_USER_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<UserOptionEnum>();
+            NonTerminal nt_USER_OPTION_LIST_AUX = new NonTerminal("USER_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<UserOptionEnum>));
             nt_USER_OPTION_LIST_AUX.AstConfig.NodeType = null;
             nt_USER_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<UserOptionEnum>();
             /************************************************/
@@ -264,14 +326,16 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_STREAM_OPTION_LIST = new NonTerminal("STREAM_OPTION_LIST", typeof(DictionaryCommandOptionASTNode<StreamOptionEnum>));
             nt_STREAM_OPTION_LIST.AstConfig.NodeType = null;
             nt_STREAM_OPTION_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryCommandOptionASTNode<StreamOptionEnum>();
+            NonTerminal nt_STREAM_OPTION_LIST_AUX = new NonTerminal("USER_OPTION_LIST_AUX", typeof(CommandOptionListASTNode<StreamOptionEnum>));
+            nt_STREAM_OPTION_LIST_AUX.AstConfig.NodeType = null;
+            nt_STREAM_OPTION_LIST_AUX.AstConfig.DefaultNodeCreator = () => new CommandOptionListASTNode<StreamOptionEnum>();
             /************************************************/
 
             /* SPACE PERMISSION LIST */
-            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("SPACE_PERMISSION_LIST", typeof(ListASTNode<PermissionASTNode, PermissionNode>));
+            NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("PERMISSION_LIST", typeof(ListASTNode<PermissionASTNode, PermissionNode>));
             nt_SPACE_PERMISSION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<PermissionASTNode, PermissionNode>();
-            
-            NonTerminal nt_SPACE_PRINCIPAL_LIST = new NonTerminal("SPACE_SERVER_PRINCIPAL_LIST", typeof(ListASTNode<SpaceObjectWithIdASTNode, CommandObject>));
+            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<PermissionASTNode, PermissionNode>();            
+            NonTerminal nt_SPACE_PRINCIPAL_LIST = new NonTerminal("SERVER_PRINCIPAL_LIST", typeof(ListASTNode<SpaceObjectWithIdASTNode, CommandObject>));
             nt_SPACE_PRINCIPAL_LIST.AstConfig.NodeType = null;
             nt_SPACE_PRINCIPAL_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceObjectWithIdASTNode, CommandObject>();
             /************************************************/
@@ -325,29 +389,26 @@ namespace Integra.Space.Language.Grammars
             nt_ALTER_STREAM.AstConfig.NodeType = null;
             nt_ALTER_STREAM.AstConfig.DefaultNodeCreator = () => new AlterStreamASTNode();
             /************************************************/
-
-            NonTerminal nt_STATUS_COMMANDS = new NonTerminal("STATUS_COMMANDS", typeof(StatusCommandASTNode));
-            nt_STATUS_COMMANDS.AstConfig.NodeType = null;
-            nt_STATUS_COMMANDS.AstConfig.DefaultNodeCreator = () => new StatusCommandASTNode();
+            
             NonTerminal nt_PERMISSIONS_COMMANDS = new NonTerminal("PERMISSIONS_COMMANDS", typeof(PermissionCommandASTNode));
             nt_PERMISSIONS_COMMANDS.AstConfig.NodeType = null;
             nt_PERMISSIONS_COMMANDS.AstConfig.DefaultNodeCreator = () => new PermissionCommandASTNode();
-            NonTerminal nt_ADD_USERS_TO_ROLE_COMMAND = new NonTerminal("ADD_USERS_TO_ROLE_COMMAND", typeof(AddCommandASTNode));
-            nt_ADD_USERS_TO_ROLE_COMMAND.AstConfig.NodeType = null;
-            nt_ADD_USERS_TO_ROLE_COMMAND.AstConfig.DefaultNodeCreator = () => new AddCommandASTNode();
+            NonTerminal nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND = new NonTerminal("ADD_USERS_TO_ROLE_COMMAND", typeof(AddOrRemoveCommandASTNode));
+            nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND.AstConfig.NodeType = null;
+            nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND.AstConfig.DefaultNodeCreator = () => new AddOrRemoveCommandASTNode();
             NonTerminal nt_TAKE_OWNERSHIP = new NonTerminal("TAKE_OWNERSHIP", typeof(TakeOwnershipASTNode));
             nt_TAKE_OWNERSHIP.AstConfig.NodeType = null;
             nt_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new TakeOwnershipASTNode();
 
             /* RULES */
+            
+            nt_SECOND_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST, terminalComa, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
+            nt_THIRD_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST, terminalComa, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
+            nt_THIRD_LEVEL_ID_LIST_2.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST_2, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
+            nt_FOURTH_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_FOURTH_LEVEL_ID_LIST, terminalComa, nt_FOURTH_LEVEL_OBJECT_IDENTIFIER);
 
             /* COMMAND ACTIONS */
-
-            nt_STATUS_ACTIONS.Rule = terminalStart
-                                    | terminalStop;
             
-            /************************************************/
-
             /* SPACE OBJECTS CATEGORIES */
 
             nt_SPACE_OBJECTS.Rule = terminalServer
@@ -360,24 +421,24 @@ namespace Integra.Space.Language.Grammars
                                     | terminalSource
                                     | terminalStream
                                     | terminalView;
+            
+            nt_SECOND_LEVEL_OBJECTS_TO_ALTER.Rule = terminalDatabase
+                                                    | terminalLogin
+                                                    | terminalEndpoint;
 
-            nt_OBJECTS_TO_ALTER.Rule = terminalSchema
-                                        | terminalSource
-                                        | terminalStream
-                                        | terminalView
-                                        | terminalUser
-                                        | terminalRole
-                                        | terminalDatabase
-                                        | terminalLogin
-                                        | terminalEndpoint;
+            nt_THIRD_LEVEL_OBJECTS_TO_ALTER.Rule = terminalUser
+                                                    | terminalRole
+                                                    | terminalSchema;
 
-            nt_OBJECTS_TO_TAKE_OWNERSHIP.Rule = terminalRole
-                                                | terminalDatabase
-                                                | terminalEndpoint
-                                                | terminalSchema
-                                                | terminalSource
-                                                | terminalStream
-                                                | terminalView;
+            nt_FOURTH_LEVEL_OBJECTS_TO_ALTER.Rule = terminalSource
+                                                    | terminalStream
+                                                    | terminalView;
+
+            nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.Rule = terminalDatabase
+                                                            | terminalEndpoint;
+
+            nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.Rule = terminalRole
+                                                            | terminalSchema;
 
             nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS.Rule = terminalSource
                                                         | terminalStream;
@@ -386,24 +447,37 @@ namespace Integra.Space.Language.Grammars
 
             nt_SPACE_DB_PRINCIPALS.Rule = terminalRole
                                         | terminalUser;
-                        
+
+            /************************************************/
+
+            /* OBJECT WITH IDENTIFIER */
+            nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.Rule = terminalId + terminalPunto + terminalId + terminalPunto + terminalId
+                                                    | terminalId + terminalPunto + terminalId
+                                                    | terminalId;
+
+            nt_THIRD_LEVEL_OBJECT_IDENTIFIER.Rule = terminalId + terminalPunto + terminalId
+                                                    | terminalId;
+
+            nt_SECOND_LEVEL_OBJECT_IDENTIFIER.Rule = terminalId;
+
             /************************************************/
 
             /* OBJECT WITH IDENTIFIER */
             
-            nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID.Rule = nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS + terminalId;
+            nt_SPACE_SERVER_PRINCIPALS_WITH_ID.Rule = nt_SPACE_SERVER_PRINCIPALS + nt_SECOND_LEVEL_OBJECT_IDENTIFIER;
 
-            nt_SPACE_SERVER_PRINCIPALS_WITH_ID.Rule = nt_SPACE_SERVER_PRINCIPALS + terminalId;
-
-            nt_SPACE_DB_PRINCIPALS_WITH_ID.Rule = nt_SPACE_DB_PRINCIPALS + terminalId;
+            nt_SPACE_DB_PRINCIPALS_WITH_ID.Rule = nt_SPACE_DB_PRINCIPALS + nt_THIRD_LEVEL_OBJECT_IDENTIFIER;
 
             /************************************************/
 
             /* PERMISSIONS */
 
             nt_PERMISSION.Rule = nt_GRANULAR_PERMISSION
-                                | nt_GRANULAR_PERMISSION_FOR_ON_1 + terminalOn + nt_OBJECTS_TO_ALTER + terminalId
-                                | nt_GRANULAR_PERMISSION_FOR_ON_2 + terminalOn + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS + terminalId
+                                | nt_GRANULAR_PERMISSION_FOR_ON_1 + terminalOn + nt_SECOND_LEVEL_OBJECTS_TO_ALTER + nt_SECOND_LEVEL_OBJECT_IDENTIFIER
+                                | nt_GRANULAR_PERMISSION_FOR_ON_1 + terminalOn + nt_THIRD_LEVEL_OBJECTS_TO_ALTER + nt_THIRD_LEVEL_OBJECT_IDENTIFIER
+                                | nt_GRANULAR_PERMISSION_FOR_ON_1 + terminalOn + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER
+                                | nt_GRANULAR_PERMISSION_FOR_ON_3 + terminalOn + nt_SECOND_LEVEL_OBJECTS_TO_ALTER + nt_SECOND_LEVEL_OBJECT_IDENTIFIER
+                                | nt_GRANULAR_PERMISSION_FOR_ON_2 + terminalOn + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER
                                 | nt_GRANULAR_PERMISSION_ANY;
 
             nt_GRANULAR_PERMISSION.Rule = terminalControl + terminalServer
@@ -418,14 +492,13 @@ namespace Integra.Space.Language.Grammars
                                             | terminalAuthenticate;
             
             nt_GRANULAR_PERMISSION_FOR_ON_1.Rule = terminalView + terminalDefinition
-                                            | terminalTake + terminalOwnership
-                                            | terminalControl
-                                            | terminalConnect
-                                            | terminalAlter;
+                                                    | terminalControl
+                                                    | terminalAlter
+                                                    | terminalTake + terminalOwnership;
 
-            nt_GRANULAR_PERMISSION_FOR_ON_2.Rule = terminalRead
-                                                    | terminalStop
-                                                    | terminalStart;
+            nt_GRANULAR_PERMISSION_FOR_ON_2.Rule = terminalRead;
+
+            nt_GRANULAR_PERMISSION_FOR_ON_3.Rule = terminalConnect;
 
             nt_GRANULAR_PERMISSION_ANY.Rule = terminalView + terminalAny + terminalDefinition
                                             | terminalView + terminalAny + terminalDatabase
@@ -456,68 +529,74 @@ namespace Integra.Space.Language.Grammars
             nt_USE.Rule = terminalUse + terminalId;
                         
             /************************************************/
-
-            /* START & STOP */
-
-            nt_STATUS_COMMANDS.Rule = nt_STATUS_ACTIONS + nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS_WITH_ID;
-
-            /************************************************/
-
+            
             /* CRUD commands */
 
-            /* ALTER */
-
-            nt_ALTER_LOGIN.Rule = terminalAlter + terminalLogin + terminalId + terminalWith + nt_LOGIN_OPTION_LIST;
-
-            nt_ALTER_USER.Rule = terminalAlter + terminalUser + terminalId + terminalWith + nt_SPACE_USER_OPTION_LIST;
-
-            nt_ALTER_DATABASE.Rule = terminalAlter + terminalDatabase + terminalId + terminalWith + terminalName + terminalEqual + terminalId;
-
-            nt_ALTER_ROLE.Rule = terminalAlter + terminalRole + terminalId + terminalWith + terminalName + terminalEqual + terminalId;
-
-            nt_ALTER_SCHEMA.Rule = terminalAlter + terminalSchema + terminalId + terminalWith + terminalName + terminalEqual + terminalId;
-
-            nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + terminalId + terminalWith + terminalName + terminalEqual + terminalId;
-
-            nt_ALTER_STREAM.Rule = terminalAlter + terminalStream + terminalId + terminalWith + nt_STREAM_OPTION_LIST;
-            nt_STREAM_OPTION_LIST.Rule = this.MakePlusRule(nt_STREAM_OPTION_LIST, terminalComa, nt_STREAM_OPTION);
-            nt_STREAM_OPTION.Rule = terminalQuery + terminalEqual + terminalQueryScript
-                                        | terminalName + terminalEqual + terminalId;
-
-            /* DROP */
-
-            nt_DROP_COMMAND.Rule = terminalDrop + nt_OBJECTS_TO_ALTER + nt_ID_LIST;
-
-            nt_ID_LIST.Rule = this.MakePlusRule(nt_ID_LIST, terminalComa, terminalId);
-            
             /* CREATE */
 
-            nt_CREATE_SCHEMA.Rule = terminalCreate + terminalSchema + terminalId;
-
-            nt_CREATE_STREAM.Rule = terminalCreate + terminalStream + terminalId + terminalQueryScript;
-
-            nt_CREATE_ROLE.Rule = terminalCreate + terminalRole + terminalId;
-
-            nt_CREATE_USER.Rule = terminalCreate + terminalUser + terminalId + nt_USER_OPTION_LIST_AUX;
-            nt_USER_OPTION_LIST_AUX.Rule = terminalWith + nt_SPACE_USER_OPTION_LIST
-                                            | this.Empty;
-            nt_SPACE_USER_OPTION_LIST.Rule = this.MakePlusRule(nt_SPACE_USER_OPTION_LIST, terminalComa, nt_SPACE_USER_OPTION);
-            nt_SPACE_USER_OPTION.Rule = terminalDefaultSchema + terminalEqual + terminalId
-                                        | terminalName + terminalEqual + terminalId;
-
-            nt_CREATE_LOGIN.Rule = terminalCreate + terminalLogin + terminalId + terminalWith + nt_LOGIN_OPTION_PASSWORD + nt_LOGIN_OPTION_LIST_AUX;
+            nt_CREATE_LOGIN.Rule = terminalCreate + terminalLogin + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_LOGIN_OPTION_PASSWORD + nt_LOGIN_OPTION_LIST_AUX;
             nt_LOGIN_OPTION_LIST_AUX.Rule = terminalComa + nt_LOGIN_OPTION_LIST
                                             | this.Empty;
             nt_LOGIN_OPTION_PASSWORD.Rule = terminalPassword + terminalEqual + terminalCadena;
             nt_LOGIN_OPTION_LIST.Rule = this.MakePlusRule(nt_LOGIN_OPTION_LIST, terminalComa, nt_LOGIN_OPTION);
             nt_LOGIN_OPTION.Rule = terminalDefaultDatabase + terminalEqual + terminalId
                                         | terminalPassword + terminalEqual + terminalCadena
-                                        | terminalName + terminalEqual + terminalId;
+                                        | terminalName + terminalEqual + terminalId
+                                        | terminalStatus + terminalEqual + terminalStatusValue;
+            nt_CREATE_DATABASE.Rule = terminalCreate + terminalDatabase + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + nt_DATABASE_OPTION_LIST_AUX;
+            nt_DATABASE_OPTION_LIST_AUX.Rule = terminalWith + nt_DATABASE_OPTION_LIST
+                                            | this.Empty;
+            nt_DATABASE_OPTION_LIST.Rule = this.MakePlusRule(nt_DATABASE_OPTION_LIST, terminalComa, nt_DATABASE_OPTION);
+            nt_DATABASE_OPTION.Rule = terminalStatus + terminalEqual + terminalStatusValue
+                                    | terminalName + terminalEqual + terminalId;
+            nt_CREATE_USER.Rule = terminalCreate + terminalUser + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + nt_USER_OPTION_LIST_AUX;
+            nt_USER_OPTION_LIST_AUX.Rule = terminalWith + nt_USER_OPTION_LIST
+                                            | this.Empty;
+            nt_USER_OPTION_LIST.Rule = this.MakePlusRule(nt_USER_OPTION_LIST, terminalComa, nt_USER_OPTION);
+            nt_USER_OPTION.Rule = terminalDefaultSchema + terminalEqual + terminalId
+                                        | terminalName + terminalEqual + terminalId
+                                        | terminalLogin + terminalEqual + terminalId
+                                        | terminalStatus + terminalEqual + terminalStatusValue;
+            nt_CREATE_ROLE.Rule = terminalCreate + terminalRole + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + nt_DB_ROLE_OPTION_LIST_AUX;
+            nt_DB_ROLE_OPTION_LIST_AUX.Rule = terminalWith + nt_DB_ROLE_OPTION_LIST
+                                            | this.Empty;
+            nt_DB_ROLE_OPTION_LIST.Rule = this.MakePlusRule(nt_DB_ROLE_OPTION_LIST, terminalComa, nt_DB_ROLE_OPTION);
+            nt_DB_ROLE_OPTION.Rule = terminalStatus + terminalEqual + terminalStatusValue
+                                    | terminalName + terminalEqual + terminalId
+                                    | terminalAdd + terminalEqual + nt_THIRD_LEVEL_ID_LIST_2
+                                    | terminalRemove + terminalEqual + nt_THIRD_LEVEL_ID_LIST_2;
+            nt_CREATE_SCHEMA.Rule = terminalCreate + terminalSchema + nt_THIRD_LEVEL_OBJECT_IDENTIFIER;
+            nt_CREATE_STREAM.Rule = terminalCreate + terminalStream + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalQueryScript + nt_STREAM_OPTION_LIST_AUX;
+            nt_STREAM_OPTION_LIST_AUX.Rule = terminalWith + nt_STREAM_OPTION_LIST
+                                            | this.Empty;
+            nt_CREATE_SOURCE.Rule = terminalCreate + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + nt_SOURCE_OPTION_LIST_AUX;
+            nt_SOURCE_OPTION_LIST_AUX.Rule = terminalWith + nt_SOURCE_OPTION_LIST
+                                            | this.Empty;
+            nt_SOURCE_OPTION_LIST.Rule = this.MakePlusRule(nt_SOURCE_OPTION_LIST, terminalComa, nt_SOURCE_OPTION);
+            nt_SOURCE_OPTION.Rule = terminalStatus + terminalEqual + terminalStatusValue
+                                    | terminalName + terminalEqual + terminalId;
+            /* ALTER */
 
-            nt_CREATE_DATABASE.Rule = terminalCreate + terminalDatabase + terminalId;
+            nt_ALTER_LOGIN.Rule = terminalAlter + terminalLogin + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_LOGIN_OPTION_LIST;
+            nt_ALTER_DATABASE.Rule = terminalAlter + terminalDatabase + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_DATABASE_OPTION_LIST;
 
-            nt_CREATE_SOURCE.Rule = terminalCreate + terminalSource + terminalId;
+            nt_ALTER_USER.Rule = terminalAlter + terminalUser + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_USER_OPTION_LIST;
+            nt_ALTER_ROLE.Rule = terminalAlter + terminalRole + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_DB_ROLE_OPTION_LIST;
+            nt_ALTER_SCHEMA.Rule = terminalAlter + terminalSchema + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + terminalName + terminalEqual + terminalId;
 
+            nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_SOURCE_OPTION_LIST;
+            nt_ALTER_STREAM.Rule = terminalAlter + terminalStream + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_STREAM_OPTION_LIST;
+            nt_STREAM_OPTION_LIST.Rule = this.MakePlusRule(nt_STREAM_OPTION_LIST, terminalComa, nt_STREAM_OPTION);
+            nt_STREAM_OPTION.Rule = terminalQuery + terminalEqual + terminalQueryScript
+                                        | terminalName + terminalEqual + terminalId
+                                        | terminalStatus + terminalEqual + terminalStatusValue;
+
+            /* DROP */
+
+            nt_DROP_COMMAND.Rule = terminalDrop + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_ID_LIST
+                                    | terminalDrop + nt_THIRD_LEVEL_OBJECTS_TO_ALTER + nt_THIRD_LEVEL_ID_LIST
+                                    | terminalDrop + nt_SECOND_LEVEL_OBJECTS_TO_ALTER + nt_SECOND_LEVEL_ID_LIST;
+            
             /************************************************/
 
             /* Permission commands */
@@ -531,21 +610,23 @@ namespace Integra.Space.Language.Grammars
 
             /* Add USERS TO ROLES */
 
-            nt_ADD_USERS_TO_ROLE_COMMAND.Rule = terminalAdd + nt_ID_LIST + terminalTo + nt_ID_LIST;
+            nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND.Rule = terminalAdd + nt_THIRD_LEVEL_ID_LIST + terminalTo + nt_THIRD_LEVEL_ID_LIST
+                                                            | terminalRemove + nt_THIRD_LEVEL_ID_LIST + terminalTo + nt_THIRD_LEVEL_ID_LIST;
 
             /* TAKE OWNERSHIP */
 
-            nt_TAKE_OWNERSHIP.Rule = terminalTake + terminalOwnership + terminalOn + nt_OBJECTS_TO_TAKE_OWNERSHIP + terminalId;
+            nt_TAKE_OWNERSHIP.Rule = terminalTake + terminalOwnership + terminalOn + nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP + nt_SECOND_LEVEL_OBJECT_IDENTIFIER
+                                    | terminalTake + terminalOwnership + terminalOn + nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP + nt_THIRD_LEVEL_OBJECT_IDENTIFIER
+                                    | terminalTake + terminalOwnership + terminalOn + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER;
 
             /************************************************/
 
             /* QUERY METADATA */
-            nt_METADATA_QUERY.Rule = this.CreateQueryForMetadataGrammar();
+            nt_METADATA_QUERY.Rule = new QueryGrammarForMetadata(this.Empty).QueryForMetadata; // new QueryGrammarForMetadata().QueryForMetadata; // this.CreateQueryForMetadataGrammar();
             /************************************************/
 
-            nt_COMMAND_NODE.Rule = nt_STATUS_COMMANDS
-                                    | nt_PERMISSIONS_COMMANDS
-                                    | nt_ADD_USERS_TO_ROLE_COMMAND
+            nt_COMMAND_NODE.Rule = nt_PERMISSIONS_COMMANDS
+                                    | nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND
                                     | nt_DROP_COMMAND
                                     | nt_CREATE_LOGIN
                                     | nt_CREATE_DATABASE
@@ -570,131 +651,6 @@ namespace Integra.Space.Language.Grammars
             this.Root = nt_COMMAND_NODE_LIST;
 
             this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;
-        }
-
-        /// <summary>
-        /// Creates the query for metadata grammar.
-        /// </summary>
-        /// <returns>Query for metadata root node.</returns>
-        public NonTerminal CreateQueryForMetadataGrammar()
-        {
-            /*** TERMINALES DE LA GRAMATICA ***/
-
-            /* PALABRAS RESERVADAS */
-            KeyTerm terminalFrom = ToTerm("from", "from");
-            KeyTerm terminalWhere = ToTerm("where", "where");
-            KeyTerm terminalOrder = ToTerm("order", "order");
-            KeyTerm terminalAsc = ToTerm("asc", "asc");
-            KeyTerm terminalDesc = ToTerm("desc", "desc");
-            KeyTerm terminalBy = ToTerm("by", "by");
-            KeyTerm terminalAs = ToTerm("as", "as");
-            KeyTerm terminalSelect = ToTerm("select", "select");
-            KeyTerm terminalTop = ToTerm("top", "top");
-
-            // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
-            this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
-
-            /* SIMBOLOS */
-            KeyTerm terminalComa = ToTerm(",", "coma");
-
-            /* CONSTANTES E IDENTIFICADORES */
-            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
-            terminalNumero.AstConfig.NodeType = null;
-            terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
-
-            RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
-            terminalId.Name = "identifier";
-            terminalId.AstConfig.NodeType = null;
-            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
-
-            /* COMENTARIOS */
-            CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");
-            CommentTerminal comentarioBloque = new CommentTerminal("block_coment", "/*", "*/");
-            NonGrammarTerminals.Add(comentarioLinea);
-            NonGrammarTerminals.Add(comentarioBloque);
-
-            /* NO TERMINALES */
-            ExpressionGrammarForMetadata expressionGrammar = new ExpressionGrammarForMetadata();
-            NonTerminal nt_LOGIC_EXPRESSION = expressionGrammar.LogicExpression;
-
-            NonTerminal nt_WHERE = new NonTerminal("WHERE", typeof(WhereNode));
-            nt_WHERE.AstConfig.NodeType = null;
-            nt_WHERE.AstConfig.DefaultNodeCreator = () => new WhereNode();
-            NonTerminal nt_FROM = new NonTerminal("FROM", typeof(SourceForMetadataASTNode));
-            nt_FROM.AstConfig.NodeType = null;
-            nt_FROM.AstConfig.DefaultNodeCreator = () => new SourceForMetadataASTNode(0);
-            NonTerminal nt_ORDER_BY = new NonTerminal("ORDER_BY", typeof(OrderByNode));
-            nt_ORDER_BY.AstConfig.NodeType = null;
-            nt_ORDER_BY.AstConfig.DefaultNodeCreator = () => new OrderByNode();
-            NonTerminal nt_LIST_OF_VALUES_FOR_ORDER_BY = new NonTerminal("LIST_OF_VALUES", typeof(ListNodeOrderBy));
-            nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.NodeType = null;
-            nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.DefaultNodeCreator = () => new ListNodeOrderBy();
-            NonTerminal nt_QUERY_FOR_METADATA = new NonTerminal("METADATA_QUERY", typeof(QueryForMetadataASTNode));
-            nt_QUERY_FOR_METADATA.AstConfig.NodeType = null;
-            nt_QUERY_FOR_METADATA.AstConfig.DefaultNodeCreator = () => new QueryForMetadataASTNode();
-            NonTerminal nt_SOURCE_DEFINITION = new NonTerminal("SOURCE_DEFINITION", typeof(PassNode));
-            nt_SOURCE_DEFINITION.AstConfig.NodeType = null;
-            nt_SOURCE_DEFINITION.AstConfig.DefaultNodeCreator = () => new PassNode();
-            NonTerminal nt_ID_OR_ID_WITH_ALIAS = new NonTerminal("ID_OR_ID_WITH_ALIAS", typeof(ConstantValueWithOptionalAliasNode));
-            nt_ID_OR_ID_WITH_ALIAS.AstConfig.NodeType = null;
-            nt_ID_OR_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithOptionalAliasNode();
-
-            /* PROJECTION */
-            NonTerminal nt_VALUES_WITH_ALIAS_FOR_PROJECTION = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
-            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.NodeType = null;
-            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
-            NonTerminal nt_LIST_OF_VALUES_FOR_PROJECTION = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
-            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.NodeType = null;
-            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
-            NonTerminal nt_SELECT = new NonTerminal("SELECT", typeof(SelectNode));
-            nt_SELECT.AstConfig.NodeType = null;
-            nt_SELECT.AstConfig.DefaultNodeCreator = () => new SelectNode();
-            NonTerminal nt_TOP = new NonTerminal("TOP", typeof(TopNode));
-            nt_TOP.AstConfig.NodeType = null;
-            nt_TOP.AstConfig.DefaultNodeCreator = () => new TopNode();
-
-            /* USER QUERY */
-            nt_QUERY_FOR_METADATA.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_ORDER_BY;
-            /* **************************** */
-            /* ORDER BY */
-            nt_ORDER_BY.Rule = terminalOrder + terminalBy + nt_LIST_OF_VALUES_FOR_ORDER_BY
-                                | terminalOrder + terminalBy + terminalAsc + nt_LIST_OF_VALUES_FOR_ORDER_BY
-                                | terminalOrder + terminalBy + terminalDesc + nt_LIST_OF_VALUES_FOR_ORDER_BY
-                                | this.Empty;
-
-            nt_LIST_OF_VALUES_FOR_ORDER_BY.Rule = nt_LIST_OF_VALUES_FOR_ORDER_BY + terminalComa + terminalId
-                                                    | terminalId;
-            /* **************************** */
-            /* SOURCE DEFINITION */
-            nt_SOURCE_DEFINITION.Rule = nt_FROM;
-            /* **************************** */
-            /* FROM */
-            nt_FROM.Rule = terminalFrom + nt_ID_OR_ID_WITH_ALIAS;
-            /* **************************** */
-            /* ID OR ID WITH ALIAS */
-            nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
-                                            | terminalId;
-            /* **************************** */
-            /* WHERE */
-            nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION
-                            | this.Empty;
-            /* **************************** */
-
-            /* SELECT */
-            nt_SELECT.Rule = terminalSelect + nt_TOP + nt_LIST_OF_VALUES_FOR_PROJECTION
-                                        | terminalSelect + nt_LIST_OF_VALUES_FOR_PROJECTION;
-            /* **************************** */
-            /* TOP */
-            nt_TOP.Rule = terminalTop + terminalNumero;
-            /* **************************** */
-            /* LISTA DE VALORES */
-            nt_LIST_OF_VALUES_FOR_PROJECTION.Rule = nt_LIST_OF_VALUES_FOR_PROJECTION + terminalComa + nt_VALUES_WITH_ALIAS_FOR_PROJECTION
-                                    | nt_VALUES_WITH_ALIAS_FOR_PROJECTION;
-            /* **************************** */
-            /* VALORES CON ALIAS */
-            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = expressionGrammar.ProjectionValue + terminalAs + terminalId;
-
-            return nt_QUERY_FOR_METADATA;
         }
     }
 }

@@ -19,14 +19,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class AlterDatabaseASTNode : AlterCommandASTNode<DatabaseOptionEnum>
     {
         /// <summary>
-        /// Space object.
+        /// Options AST node.
         /// </summary>
-        private string spaceUserOption;
-
-        /// <summary>
-        /// Space object identifier.
-        /// </summary>
-        private object optionValue;
+        private DictionaryCommandOptionASTNode<DatabaseOptionEnum> options;
 
         /// <summary>
         /// Reserved word with.
@@ -49,8 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.with = (string)ChildrenNodes[3].Token.Value;
-            this.spaceUserOption = (string)ChildrenNodes[4].Token.Value;
-            this.optionValue = ChildrenNodes[6].Token.Value;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<DatabaseOptionEnum>;
         }
 
         /// <summary>
@@ -62,21 +56,14 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
-            Dictionary<DatabaseOptionEnum, object> optionsAux = new Dictionary<DatabaseOptionEnum, object>();
-            CommandOption<DatabaseOptionEnum> commandOption = null;
-            DatabaseOptionEnum userOptionAux;
-            if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
-            {
-                commandOption = new CommandOption<DatabaseOptionEnum>(userOptionAux, this.optionValue);
-            }
-            else
-            {
-                throw new Exceptions.SyntaxException(string.Format("Invalid user option {0}.", this.spaceUserOption));
-            }
-            
-            this.AddCommandOption(optionsAux, commandOption);
 
             this.BeginEvaluate(thread);
+            Dictionary<DatabaseOptionEnum, object> optionsAux = new Dictionary<DatabaseOptionEnum, object>();
+            if (this.options != null)
+            {
+                optionsAux = (Dictionary<DatabaseOptionEnum, object>)this.options.Evaluate(thread);
+            }
+
             this.EndEvaluate(thread);
 
             return new AlterDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());

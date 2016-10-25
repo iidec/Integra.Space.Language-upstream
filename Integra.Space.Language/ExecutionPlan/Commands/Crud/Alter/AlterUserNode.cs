@@ -21,17 +21,16 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public AlterUserNode(CommandObject commandObject, Dictionary<UserOptionEnum, object> options, int line, int column, string nodeText, string databaseName) : base(commandObject, options, line, column, nodeText, null, databaseName)
+        public AlterUserNode(CommandObject commandObject, Dictionary<UserOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             if (options.ContainsKey(UserOptionEnum.Default_Schema))
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, options[UserOptionEnum.Default_Schema].ToString(), PermissionsEnum.None, false));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, commandObject.DatabaseName, null, options[UserOptionEnum.Default_Schema].ToString(), PermissionsEnum.None, false));
             }
 
             if (options.ContainsKey(UserOptionEnum.Name))
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.DatabaseUser, options[UserOptionEnum.Name].ToString(), PermissionsEnum.None, true));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.DatabaseUser, commandObject.DatabaseName, null, options[UserOptionEnum.Name].ToString(), PermissionsEnum.None, true));
             }
         }
     }

@@ -18,23 +18,24 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="action">Space command action.</param>
         /// <param name="commandObjects">Command objects.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public SystemCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects, string schemaName, string databaseName)
+        public SystemCommand(ActionCommandEnum action, HashSet<CommandObject> commandObjects)
         {
             this.Action = action;
-            this.CommandObjects = commandObjects;
-            this.SchemaName = schemaName;
-            this.DatabaseName = databaseName;
+            this.CommandObjects = new HashSet<CommandObject>();
 
-            if (!string.IsNullOrWhiteSpace(schemaName))
+            foreach (CommandObject @object in commandObjects)
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, schemaName, PermissionsEnum.None, false));
-            }
+                if (!string.IsNullOrWhiteSpace(@object.SchemaName))
+                {
+                    this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, @object.DatabaseName, null, @object.SchemaName, PermissionsEnum.None, false));
+                }
 
-            if (!string.IsNullOrWhiteSpace(databaseName))
-            {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, databaseName, PermissionsEnum.Connect, false));
+                if (!string.IsNullOrWhiteSpace(@object.DatabaseName))
+                {
+                    this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, @object.DatabaseName, PermissionsEnum.Connect, false));
+                }
+
+                this.CommandObjects.Add(@object);
             }
         }
 
@@ -42,16 +43,6 @@ namespace Integra.Space.Language
         /// Gets command action.
         /// </summary>
         public ActionCommandEnum Action { get; private set; }
-
-        /// <summary>
-        /// Gets the schema of the object.
-        /// </summary>
-        public string SchemaName { get; private set; }
-
-        /// <summary>
-        /// Gets the database name for the command execution.
-        /// </summary>
-        public string DatabaseName { get; private set; }
 
         /// <summary>
         /// Gets the objects specified in the command.

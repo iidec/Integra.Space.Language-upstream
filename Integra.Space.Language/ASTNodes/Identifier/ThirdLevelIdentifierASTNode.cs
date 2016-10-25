@@ -1,27 +1,31 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CommandQueryForMetadataASTNode.cs" company="Integra.Space.Language">
+// <copyright file="ThirdLevelIdentifierASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language.ASTNodes.MetadataQuery
+namespace Integra.Space.Language.ASTNodes.Identifier
 {
-    using System.Collections.Generic;
+    using System;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
-    /// JoinNode class
+    /// IdentifierNode class
     /// </summary>
-    internal sealed class CommandQueryForMetadataASTNode : AstNodeBase
+    internal sealed class ThirdLevelIdentifierASTNode : AstNodeBase
     {
         /// <summary>
-        /// on node
+        /// Object identifier.
         /// </summary>
-        private AstNodeBase metadataQuery;
+        private string identifier;
+
+        /// <summary>
+        /// Database name.
+        /// </summary>
+        private string databaseName;
 
         /// <summary>
         /// First method called
@@ -31,7 +35,16 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.metadataQuery = AddChild(NodeUseType.Parameter, "MetadataQuery", ChildrenNodes[0]) as AstNodeBase;
+
+            if (ChildrenNodes.Count == 1)
+            {
+                this.identifier = (string)ChildrenNodes[0].Token.Value;
+            }
+            else if (ChildrenNodes.Count == 2)
+            {
+                this.databaseName = (string)ChildrenNodes[0].Token.Value;
+                this.identifier = (string)ChildrenNodes[1].Token.Value;
+            }
         }
 
         /// <summary>
@@ -42,13 +55,7 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            this.BeginEvaluate(thread);
-            PlanNode query = (PlanNode)this.metadataQuery.Evaluate(thread);
-            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
-            string databaseName = (string)databaseBinding.GetValueRef(thread);
-            this.EndEvaluate(thread);
-
-            return new QueryCommandForMetadataNode(Common.ActionCommandEnum.ViewDefinition, query, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            return Tuple.Create<string, string, string>(this.databaseName, null, this.identifier);
         }
     }
 }

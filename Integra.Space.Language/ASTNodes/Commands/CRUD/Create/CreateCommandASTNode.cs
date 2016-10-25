@@ -42,7 +42,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Object identifier.
         /// </summary>
-        private string identifier;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// Not allowed options.
@@ -101,7 +101,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
             this.systemObjectTypeName = (string)ChildrenNodes[1].Token.Value;
-            this.identifier = (string)ChildrenNodes[2].Token.Value;
+            this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[2]) as AstNodeBase; // (string)ChildrenNodes[2].Token.Value;
         }
 
         /// <summary>
@@ -113,6 +113,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
+            System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)this.identifier.Evaluate(thread);
+
+            // gets the database if it was defined.
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
             if (this.systemObjectTypeName.Equals("role", System.StringComparison.InvariantCultureIgnoreCase) | this.systemObjectTypeName.Equals("user", System.StringComparison.InvariantCultureIgnoreCase))
@@ -126,7 +131,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 throw new Exceptions.SyntaxException(string.Format("Invalid object {0}.", this.systemObjectTypeName));
             }
 
-            return new CommandObject(systemObjectType, this.identifier, this.granularPermission, true);
+            if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+            {
+                databaseName = identifierWithPath.Item1;
+            }
+
+            return new CommandObject(systemObjectType, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, this.granularPermission, true);
         }
 
         /// <summary>
@@ -139,7 +149,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             {
                 if (this.notAllowedOptions.Contains(option))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("{0} option is not allowed in a {1} statement.", option.ToString(), this.action.ToString()));
+                    throw new Exceptions.SyntaxException(string.Format("'{0}' option is not allowed.", option.ToString()));
                 }
             }
         }

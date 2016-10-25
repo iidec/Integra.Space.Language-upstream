@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="AddCommandASTNode.cs" company="Integra.Space.Language">
+// <copyright file="AddOrRemoveCommandASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -18,7 +18,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
     /// <summary>
     /// Space command AST node class.
     /// </summary>
-    internal class AddCommandASTNode : AstNodeBase
+    internal class AddOrRemoveCommandASTNode : AstNodeBase
     {
         /// <summary>
         /// Space permission list.
@@ -66,18 +66,30 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Enum.TryParse<ActionCommandEnum>(this.terminalAdd, true, out actionAux);
 
             HashSet<CommandObject> usersAux = new HashSet<CommandObject>(new CommandObjectComparer());
-            foreach (IdentifierNode child in this.users.GetChildNodes())
+            foreach (AstNode child in this.users.GetChildNodes())
             {
-                if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, child.Symbol, PermissionsEnum.Control, false)))
+                System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)child.Evaluate(thread);
+                if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                {
+                    databaseName = identifierWithPath.Item1;
+                }
+
+                if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
                 {
                     throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
                 }
             }
 
             HashSet<CommandObject> rolesAux = new HashSet<CommandObject>(new CommandObjectComparer());
-            foreach (IdentifierNode child in this.roles.GetChildNodes())
+            foreach (AstNode child in this.roles.GetChildNodes())
             {
-                if (!rolesAux.Add(new CommandObject(SystemObjectEnum.DatabaseRole, child.Symbol, PermissionsEnum.Control, false)))
+                System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)child.Evaluate(thread);
+                if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                {
+                    databaseName = identifierWithPath.Item1;
+                }
+
+                if (!rolesAux.Add(new CommandObject(SystemObjectEnum.DatabaseRole, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Alter, false)))
                 {
                     throw new Exceptions.SyntaxException(string.Format("The role '{0}' is specified more than once."));
                 }
@@ -85,7 +97,15 @@ namespace Integra.Space.Language.ASTNodes.Commands
             
             this.EndEvaluate(thread);
 
-            return new AddCommandNode(actionAux, rolesAux, usersAux, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            HashSet<CommandObject> commandObjects = new HashSet<CommandObject>(new CommandObjectComparer());
+
+            // agrego la lista de roles al hashset de objetos del comando.
+            rolesAux.ToList().ForEach(x => commandObjects.Add(x));
+
+            // agrego la lista de usuarios al hashset de objetos del comando.
+            usersAux.ToList().ForEach(x => commandObjects.Add(x));
+
+            return new AddOrRemoveCommandNode(actionAux, commandObjects, rolesAux, usersAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

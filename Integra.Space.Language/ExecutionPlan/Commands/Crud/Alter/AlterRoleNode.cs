@@ -21,13 +21,12 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public AlterRoleNode(CommandObject commandObject, Dictionary<RoleOptionEnum, object> options, int line, int column, string nodeText, string databaseName) : base(commandObject, options, line, column, nodeText, null, databaseName)
+        public AlterRoleNode(CommandObject commandObject, Dictionary<RoleOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             if (options.ContainsKey(RoleOptionEnum.Name))
             {
                 System.Diagnostics.Contracts.Contract.Assert(options[RoleOptionEnum.Name].ToString() != commandObject.Name);
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, options[RoleOptionEnum.Name].ToString(), PermissionsEnum.None, true));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.DatabaseRole, commandObject.DatabaseName, commandObject.SchemaName, options[RoleOptionEnum.Name].ToString(), PermissionsEnum.None, true));
             }
         }
     }

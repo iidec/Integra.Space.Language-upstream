@@ -36,6 +36,27 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CommandObject"/> class.
+        /// </summary>
+        /// <param name="securableClass">Securable class.</param>
+        /// <param name="databaseName">Database name of the object.</param>
+        /// <param name="schemaName">Schema name of the object.</param>
+        /// <param name="name">Name of the object.</param>
+        /// <param name="granularPermission">Granular permission.</param>
+        /// <param name="isNew">Value indicating whether the object is new or not.</param>
+        public CommandObject(SystemObjectEnum securableClass, string databaseName, string schemaName, string name, PermissionsEnum granularPermission, bool? isNew)
+        {
+            Contract.Assert(!string.IsNullOrWhiteSpace(name));
+
+            this.SecurableClass = securableClass;
+            this.Name = name;
+            this.SchemaName = schemaName;
+            this.DatabaseName = databaseName;
+            this.GranularPermission = granularPermission;
+            this.isNew = isNew;
+        }
+
+        /// <summary>
         /// Gets the securable class of the object.
         /// </summary>
         public SystemObjectEnum SecurableClass { get; private set; }
@@ -44,6 +65,16 @@ namespace Integra.Space.Language
         /// Gets the name of the object.
         /// </summary>
         public string Name { get; private set; }
+
+        /// <summary>
+        /// Gets the schema name of the object.
+        /// </summary>
+        public string SchemaName { get; private set; }
+
+        /// <summary>
+        /// Gets the database name of the object.
+        /// </summary>
+        public string DatabaseName { get; private set; }
 
         /// <summary>
         /// Gets or sets the required granular permission to execute the command that contains this object.

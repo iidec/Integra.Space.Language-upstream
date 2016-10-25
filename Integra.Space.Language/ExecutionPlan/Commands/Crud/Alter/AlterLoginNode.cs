@@ -21,17 +21,17 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public AlterLoginNode(CommandObject commandObject, Dictionary<LoginOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText, null, null)
+        public AlterLoginNode(CommandObject commandObject, Dictionary<LoginOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             if (options.ContainsKey(LoginOptionEnum.Default_Database))
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, options[LoginOptionEnum.Default_Database].ToString(), PermissionsEnum.Connect, false));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, options[LoginOptionEnum.Default_Database].ToString(), PermissionsEnum.None, false));
             }
 
             if (options.ContainsKey(LoginOptionEnum.Name))
             {
                 System.Diagnostics.Contracts.Contract.Assert(options[LoginOptionEnum.Name].ToString() != commandObject.Name);
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, options[LoginOptionEnum.Name].ToString(), PermissionsEnum.None, true));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Login, options[LoginOptionEnum.Name].ToString(), PermissionsEnum.None, true));
             }
         }
     }

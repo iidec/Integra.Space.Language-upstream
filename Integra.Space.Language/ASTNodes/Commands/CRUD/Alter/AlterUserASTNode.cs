@@ -26,7 +26,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Options AST node.
         /// </summary>
-        private CommandOptionListASTNode<UserOptionEnum> options;
+        private DictionaryCommandOptionASTNode<UserOptionEnum> options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlterUserASTNode"/> class.
@@ -44,7 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.with = (string)ChildrenNodes[3].Token.Value;
-            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<UserOptionEnum>;
+            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<UserOptionEnum>;
         }
 
         /// <summary>
@@ -59,8 +59,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Dictionary<UserOptionEnum, object> optionsAux = new Dictionary<UserOptionEnum, object>();
 
             this.BeginEvaluate(thread);
-            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
-            string databaseName = (string)databaseBinding.GetValueRef(thread);
 
             if (this.options != null)
             {
@@ -68,7 +66,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             
             this.EndEvaluate(thread);
-            return new AlterUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText(), databaseName);
+            return new AlterUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

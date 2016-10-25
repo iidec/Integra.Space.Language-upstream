@@ -19,9 +19,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public DropObjectNode(CommandObject commandObject, int line, int column, string nodeText, string schemaName, string databaseName) : base(ActionCommandEnum.Drop, commandObject, line, column, nodeText, schemaName, databaseName)
+        public DropObjectNode(CommandObject commandObject, int line, int column, string nodeText) : base(ActionCommandEnum.Drop, commandObject, line, column, nodeText)
         {
         }
     }

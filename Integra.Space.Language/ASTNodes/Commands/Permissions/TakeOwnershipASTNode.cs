@@ -38,7 +38,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// System object type.
         /// </summary>
-        private string identifier;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// First method called
@@ -52,7 +52,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.action = ChildrenNodes[0].Token.Text + ChildrenNodes[1].Token.Text;
             this.on = ChildrenNodes[2].Token.Text;
             this.objectType = AddChild(NodeUseType.ValueRead, "SpaceObjectType", ChildrenNodes[3]) as SpaceObjectASTNode;
-            this.identifier = ChildrenNodes[4].Token.ValueString;
+            this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[4]) as AstNodeBase; // ChildrenNodes[4].Token.ValueString;
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             this.BeginEvaluate(thread);
             SystemObjectEnum objectTypeAux = (SystemObjectEnum)this.objectType.Evaluate(thread);
-
+            System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)this.identifier.Evaluate(thread);
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
@@ -76,7 +76,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.action));
             }
             
-            return new TakeOwnershipCommandNode(actionAux, new CommandObject(objectTypeAux, this.identifier, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+            {
+                databaseName = identifierWithPath.Item1;
+            }
+
+            return new TakeOwnershipCommandNode(actionAux, new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

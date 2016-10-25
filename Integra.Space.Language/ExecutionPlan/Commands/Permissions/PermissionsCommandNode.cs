@@ -24,7 +24,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Space object to assign the permission.
         /// </summary>
-        private IEnumerable<CommandObject> principals;
+        private HashSet<CommandObject> principals;
 
         /// <summary>
         /// With grant option flag.
@@ -41,18 +41,21 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public PermissionsCommandNode(ActionCommandEnum action, HashSet<CommandObject> principals, PermissionNode permission, bool permissionOption, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, principals, line, column, nodeText, schemaName, databaseName)
+        public PermissionsCommandNode(ActionCommandEnum action, HashSet<CommandObject> principals, PermissionNode permission, bool permissionOption, int line, int column, string nodeText) : base(action, principals, line, column, nodeText)
         {
             this.permission = permission;
-            this.principals = principals;
-            this.permissionOption = permissionOption;
-            
-            // se agregan los objetos de los permisos al listado de objetos del comando.
-            if (permission.ObjectType != null && permission.ObjectName != null)
+            this.principals = new HashSet<CommandObject>(new CommandObjectComparer());
+            foreach (CommandObject commandObject in principals)
             {
-                this.CommandObjects.Add(new CommandObject(permission.ObjectType.Value, permission.ObjectName, PermissionsEnum.Control, false));
+                this.principals.Add(commandObject);
+            }
+
+            this.permissionOption = permissionOption;
+
+            // se agregan los objetos de los permisos al listado de objetos del comando.
+            if (permission.CommandObject != null)
+            {
+                this.CommandObjects.Add(permission.CommandObject);
             }
         }
 

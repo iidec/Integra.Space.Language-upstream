@@ -28,9 +28,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
-        /// <param name="databaseName">Database name for the command execution.</param>
-        public CreateStreamNode(CommandObject commandObject, string query, PlanNode executionPlan, Dictionary<StreamOptionEnum, object> options, int line, int column, string nodeText, string schemaName, string databaseName) : base(commandObject, options, line, column, nodeText, schemaName, databaseName)
+        public CreateStreamNode(CommandObject commandObject, string query, PlanNode executionPlan, Dictionary<StreamOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             System.Diagnostics.Contracts.Contract.Assert(!string.IsNullOrWhiteSpace(query));
             this.Query = query;
@@ -40,16 +38,22 @@ namespace Integra.Space.Language
             List<PlanNode> fromNodes = Language.Runtime.NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
-                string sourceName = fromNode.Properties["SourceName"].ToString();
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Source, sourceName, PermissionsEnum.Read, false));
-
-                string schemaNameOfSource = null;
+                string schemaNameOfSource = commandObject.SchemaName;
+                string databaseNameOfSource = commandObject.DatabaseName;
                 if (fromNode.Properties.ContainsKey("SchemaName") && fromNode.Properties["SchemaName"] != null)
                 {
                     schemaNameOfSource = fromNode.Properties["SchemaName"].ToString();
                 }
 
-                this.referencedSources.Add(new ReferencedSource(schemaNameOfSource, sourceName));
+                if (fromNode.Properties.ContainsKey("DatabaseName") && fromNode.Properties["DatabaseName"] != null)
+                {
+                    databaseNameOfSource = fromNode.Properties["DatabaseName"].ToString();
+                }
+
+                string sourceName = fromNode.Properties["SourceName"].ToString();
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, PermissionsEnum.Read, false));
+                
+                this.referencedSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
             }
         }
 
@@ -82,10 +86,12 @@ namespace Integra.Space.Language
             /// <summary>
             /// Initializes a new instance of the <see cref="ReferencedSource"/> class.
             /// </summary>
-            /// <param name="schemaName">Schema to witch the source belongs.</param>
+            /// <param name="databaseName">Database to which the source belongs.</param>
+            /// <param name="schemaName">Schema to which the source belongs.</param>
             /// <param name="sourceName">Source referenced at the stream query.</param>
-            public ReferencedSource(string schemaName, string sourceName)
+            public ReferencedSource(string databaseName, string schemaName, string sourceName)
             {
+                this.DatabaseName = databaseName;
                 this.SchemaName = schemaName;
                 this.SourceName = sourceName;
             }
@@ -93,12 +99,17 @@ namespace Integra.Space.Language
             /// <summary>
             /// Gets the source name.
             /// </summary>
-            protected string SourceName { get; private set; }
+            public string SourceName { get; private set; }
 
             /// <summary>
             /// Gets the schema name.
             /// </summary>
-            protected string SchemaName { get; private set; }
+            public string SchemaName { get; private set; }
+
+            /// <summary>
+            /// Gets the database name.
+            /// </summary>
+            public string DatabaseName { get; private set; }
         }
     }
 }

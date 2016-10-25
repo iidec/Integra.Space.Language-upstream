@@ -104,7 +104,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string nodeText = this.GetNodeText();
             foreach (PermissionNode permission in permissionListAux)
             {
-                listOfPermissionCommands.Add(new PermissionsCommandNode(actionAux, principalsHS, permission, permissionOptionAux, this.Location.Line, this.Location.Column, nodeText, null, databaseName));
+                listOfPermissionCommands.Add(new PermissionsCommandNode(actionAux, principalsHS, permission, permissionOptionAux, this.Location.Line, this.Location.Column, nodeText));
             }
 
             return listOfPermissionCommands.ToArray();

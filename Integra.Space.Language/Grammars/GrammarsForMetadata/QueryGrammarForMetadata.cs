@@ -33,12 +33,30 @@ namespace Integra.Space.Language.Grammars
         private NonTerminal queryForMetadata;
 
         /// <summary>
+        /// Terminal empty of the parent grammar.
+        /// </summary>
+        private Terminal terminalEmpty;
+        
+        /// <summary>
         /// Initializes a new instance of the <see cref="QueryGrammarForMetadata"/> class
         /// </summary>
         public QueryGrammarForMetadata()
             : base(false)
         {
             this.expressionGrammar = new ExpressionGrammarForMetadata();
+            this.terminalEmpty = this.Empty;
+            this.CreateGrammar();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="QueryGrammarForMetadata"/> class
+        /// </summary>
+        /// <param name="empty">Terminal empty of the parent grammar.</param>
+        public QueryGrammarForMetadata(Terminal empty)
+            : base(false)
+        {
+            this.expressionGrammar = new ExpressionGrammarForMetadata();
+            this.terminalEmpty = empty;
             this.CreateGrammar();
         }
 
@@ -70,12 +88,14 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalAs = ToTerm("as", "as");
             KeyTerm terminalSelect = ToTerm("select", "select");
             KeyTerm terminalTop = ToTerm("top", "top");
+            KeyTerm terminalSys = ToTerm("sys", "sys");
 
             // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
 
             /* SIMBOLOS */
             KeyTerm terminalComa = ToTerm(",", "coma");
+            KeyTerm terminalPunto = ToTerm(".", "punto");
 
             /* CONSTANTES E IDENTIFICADORES */
             Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
@@ -85,7 +105,7 @@ namespace Integra.Space.Language.Grammars
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
             terminalId.Name = "identifier";
             terminalId.AstConfig.NodeType = null;
-            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
+            terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierASTNode();
 
             /* COMENTARIOS */
             CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");
@@ -139,7 +159,7 @@ namespace Integra.Space.Language.Grammars
             nt_ORDER_BY.Rule = terminalOrder + terminalBy + nt_LIST_OF_VALUES_FOR_ORDER_BY
                                 | terminalOrder + terminalBy + terminalAsc + nt_LIST_OF_VALUES_FOR_ORDER_BY
                                 | terminalOrder + terminalBy + terminalDesc + nt_LIST_OF_VALUES_FOR_ORDER_BY
-                                | this.Empty;
+                                | this.terminalEmpty;
 
             nt_LIST_OF_VALUES_FOR_ORDER_BY.Rule = nt_LIST_OF_VALUES_FOR_ORDER_BY + terminalComa + terminalId
                                                     | terminalId;
@@ -148,7 +168,7 @@ namespace Integra.Space.Language.Grammars
             nt_SOURCE_DEFINITION.Rule = nt_FROM;
             /* **************************** */
             /* FROM */
-            nt_FROM.Rule = terminalFrom + nt_ID_OR_ID_WITH_ALIAS;
+            nt_FROM.Rule = terminalFrom + terminalSys + terminalPunto + nt_ID_OR_ID_WITH_ALIAS;
             /* **************************** */
             /* ID OR ID WITH ALIAS */
             nt_ID_OR_ID_WITH_ALIAS.Rule = terminalId + terminalAs + terminalId
@@ -156,7 +176,7 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* WHERE */
             nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION
-                            | this.Empty;
+                            | this.terminalEmpty;
             /* **************************** */
 
             /* SELECT */
@@ -172,7 +192,7 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* VALORES CON ALIAS */
             nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = this.expressionGrammar.ProjectionValue + terminalAs + terminalId;
-
+            
             this.Root = this.queryForMetadata;
 
             this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;

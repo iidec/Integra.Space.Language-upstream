@@ -35,7 +35,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Object identifier.
         /// </summary>
-        private string identifier;
+        private AstNodeBase identifier;
 
         /// <summary>
         /// First method called
@@ -52,7 +52,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             {
                 this.terminalOn = (string)ChildrenNodes[1].Token.Value;
                 this.objectType = AddChild(NodeUseType.ValueRead, "SpaceObjectType", ChildrenNodes[2]) as SpaceObjectASTNode;
-                this.identifier = (string)ChildrenNodes[3].Token.Value;
+                this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[3]) as AstNodeBase; // (string)ChildrenNodes[3].Token.Value;
             }
         }
 
@@ -67,15 +67,35 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);
             PermissionsEnum permissionEnum = (PermissionsEnum)this.granularPermission.Evaluate(thread);
 
+            // gets the database if it was defined.
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
+
             PermissionNode permission = null;
             if (ChildrenNodes.Count == 1)
             {
-                permission = new PermissionNode(permissionEnum);
+                // esto se coloca por el comando 'use' a los permisos sobre bases de datos para que tengan la base de datos especificada en el comando 'use'.
+                if (!string.IsNullOrWhiteSpace(databaseName) && (permissionEnum == PermissionsEnum.AlterAnySchema || permissionEnum == PermissionsEnum.AlterAnyRole || permissionEnum == PermissionsEnum.AlterAnyUser || permissionEnum == PermissionsEnum.CreateSchema || permissionEnum == PermissionsEnum.CreateSource || permissionEnum == PermissionsEnum.CreateStream || permissionEnum == PermissionsEnum.CreateView))
+                {
+                    CommandObject commandObject = new CommandObject(SystemObjectEnum.Database, null, null, databaseName, PermissionsEnum.Connect, false);
+                    permission = new PermissionNode(permissionEnum, commandObject);
+                }
+                else
+                {
+                    permission = new PermissionNode(permissionEnum);
+                }
             }
             else if (ChildrenNodes.Count == 4)
             {
+                System.Tuple<string, string, string> identifierWithPath = (System.Tuple<string, string, string>)this.identifier.Evaluate(thread);
+                if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
+                {
+                    databaseName = identifierWithPath.Item1;
+                }
+
                 SystemObjectEnum objectTypeAux = (SystemObjectEnum)this.objectType.Evaluate(thread);
-                permission = new PermissionNode(permissionEnum, objectTypeAux, this.identifier);
+                CommandObject commandObject = new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, permissionEnum, false);
+                permission = new PermissionNode(permissionEnum, commandObject);
             }
 
             this.EndEvaluate(thread);
