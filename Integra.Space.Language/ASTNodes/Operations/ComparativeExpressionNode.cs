@@ -24,7 +24,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// minuend of the subtract
         /// </summary>
         private AstNodeBase leftNode;
-
+        
         /// <summary>
         /// operator of the expression
         /// </summary>
@@ -33,7 +33,12 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// <summary>
         /// subtrahend of the subtract
         /// </summary>
-        private AstNodeBase rightNode;
+        private AstNodeBase rightNode1;
+
+        /// <summary>
+        /// right part of the 'between' operator at the 'and' section 
+        /// </summary>
+        private AstNodeBase rightNode2;
 
         /// <summary>
         /// this.result plan
@@ -54,7 +59,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 this.leftNode = AddChild(NodeUseType.Parameter, "leftNode", ChildrenNodes[0]) as AstNodeBase;
                 this.operationNode = (string)ChildrenNodes[1].Token.Value;
-                this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[2]) as AstNodeBase;
+                this.rightNode1 = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[2]) as AstNodeBase;
                 this.result = new PlanNode();
                 this.result.Column = ChildrenNodes[1].Token.Location.Column;
                 this.result.Properties.Add("DataType", typeof(bool));
@@ -62,12 +67,23 @@ namespace Integra.Space.Language.ASTNodes.Operations
             }
             else if (childrenCount == 2)
             {
-                this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
+                this.rightNode1 = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
                 this.operationNode = (string)ChildrenNodes[0].Token.Value;
                 this.result = new PlanNode();
                 this.result.Column = ChildrenNodes[0].Token.Location.Column;
                 this.result.Properties.Add("DataType", typeof(bool));
                 this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            }
+            else if (childrenCount == 5)
+            {
+                this.leftNode = AddChild(NodeUseType.Parameter, "leftNode", ChildrenNodes[0]) as AstNodeBase;
+                this.operationNode = (string)ChildrenNodes[1].Token.Value;
+                this.rightNode1 = AddChild(NodeUseType.Parameter, "rightNode1", ChildrenNodes[2]) as AstNodeBase;
+                this.rightNode2 = AddChild(NodeUseType.Parameter, "rightNode2", ChildrenNodes[4]) as AstNodeBase;
+                this.result = new PlanNode();
+                this.result.Column = ChildrenNodes[1].Token.Location.Column;
+                this.result.Properties.Add("DataType", typeof(bool));
+                this.result.Line = ChildrenNodes[1].Token.Location.Line;
             }
             else
             {
@@ -80,35 +96,38 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// </summary>
         /// <param name="operacion">operator symbol</param>
         /// <param name="thread">actual thread</param>
-        public void SelectOperation(string operacion, ScriptThread thread)
+        /// <returns>The result node type.</returns>
+        public PlanNodeTypeEnum SelectOperation(string operacion, ScriptThread thread)
         {
+            PlanNodeTypeEnum resultType = PlanNodeTypeEnum.None;
+
             try
             {
                 switch (operacion)
                 {
                     case "==":
-                        this.result.NodeType = PlanNodeTypeEnum.Equal;
+                        resultType = PlanNodeTypeEnum.Equal;
                         break;
                     case "!=":
-                        this.result.NodeType = PlanNodeTypeEnum.NotEqual;
+                        resultType = PlanNodeTypeEnum.NotEqual;
                         break;
                     case "<=":
-                        this.result.NodeType = PlanNodeTypeEnum.LessThanOrEqual;
+                        resultType = PlanNodeTypeEnum.LessThanOrEqual;
                         break;
                     case "<":
-                        this.result.NodeType = PlanNodeTypeEnum.LessThan;
+                        resultType = PlanNodeTypeEnum.LessThan;
                         break;
                     case ">=":
-                        this.result.NodeType = PlanNodeTypeEnum.GreaterThanOrEqual;
+                        resultType = PlanNodeTypeEnum.GreaterThanOrEqual;
                         break;
                     case ">":
-                        this.result.NodeType = PlanNodeTypeEnum.GreaterThan;
+                        resultType = PlanNodeTypeEnum.GreaterThan;
                         break;
                     case "like":
-                        this.result.NodeType = PlanNodeTypeEnum.Like;
+                        resultType = PlanNodeTypeEnum.Like;
                         break;
                     case "not":
-                        this.result.NodeType = PlanNodeTypeEnum.Not;
+                        resultType = PlanNodeTypeEnum.Not;
                         break;
                     default:
                         ErrorNode error = new ErrorNode();
@@ -133,6 +152,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 Errors errores = new Errors(thread);
                 errores.AlmacenarError(error);
             }
+
+            return resultType;
         }
 
         /// <summary>
@@ -142,7 +163,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// <param name="leftNode">left child</param>
         /// <param name="rightNode">right child</param>
         /// <param name="thread">actual thread</param>
-        public void CreateChildrensForResult(PlanNode leftNode, PlanNode rightNode, ScriptThread thread)
+        /// <returns>The result plan nodes for left and right nodes</returns>
+        public Tuple<PlanNode, PlanNode> CreateChildrensForResult(PlanNode leftNode, PlanNode rightNode, ScriptThread thread)
         {
             Type leftType = null;
             Type rightType = null;
@@ -157,56 +179,64 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 rightType = Type.GetType(rightNode.Properties["DataType"].ToString());
             }
 
-            this.result.Children = new List<PlanNode>();
+            /*this.result.Children = new List<PlanNode>();*/
 
             TypeValidation validate = new TypeValidation(leftType, rightType, this.result, thread);
             Type selectedType = validate.SelectTypeToCast();
+            Tuple<PlanNode, PlanNode> childResult;
 
             if (selectedType != null)
             {
-                PlanNode casteoLeft = null;
+                PlanNode leftResultNode = null;
                 if (validate.ConvertLeftNode)
                 {
-                    casteoLeft = new PlanNode();
-                    casteoLeft.Column = leftNode.Column;
-                    casteoLeft.Line = leftNode.Line;
-                    casteoLeft.NodeText = leftNode.NodeText;
-                    casteoLeft.NodeType = PlanNodeTypeEnum.Cast;
-                    casteoLeft.Properties.Add("DataType", selectedType);
-                    casteoLeft.Children = new List<PlanNode>();
-                    casteoLeft.Children.Add(leftNode);
-                    this.result.Children.Add(casteoLeft);
+                    leftResultNode = new PlanNode();
+                    leftResultNode.Column = leftNode.Column;
+                    leftResultNode.Line = leftNode.Line;
+                    leftResultNode.NodeText = leftNode.NodeText;
+                    leftResultNode.NodeType = PlanNodeTypeEnum.Cast;
+                    leftResultNode.Properties.Add("DataType", selectedType);
+                    leftResultNode.Children = new List<PlanNode>();
+                    leftResultNode.Children.Add(leftNode);
+                    /*this.result.Children.Add(leftResultNode);*/
                 }
 
-                PlanNode casteoRight = null;
+                PlanNode rightResultNode = null;
                 if (validate.ConvertRightNode)
                 {
-                    casteoRight = new PlanNode();
-                    casteoRight.Column = rightNode.Column;
-                    casteoRight.Line = rightNode.Line;
-                    casteoRight.NodeText = rightNode.NodeText;
-                    casteoRight.NodeType = PlanNodeTypeEnum.Cast;
-                    casteoRight.Properties.Add("DataType", selectedType);
-                    casteoRight.Children = new List<PlanNode>();
-                    casteoRight.Children.Add(rightNode);
-                    this.result.Children.Add(casteoRight);
+                    rightResultNode = new PlanNode();
+                    rightResultNode.Column = rightNode.Column;
+                    rightResultNode.Line = rightNode.Line;
+                    rightResultNode.NodeText = rightNode.NodeText;
+                    rightResultNode.NodeType = PlanNodeTypeEnum.Cast;
+                    rightResultNode.Properties.Add("DataType", selectedType);
+                    rightResultNode.Children = new List<PlanNode>();
+                    rightResultNode.Children.Add(rightNode);
+                    /*this.result.Children.Add(rightResultNode);*/
                 }
 
-                if (casteoLeft == null)
+                if (leftResultNode == null)
                 {
-                    this.result.Children.Add(leftNode);
+                    leftResultNode = leftNode;
+                    /*this.result.Children.Add(leftNode);*/
                 }
 
-                if (casteoRight == null)
+                if (rightResultNode == null)
                 {
-                    this.result.Children.Add(rightNode);
+                    rightResultNode = rightNode;
+                    /*this.result.Children.Add(rightNode);*/
                 }
+
+                childResult = Tuple.Create(leftResultNode, rightResultNode);
             }
             else
             {
-                this.result.Children.Add(leftNode);
-                this.result.Children.Add(rightNode);
+                childResult = Tuple.Create(leftNode, rightNode);
+                /*this.result.Children.Add(leftNode);
+                this.result.Children.Add(rightNode);*/
             }
+
+            return childResult;
         }
 
         /// <summary>
@@ -215,7 +245,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// </summary>
         /// <param name="rightNode">right child</param>
         /// <param name="thread">actual thread</param>
-        public void CreateChildrensForResult(PlanNode rightNode, ScriptThread thread)
+        /// <returns>The result plan node for 'not' operation.</returns>
+        public PlanNode CreateChildrensForResult(PlanNode rightNode, ScriptThread thread)
         {
             Type leftType = typeof(bool);
             Type rightType = null;
@@ -225,10 +256,11 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 rightType = Type.GetType(rightNode.Properties["DataType"].ToString());
             }
 
-            this.result.Children = new List<PlanNode>();
+            /*this.result.Children = new List<PlanNode>();*/
 
             TypeValidation validate = new TypeValidation(leftType, rightType, this.result, thread);
             Type selectedType = validate.SelectTypeToCast();
+            PlanNode resultChild;
 
             if (selectedType != null && rightType != null)
             {
@@ -242,17 +274,22 @@ namespace Integra.Space.Language.ASTNodes.Operations
                     casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
-                    this.result.Children.Add(casteo);
+                    resultChild = casteo;
+                    /*this.result.Children.Add(casteo);*/
                 }
                 else
                 {
-                    this.result.Children.Add(rightNode);
+                    resultChild = rightNode;
+                    /*this.result.Children.Add(rightNode);*/
                 }
             }
             else
             {
-                this.result.Children.Add(rightNode);
+                resultChild = rightNode;
+                /*this.result.Children.Add(rightNode);*/
             }
+
+            return resultChild;
         }
 
         /// <summary>
@@ -452,12 +489,17 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 this.BeginEvaluate(thread);
                 PlanNode l = (PlanNode)this.leftNode.Evaluate(thread);
-                PlanNode r = (PlanNode)this.rightNode.Evaluate(thread);
+                PlanNode r = (PlanNode)this.rightNode1.Evaluate(thread);
                 this.EndEvaluate(thread);
 
                 this.result.NodeText = l.NodeText + " " + this.operationNode + " " + r.NodeText;
-                this.SelectOperation(this.operationNode, thread);
-                this.CreateChildrensForResult(l, r, thread);
+                this.result.NodeType = this.SelectOperation(this.operationNode, thread);
+
+                Tuple<PlanNode, PlanNode> lr = this.CreateChildrensForResult(l, r, thread);
+                this.result.Children = new List<PlanNode>();
+                this.result.Children.Add(lr.Item1);
+                this.result.Children.Add(lr.Item2);
+
                 this.ValidateTypesForOperation(l, r, this.operationNode, thread);
                 if (bool.Parse(r.Properties["IsConstant"].ToString()) == true || bool.Parse(l.Properties["IsConstant"].ToString()) == true)
                 {
@@ -471,14 +513,87 @@ namespace Integra.Space.Language.ASTNodes.Operations
             else if (childrenCount == 2)
             {
                 this.BeginEvaluate(thread);
-                PlanNode r = (PlanNode)this.rightNode.Evaluate(thread);
+                PlanNode r = (PlanNode)this.rightNode1.Evaluate(thread);
                 this.EndEvaluate(thread);
 
                 this.result.NodeText = this.operationNode + "(" + r.NodeText + ")";
-                this.SelectOperation(this.operationNode, thread);
-                this.CreateChildrensForResult(r, thread);
+                this.result.NodeType = this.SelectOperation(this.operationNode, thread);
+
+                this.result.Children = new List<PlanNode>();
+                PlanNode child = this.CreateChildrensForResult(r, thread);
+                this.result.Children.Add(child);
+
                 this.ValidateTypesForOperation(r, this.operationNode, thread);
                 this.result.Properties.Add("IsConstant", bool.Parse(r.Properties["IsConstant"].ToString()));
+            }
+            else if (childrenCount == 5)
+            {
+                this.BeginEvaluate(thread);
+                PlanNode l = (PlanNode)this.leftNode.Evaluate(thread);
+                PlanNode r1 = (PlanNode)this.rightNode1.Evaluate(thread);
+                PlanNode r2 = (PlanNode)this.rightNode2.Evaluate(thread);
+                this.EndEvaluate(thread);
+
+                this.result.NodeText = l.NodeText + " " + this.operationNode + " " + r1.NodeText + " and " + r2.NodeText;
+                this.result.NodeType = PlanNodeTypeEnum.And;
+
+                this.operationNode = ">";
+                Tuple<PlanNode, PlanNode> lr1 = this.CreateChildrensForResult(l, r1, thread);
+                PlanNode auxIz = new PlanNode();
+                auxIz.NodeText = this.result.NodeText;
+                auxIz.NodeType = this.SelectOperation(this.operationNode, thread);
+                auxIz.Column = ChildrenNodes[1].Token.Location.Column;
+                auxIz.Properties.Add("DataType", typeof(bool));
+                auxIz.Line = ChildrenNodes[1].Token.Location.Line;
+                auxIz.Children = new List<PlanNode>();
+                auxIz.Children.Add(lr1.Item1);
+                auxIz.Children.Add(lr1.Item2);
+                this.ValidateTypesForOperation(l, r1, this.operationNode, thread);
+
+                if (bool.Parse(l.Properties["IsConstant"].ToString()) == true || bool.Parse(r1.Properties["IsConstant"].ToString()) == true)
+                {
+                    auxIz.Properties.Add("IsConstant", true);
+                }
+                else
+                {
+                    auxIz.Properties.Add("IsConstant", false);
+                }
+
+                this.operationNode = "<";
+                PlanNode leftNodecloned = l.Clone();
+                Tuple<PlanNode, PlanNode> lr2 = this.CreateChildrensForResult(leftNodecloned, r2, thread);
+                PlanNode auxDer = new PlanNode();
+                auxDer.NodeText = this.result.NodeText;
+                auxDer.NodeType = this.SelectOperation(this.operationNode, thread);
+                auxDer.Column = ChildrenNodes[1].Token.Location.Column;
+                auxDer.Properties.Add("DataType", typeof(bool));
+                auxDer.Line = ChildrenNodes[1].Token.Location.Line;
+                auxDer.Children = new List<PlanNode>();
+                auxDer.Children.Add(lr2.Item1);
+                auxDer.Children.Add(lr2.Item2);
+                this.ValidateTypesForOperation(leftNodecloned, r2, this.operationNode, thread);
+
+                if (bool.Parse(leftNodecloned.Properties["IsConstant"].ToString()) == true || bool.Parse(r2.Properties["IsConstant"].ToString()) == true)
+                {
+                    auxDer.Properties.Add("IsConstant", true);
+                }
+                else
+                {
+                    auxDer.Properties.Add("IsConstant", false);
+                }
+
+                this.result.Children = new List<PlanNode>();
+                this.result.Children.Add(auxIz);
+                this.result.Children.Add(auxDer);
+
+                if ((bool.Parse(r1.Properties["IsConstant"].ToString()) == true && bool.Parse(r2.Properties["IsConstant"].ToString()) == true) || bool.Parse(l.Properties["IsConstant"].ToString()) == true)
+                {
+                    this.result.Properties.Add("IsConstant", true);
+                }
+                else
+                {
+                    this.result.Properties.Add("IsConstant", false);
+                }
             }
             else
             {

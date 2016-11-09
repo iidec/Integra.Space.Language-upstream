@@ -57,9 +57,38 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="CommandObject"/> class.
+        /// </summary>
+        /// <param name="securableClass">Securable class.</param>
+        /// <param name="databaseName">Database name of the object.</param>
+        /// <param name="schemaName">Schema name of the object.</param>
+        /// <param name="objectName">Name of the object.</param>
+        /// <param name="granularObjectName">Name of the granular object contained inside the system object</param>
+        /// <param name="granularPermission">Granular permission.</param>
+        /// <param name="isNew">Value indicating whether the object is new or not.</param>
+        public CommandObject(SystemObjectEnum securableClass, string databaseName, string schemaName, string objectName, string granularObjectName, PermissionsEnum granularPermission, bool? isNew)
+        {
+            Contract.Assert(!string.IsNullOrWhiteSpace(objectName));
+            Contract.Assert(!string.IsNullOrWhiteSpace(granularObjectName));
+
+            this.SecurableClass = securableClass;
+            this.Name = objectName;
+            this.GranularObjectName = granularObjectName;
+            this.SchemaName = schemaName;
+            this.DatabaseName = databaseName;
+            this.GranularPermission = granularPermission;
+            this.isNew = isNew;
+        }
+
+        /// <summary>
         /// Gets the securable class of the object.
         /// </summary>
         public SystemObjectEnum SecurableClass { get; private set; }
+
+        /// <summary>
+        /// Gets the object name.
+        /// </summary>
+        public string GranularObjectName { get; private set; }
 
         /// <summary>
         /// Gets the name of the object.

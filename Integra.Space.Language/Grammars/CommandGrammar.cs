@@ -48,6 +48,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalRevoke = ToTerm("revoke", "revoke");
             KeyTerm terminalDeny = ToTerm("deny", "deny");
             KeyTerm terminalUse = ToTerm("use", "use");
+            KeyTerm terminalTruncate = ToTerm("truncate", "truncate");
 
             /* SPACE OBJECTS */
             KeyTerm terminalServer = ToTerm("server", "server");
@@ -99,6 +100,11 @@ namespace Integra.Space.Language.Grammars
             /* OPCIONES DEL OBJETO STREAM */
             KeyTerm terminalQuery = ToTerm("query", "query");
 
+            /* OPCIONES PARA EL OBJETO SOURCE */
+            KeyTerm terminalCacheDurability = ToTerm("cache_durability", "cache_durability");
+            KeyTerm terminalCacheSize = ToTerm("cache_size", "cache_size");
+            KeyTerm terminalPersistent = ToTerm("persistent", "persistent");
+
             /* PARA ASIGNACIÓN DE PERMISOS */
             KeyTerm terminalTo = ToTerm("to", "to");
             KeyTerm terminalOption = ToTerm("option", "option");
@@ -113,12 +119,15 @@ namespace Integra.Space.Language.Grammars
 
             /* IDENTIFICADOR */
             IdentifierTerminal terminalId = new IdentifierTerminal("identifier", IdOptions.None);
+            NumberLiteral terminalUnsignedIntValue = new NumberLiteral("unsigned_int_value", NumberOptions.IntOnly);
 
             /* SIMBOLOS */
             KeyTerm terminalComa = ToTerm(",", "coma");
             KeyTerm terminalPuntoYComa = ToTerm(";", "puntoYComa");
             KeyTerm terminalPunto = ToTerm(".", "punto");
-            this.MarkPunctuation(terminalComa, terminalPuntoYComa, terminalPunto);
+            KeyTerm terminalParentesisIz = ToTerm("(", "parentesisIzquierdo");
+            KeyTerm terminalParentesisDer = ToTerm(")", "parentesisDer");
+            this.MarkPunctuation(terminalComa, terminalPuntoYComa, terminalPunto, terminalParentesisIz, terminalParentesisDer);
 
             /* QUERY */
             QuotedValueLiteral terminalQueryScript = new QuotedValueLiteral("terminalQuery", "{", "}", TypeCode.String);
@@ -134,6 +143,43 @@ namespace Integra.Space.Language.Grammars
             terminalUserOptionValue.Add("disable", false);
             terminalUserOptionValue.AstConfig.NodeType = null;
             terminalUserOptionValue.AstConfig.DefaultNodeCreator = () => new ValueASTNode<bool>();
+            
+            /* TIPOS */
+            ConstantTerminal terminalType = new ConstantTerminal("dataTypes", typeof(Type));
+            terminalType.Add("byte", typeof(byte));
+            terminalType.Add("byte?", typeof(byte?));
+            terminalType.Add("sbyte", typeof(sbyte));
+            terminalType.Add("sbyte?", typeof(sbyte?));
+            terminalType.Add("short", typeof(short));
+            terminalType.Add("short?", typeof(short?));
+            terminalType.Add("ushort", typeof(ushort));
+            terminalType.Add("ushort?", typeof(ushort?));
+            terminalType.Add("int", typeof(int));
+            terminalType.Add("int?", typeof(int?));
+            terminalType.Add("uint", typeof(uint));
+            terminalType.Add("uint?", typeof(uint?));
+            terminalType.Add("long", typeof(long));
+            terminalType.Add("long?", typeof(long?));
+            terminalType.Add("ulong", typeof(ulong));
+            terminalType.Add("ulong?", typeof(ulong?));
+            terminalType.Add("float", typeof(float));
+            terminalType.Add("float?", typeof(float?));
+            terminalType.Add("double", typeof(double));
+            terminalType.Add("double?", typeof(double?));
+            terminalType.Add("decimal", typeof(decimal));
+            terminalType.Add("decimal?", typeof(decimal?));
+            terminalType.Add("char", typeof(char));
+            terminalType.Add("char?", typeof(char?));
+            terminalType.Add("string", typeof(string));
+            terminalType.Add("bool", typeof(bool));
+            terminalType.Add("bool?", typeof(bool?));
+            terminalType.Add("object", typeof(object));
+            terminalType.Add("DateTime", typeof(DateTime));
+            terminalType.Add("DateTime?", typeof(DateTime?));
+            terminalType.Add("TimeSpan", typeof(TimeSpan));
+            terminalType.Add("TimeSpan?", typeof(TimeSpan?));
+            terminalType.AstConfig.NodeType = null;
+            terminalType.AstConfig.DefaultNodeCreator = () => new ValueASTNode<Type>();
 
             /* COMENTARIOS */
             CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");
@@ -382,14 +428,29 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_ALTER_SCHEMA = new NonTerminal("ALTER_SCHEMA", typeof(AlterSchemaASTNode));
             nt_ALTER_SCHEMA.AstConfig.NodeType = null;
             nt_ALTER_SCHEMA.AstConfig.DefaultNodeCreator = () => new AlterSchemaASTNode();
+
             NonTerminal nt_ALTER_SOURCE = new NonTerminal("ALTER_SOURCE", typeof(AlterSourceASTNode));
             nt_ALTER_SOURCE.AstConfig.NodeType = null;
             nt_ALTER_SOURCE.AstConfig.DefaultNodeCreator = () => new AlterSourceASTNode();
+            NonTerminal nt_ALTER_SOURCE_COLUMNS_STRUCTURE = new NonTerminal("ALTER_SOURCE_COLUMNS_STRUCTURE", typeof(AlterSourceColumnsStructureASTNode));
+            nt_ALTER_SOURCE_COLUMNS_STRUCTURE.AstConfig.NodeType = null;
+            nt_ALTER_SOURCE_COLUMNS_STRUCTURE.AstConfig.DefaultNodeCreator = () => new AlterSourceColumnsStructureASTNode();
+            NonTerminal nt_ALTER_SOURCE_STATEMENTS = new NonTerminal("ALTER_SOURCE_STATEMENTS", typeof(AlterSourceStatementASTNode));
+            nt_ALTER_SOURCE_STATEMENTS.AstConfig.NodeType = null;
+            nt_ALTER_SOURCE_STATEMENTS.AstConfig.DefaultNodeCreator = () => new AlterSourceStatementASTNode();
+
             NonTerminal nt_ALTER_STREAM = new NonTerminal("ALTER_STREAM", typeof(AlterStreamASTNode));
             nt_ALTER_STREAM.AstConfig.NodeType = null;
             nt_ALTER_STREAM.AstConfig.DefaultNodeCreator = () => new AlterStreamASTNode();
+
+            NonTerminal nt_SOURCE_COLUMN = new NonTerminal("SOURCE_COLUMN", typeof(SourceColumnsASTNode));
+            nt_SOURCE_COLUMN.AstConfig.NodeType = null;
+            nt_SOURCE_COLUMN.AstConfig.DefaultNodeCreator = () => new SourceColumnsASTNode();
+            NonTerminal nt_SOURCE_COLUMN_LIST = new NonTerminal("SOURCE_COLUMN_LIST", typeof(DictionaryASTNode<SourceColumnsASTNode, string, Type>));
+            nt_SOURCE_COLUMN_LIST.AstConfig.NodeType = null;
+            nt_SOURCE_COLUMN_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryASTNode<SourceColumnsASTNode, string, Type>();
             /************************************************/
-            
+
             NonTerminal nt_PERMISSIONS_COMMANDS = new NonTerminal("PERMISSIONS_COMMANDS", typeof(PermissionCommandASTNode));
             nt_PERMISSIONS_COMMANDS.AstConfig.NodeType = null;
             nt_PERMISSIONS_COMMANDS.AstConfig.DefaultNodeCreator = () => new PermissionCommandASTNode();
@@ -399,6 +460,10 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_TAKE_OWNERSHIP = new NonTerminal("TAKE_OWNERSHIP", typeof(TakeOwnershipASTNode));
             nt_TAKE_OWNERSHIP.AstConfig.NodeType = null;
             nt_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new TakeOwnershipASTNode();
+
+            NonTerminal nt_TRUNCATE_SOURCE = new NonTerminal("TRUNCATE_SOURCE", typeof(TruncateASTNode));
+            nt_TRUNCATE_SOURCE.AstConfig.NodeType = null;
+            nt_TRUNCATE_SOURCE.AstConfig.DefaultNodeCreator = () => new TruncateASTNode();
 
             /* RULES */
             
@@ -512,7 +577,7 @@ namespace Integra.Space.Language.Grammars
                                             | terminalAlter + terminalAny + terminalDatabase;
 
             /************************************************/
-
+            
             /* LIST OF PERMISSIONS AND PRINCIPALS */
 
             nt_SPACE_PERMISSION_LIST.Rule = this.MakePlusRule(nt_SPACE_PERMISSION_LIST, terminalComa, nt_PERMISSION);
@@ -527,7 +592,7 @@ namespace Integra.Space.Language.Grammars
             /* USE */
 
             nt_USE.Rule = terminalUse + terminalId;
-                        
+
             /************************************************/
             
             /* CRUD commands */
@@ -569,12 +634,19 @@ namespace Integra.Space.Language.Grammars
             nt_CREATE_STREAM.Rule = terminalCreate + terminalStream + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalQueryScript + nt_STREAM_OPTION_LIST_AUX;
             nt_STREAM_OPTION_LIST_AUX.Rule = terminalWith + nt_STREAM_OPTION_LIST
                                             | this.Empty;
-            nt_CREATE_SOURCE.Rule = terminalCreate + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + nt_SOURCE_OPTION_LIST_AUX;
+            nt_CREATE_SOURCE.Rule = terminalCreate + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalParentesisIz + nt_SOURCE_COLUMN_LIST + terminalParentesisDer + nt_SOURCE_OPTION_LIST_AUX;
             nt_SOURCE_OPTION_LIST_AUX.Rule = terminalWith + nt_SOURCE_OPTION_LIST
                                             | this.Empty;
             nt_SOURCE_OPTION_LIST.Rule = this.MakePlusRule(nt_SOURCE_OPTION_LIST, terminalComa, nt_SOURCE_OPTION);
             nt_SOURCE_OPTION.Rule = terminalStatus + terminalEqual + terminalStatusValue
-                                    | terminalName + terminalEqual + terminalId;
+                                    | terminalName + terminalEqual + terminalId
+                                    | terminalCacheDurability + terminalEqual + terminalUnsignedIntValue
+                                    | terminalCacheSize + terminalEqual + terminalUnsignedIntValue
+                                    | terminalPersistent + terminalEqual + terminalStatusValue;
+
+            nt_SOURCE_COLUMN.Rule = terminalId + terminalType;
+            nt_SOURCE_COLUMN_LIST.Rule = this.MakePlusRule(nt_SOURCE_COLUMN_LIST, terminalComa, nt_SOURCE_COLUMN);
+
             /* ALTER */
 
             nt_ALTER_LOGIN.Rule = terminalAlter + terminalLogin + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_LOGIN_OPTION_LIST;
@@ -584,7 +656,12 @@ namespace Integra.Space.Language.Grammars
             nt_ALTER_ROLE.Rule = terminalAlter + terminalRole + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_DB_ROLE_OPTION_LIST;
             nt_ALTER_SCHEMA.Rule = terminalAlter + terminalSchema + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + terminalName + terminalEqual + terminalId;
 
-            nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_SOURCE_OPTION_LIST;
+            nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + nt_ALTER_SOURCE_STATEMENTS;
+            nt_ALTER_SOURCE_COLUMNS_STRUCTURE.Rule = terminalAdd + nt_SOURCE_COLUMN_LIST
+                                                    | terminalRemove + nt_SOURCE_COLUMN_LIST;
+            nt_ALTER_SOURCE_STATEMENTS.Rule = terminalWith + nt_SOURCE_OPTION_LIST
+                                                | nt_ALTER_SOURCE_COLUMNS_STRUCTURE;
+
             nt_ALTER_STREAM.Rule = terminalAlter + terminalStream + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_STREAM_OPTION_LIST;
             nt_STREAM_OPTION_LIST.Rule = this.MakePlusRule(nt_STREAM_OPTION_LIST, terminalComa, nt_STREAM_OPTION);
             nt_STREAM_OPTION.Rule = terminalQuery + terminalEqual + terminalQueryScript
@@ -620,9 +697,17 @@ namespace Integra.Space.Language.Grammars
                                     | terminalTake + terminalOwnership + terminalOn + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER;
 
             /************************************************/
+            
+            /* TRUNCATE */
+
+            nt_TRUNCATE_SOURCE.Rule = terminalTruncate + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER;
+
+            /************************************************/
 
             /* QUERY METADATA */
-            nt_METADATA_QUERY.Rule = new QueryGrammarForMetadata(this.Empty).QueryForMetadata; // new QueryGrammarForMetadata().QueryForMetadata; // this.CreateQueryForMetadataGrammar();
+
+            nt_METADATA_QUERY.Rule = new QueryGrammarForMetadata(this.Empty).QueryForMetadata; // this.CreateQueryForMetadataGrammar();
+            
             /************************************************/
 
             nt_COMMAND_NODE.Rule = nt_PERMISSIONS_COMMANDS
@@ -644,7 +729,8 @@ namespace Integra.Space.Language.Grammars
                                     | nt_ALTER_STREAM
                                     | nt_USE
                                     | nt_TAKE_OWNERSHIP
-                                    | nt_METADATA_QUERY;
+                                    | nt_METADATA_QUERY
+                                    | nt_TRUNCATE_SOURCE;
 
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
 

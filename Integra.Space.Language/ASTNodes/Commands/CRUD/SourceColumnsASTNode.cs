@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="AlterSourceASTNode.cs" company="Integra.Space.Language">
+// <copyright file="SourceColumnsASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -14,26 +14,19 @@ namespace Integra.Space.Language.ASTNodes.Commands
     using Irony.Parsing;
 
     /// <summary>
-    /// Space command AST node class.
+    /// Source column AST node.
     /// </summary>
-    internal class AlterSourceASTNode : AlterCommandASTNode<SourceOptionEnum>
+    internal class SourceColumnsASTNode : AstNodeBase
     {
         /// <summary>
-        /// Options AST node.
+        /// Action enumerable type.
         /// </summary>
-        private DictionaryCommandOptionASTNode<SourceOptionEnum> options;
-        
-        /// <summary>
-        /// Reserved word with.
-        /// </summary>
-        private string with;
+        private Type columnType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AlterSourceASTNode"/> class.
+        /// Object identifier.
         /// </summary>
-        public AlterSourceASTNode() : base(PermissionsEnum.Alter)
-        {
-        }
+        private string columnIdentifier;
 
         /// <summary>
         /// First method called
@@ -43,8 +36,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.with = (string)ChildrenNodes[3].Token.Value;
-            this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as DictionaryCommandOptionASTNode<SourceOptionEnum>;
+            
+            this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
+            this.columnType = (Type)ChildrenNodes[1].Token.Value;
         }
 
         /// <summary>
@@ -55,18 +49,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
-
             this.BeginEvaluate(thread);
-            Dictionary<SourceOptionEnum, object> optionsAux = new Dictionary<SourceOptionEnum, object>();
-            if (this.options != null)
-            {
-                optionsAux = (Dictionary<SourceOptionEnum, object>)this.options.Evaluate(thread);
-            }
-
             this.EndEvaluate(thread);
 
-            return new AlterSourceNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return Tuple.Create(this.columnIdentifier, this.columnType);
         }
     }
 }

@@ -817,7 +817,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
                                                                                             "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m /*@event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 4m*/",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#1.CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",

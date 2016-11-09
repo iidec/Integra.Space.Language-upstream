@@ -113,8 +113,11 @@
   <ItemGroup>
     <Compile Include="ASTNodes\Base\AstNodeBase.cs" />
     <Compile Include="ASTNodes\Commands\CommandOptionListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceStatementASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceColumnsStructureASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\SourceColumnsASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterCommandASTNode.cs" />
-    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterSourceASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterSchemaASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterRoleASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterDatabaseASTNode.cs" />
@@ -132,7 +135,9 @@
     <Compile Include="ASTNodes\Commands\CommandOptionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\DictionaryCommandOptionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CommandListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\DictionaryASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Metadata\TruncateASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\PermissionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\TakeOwnershipASTNode.cs" />
@@ -227,6 +232,7 @@
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
     <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Metadata\TruncateNode.cs" />
     <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Metadata\QueryCommandForMetadataNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Permissions\AddOrRemoveCommandNode.cs" />

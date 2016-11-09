@@ -96,7 +96,7 @@ namespace Integra.Space.Language.Analysis
                     b2.AppendFormat("{0}: {1} {2}", kvp.Key, kvp.Value, "\\n");
                 }
                 
-                b.AppendFormat("{0}[label = \"<f0> {5} |<f1> {1} | {{ Line: {3} | Column: {4}}} | {{ {6} }}\"]; {2}", node.NodeType.ToString() + "_" + numRoot, (node.NodeText == null) ? "" : node.NodeText.Replace("\"", "\\\""), Environment.NewLine, node.Line, node.Column, node.NodeType.ToString(), b2.ToString());
+                b.AppendFormat("{0}[label = \"<f0> {5} |<f1> {1} | {{ Line: {3} | Column: {4}}} | {{ {6} }}\"]; {2}", node.NodeType.ToString() + "_" + numRoot, (node.NodeText == null) ? "" : "" /*node.NodeText.Replace("\"", "\\\"")*/, Environment.NewLine, node.Line, node.Column, node.NodeType.ToString(), b2.ToString());
             }
 
             if (node.Children != null)

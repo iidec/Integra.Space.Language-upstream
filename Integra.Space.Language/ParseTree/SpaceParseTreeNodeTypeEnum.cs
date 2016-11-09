@@ -668,6 +668,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Doc goes here.
         /// </summary>
-        NUMERIC_VALUES_FOR_METADATA = 188
+        NUMERIC_VALUES_FOR_METADATA = 188,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        between = 189
     }
 }

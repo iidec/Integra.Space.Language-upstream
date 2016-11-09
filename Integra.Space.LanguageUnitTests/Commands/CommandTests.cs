@@ -435,21 +435,56 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void CreateSource()
         {
-            string command = "create source source123";
+            string command = "create source source123 (column1 string, column2 int, column3 decimal)";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithStatusOn()
         {
-            string command = "create source source123 with status = on";
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with status = on";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithStatusOff()
         {
-            string command = "create source source123 with status = off";
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with status = off";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateSourceWithCacheDurability()
+        {
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_durability = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateSourceWithCacheSize()
+        {
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_size = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateSourceWithCacheSizeCacheDurability()
+        {
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_size = 1, cache_durability = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateSourceWithPersistentOn()
+        {
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with persistent = on";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void CreateSourceWithPersistentOff()
+        {
+            string command = "create source source123 (column1 string, column2 int, column3 decimal) with persistent = off";
             this.Process(command);
         }
 
@@ -700,8 +735,43 @@ namespace Integra.Space.LanguageUnitTests.Commands
             this.Process(command);
         }
 
+        [TestMethod]
+        public void AlterSourceWithCacheDurability()
+        {
+            string command = "alter source source123 with cache_durability = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterSourceWithCacheSize()
+        {
+            string command = "alter source source123 with cache_size = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterSourceWithCacheSizeCacheDurability()
+        {
+            string command = "alter source source123 with cache_size = 1, cache_durability = 1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterSourceAddColumns()
+        {
+            string command = "alter source source1 add column1 string, column2 int, column3 decimal";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void AlterSourceRemoveColumns()
+        {
+            string command = "alter source source1 remove column1 string, column2 int, column3 decimal";
+            this.Process(command);
+        }
+
         #endregion alter
-        
+
         [TestMethod]
         public void AlterUserNameAndDefaultSchema()
         {
@@ -1419,5 +1489,29 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         #endregion remove
+
+        #region
+
+        [TestMethod]
+        public void TruncateCommand1()
+        {
+            string command = "truncate source source1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void TruncateCommand2()
+        {
+            string command = "truncate source schema1.source1";
+            this.Process(command);
+        }
+
+        [TestMethod]
+        public void TruncateCommand3()
+        {
+            string command = "truncate source database1.schema1.source1";
+            this.Process(command);
+        }
+        #endregion
     }
 }

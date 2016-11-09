@@ -60,5 +60,35 @@ namespace Integra.Space.Language
         /// Gets or sets the actual node Children
         /// </summary>
         public List<PlanNode> Children { get; set; }
+
+        /// <summary>
+        /// Clone the actual node with his children.
+        /// </summary>
+        /// <returns>The node cloned.</returns>
+        public PlanNode Clone()
+        {
+            PlanNode planCloned = new PlanNode();
+            planCloned.NodeType = this.NodeType;
+            planCloned.Line = this.Line;
+            planCloned.Column = this.Column;
+            planCloned.NodeText = this.NodeText;
+
+            foreach (KeyValuePair<string, object> kvp in this.Properties)
+            {
+                planCloned.Properties.Add(kvp.Key, kvp.Value);
+            }
+
+            if (this.Children != null)
+            {
+                planCloned.Children = new List<PlanNode>();
+                foreach (PlanNode child in this.Children)
+                {
+                    PlanNode aux = child.Clone();
+                    planCloned.Children.Add(aux);
+                }
+            }
+
+            return planCloned;
+        }
     }
 }

@@ -140,6 +140,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalLower = ToTerm("lower", "lower");
             KeyTerm terminalAbs = ToTerm("abs", "abs");
             KeyTerm terminalIsnull = ToTerm("isnull", "isnull");
+            KeyTerm terminalBetween = ToTerm("between", "between");
 
             /* EVENTOS */
             KeyTerm terminalEvent = ToTerm("event", "event");
@@ -369,6 +370,7 @@ namespace Integra.Space.Language.Grammars
                                             | nt_ARITHMETIC_EXPRESSION + terminalMenorIgual + nt_ARITHMETIC_EXPRESSION
                                             | nt_ARITHMETIC_EXPRESSION + terminalMenorQue + nt_ARITHMETIC_EXPRESSION
                                             | nt_ARITHMETIC_EXPRESSION + terminalLike + terminalCadena
+                                            | nt_ARITHMETIC_EXPRESSION + terminalBetween + nt_ARITHMETIC_EXPRESSION + terminalAnd + nt_ARITHMETIC_EXPRESSION
                                             | terminalParentesisIz + nt_COMPARATIVE_EXPRESSION + terminalParentesisDer
                                             | terminalNot + terminalParentesisIz + nt_COMPARATIVE_EXPRESSION + terminalParentesisDer
                                             | nt_ARITHMETIC_EXPRESSION;

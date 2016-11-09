@@ -39,6 +39,22 @@ namespace Integra.Space.Language
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="DMLCommand"/> class.
+        /// </summary>
+        /// <param name="action">Space command action.</param>
+        /// <param name="commandObject">Command object.</param>
+        /// <param name="line">Line of the evaluated sentence.</param>
+        /// <param name="column">Column evaluated sentence column.</param>
+        /// <param name="commandText">Text of the actual node.</param>
+        public DMLCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText)
+        {
+            System.Diagnostics.Contracts.Contract.Assert(commandObject != null);
+            this.DatabaseName = commandObject.DatabaseName;
+            this.SchemaName = commandObject.SchemaName;
+            this.CommandObjects.Add(commandObject);
+        }
+
+        /// <summary>
         /// Gets the database name for the context.
         /// </summary>
         public string DatabaseName { get; private set; }

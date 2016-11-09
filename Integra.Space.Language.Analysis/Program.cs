@@ -116,17 +116,7 @@ namespace Integra.Space.Language.Analysis
                                                                                             "grupo1",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
 
-
-                        eql = "cross " +
-                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#0.#0 == \"0100\"" +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
-                                                                  //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#43 " +
-                                "TIMEOUT '00:00:01' " +
-                                // "EVENTLIFETIME '00:00:10' " +
-                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
-                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 ";
-
+                        
                         /*eql = string.Format("from {0} apply window of {2} select {3} as monto",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
@@ -136,10 +126,29 @@ namespace Integra.Space.Language.Analysis
 
                         eql = "from Streams as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest";
                         eql = "from Streams as x select ServerId as servId, max(1) as maxTest";
+
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m",
+                                                                                            //"@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 3m",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+
+
+                        eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#0.#0 == \"0100\"" +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#43 " +
+                                "TIMEOUT '00:00:01' " +
+                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 ";
                     }
 
-                    MetadataQueryParser parser = new MetadataQueryParser(eql);
-                    //QueryParser parser = new QueryParser(eql);
+                    //MetadataQueryParser parser = new MetadataQueryParser(eql);
+                    QueryParser parser = new QueryParser(eql);
                     ParseTree parseTree = parser.ParseTree;
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating metadata...");
