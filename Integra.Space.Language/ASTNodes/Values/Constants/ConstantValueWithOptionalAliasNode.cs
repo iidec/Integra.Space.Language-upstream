@@ -92,8 +92,11 @@ namespace Integra.Space.Language.ASTNodes.Constants
                 PlanNode value = new PlanNode();
                 value.NodeText = alias.NodeText;
                 value.NodeType = PlanNodeTypeEnum.Identifier;
-                value.Properties.Add("Value", alias.Properties["Value"]);
-                value.Properties.Add("DataType", alias.Properties["DataType"]);
+
+                foreach (KeyValuePair<string, object> property in alias.Properties)
+                {
+                    value.Properties.Add(property.Key, property.Value);
+                }
 
                 this.result.Column = value.Column;
                 this.result.Line = value.Line;

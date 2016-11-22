@@ -23,10 +23,10 @@ namespace Integra.Space.Language.Runtime
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly Process(CompileContext context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly Process(CompilerConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
         {
             QueryParser parser = new QueryParser(script);
-            PlanNode executionPlan = parser.Evaluate();
+            PlanNode executionPlan = parser.Evaluate().Item1;
 
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + context.QueryName);
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
@@ -49,7 +49,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly ProcessWithExpressionParser(CompileContext context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly ProcessWithExpressionParser(CompilerConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
         {
             ExpressionParser parser = new ExpressionParser(script);
             PlanNode executionPlan = parser.Evaluate();
@@ -75,7 +75,36 @@ namespace Integra.Space.Language.Runtime
         /// <param name="context">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithMetadataQueryParser<T>(CompileContext context, string script)
+        public Delegate ProcessWithCommandParser<T>(CompilerConfiguration context, string script)
+        {
+            /*MetadataQueryParser parser = new MetadataQueryParser(script);
+            PlanNode executionPlan = parser.Evaluate();*/
+
+            CommandParser parser = new CommandParser(script);
+            TemporalStreamNode metadataCommand = (TemporalStreamNode)parser.Evaluate().First();
+
+            SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + context.QueryName);
+            AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(asmBuilder);
+            modBuilder.CreateModuleBuilder();
+
+            TreeTransformations tf = new TreeTransformations(asmBuilder, /*executionPlan*/ metadataCommand.ExecutionPlan);
+            tf.Transform();
+
+            context.AsmBuilder = asmBuilder;
+            CodeGenerator te = new CodeGenerator(context);
+            
+            return te.CompileDelegate(/*executionPlan*/ metadataCommand.ExecutionPlan);
+        }
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        /// <typeparam name="T">Entity type.</typeparam>
+        /// <param name="context">Compilation context.</param>
+        /// <param name="script">EQL query.</param>
+        /// <returns>The assembly created.</returns>
+        public Delegate ProcessWithCommandParserForMetadata<T>(CompilerConfiguration context, string script)
         {
             /*MetadataQueryParser parser = new MetadataQueryParser(script);
             PlanNode executionPlan = parser.Evaluate();*/
@@ -93,7 +122,7 @@ namespace Integra.Space.Language.Runtime
 
             context.AsmBuilder = asmBuilder;
             CodeGenerator te = new CodeGenerator(context);
-            
+
             return te.CompileDelegate(/*executionPlan*/ metadataCommand.ExecutionPlan);
         }
     }

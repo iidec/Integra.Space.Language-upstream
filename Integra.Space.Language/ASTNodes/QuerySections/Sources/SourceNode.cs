@@ -85,6 +85,8 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
             this.result.Properties.Add("SourceType", typeof(System.IObservable<EventObject>));
             this.result.Properties.Add("SourceName", idFrom.Children[0].Properties["Value"]);
+            this.result.Properties.Add("SchemaName", idFrom.Children[0].Properties["SchemaIdentifier"]);
+            this.result.Properties.Add("DatabaseName", idFrom.Children[0].Properties["DatabaseIdentifier"]);
 
             this.result.NodeText = string.Format("{0} {1}", this.from, idFrom.NodeText);
             

@@ -26,7 +26,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Space query.
         /// </summary>
-        private string query;
+        private string queryString;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateStreamASTNode"/> class.
@@ -45,7 +45,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.query = ChildrenNodes[3].Token.Value.ToString().Trim();
+            this.queryString = ChildrenNodes[3].Token.Value.ToString().Trim();
             this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<StreamOptionEnum>;
         }
 
@@ -70,12 +70,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            QueryParser parser = new QueryParser(this.query);
-            PlanNode executionPlan = parser.Evaluate();
+            QueryParser parser = new QueryParser(this.queryString);
+            Tuple<PlanNode, CommandObject> query = parser.Evaluate();
             
             this.CheckAllowedOptions(optionsAux);
 
-            return new CreateStreamNode(commandObject, this.query, executionPlan, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateStreamNode(commandObject, this.queryString, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.GetNodeText());
         }
     }
 }

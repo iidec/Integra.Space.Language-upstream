@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="QueryGrammar.cs" company="Integra.Space.Language">
+// <copyright file="TemporalStreamGrammar.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -8,6 +8,7 @@ namespace Integra.Space.Language.Grammars
     using System;
     using System.Linq;
     using ASTNodes;
+    using ASTNodes.Commands;
     using ASTNodes.Constants;
     using ASTNodes.Identifier;
     using ASTNodes.Lists;
@@ -19,22 +20,62 @@ namespace Integra.Space.Language.Grammars
     /// <summary>
     /// EQLGrammar grammar for the commands and the predicates 
     /// </summary>
-    [Language("EQLGrammar", "0.4", "")]
-    internal sealed class QueryGrammar : InterpretedLanguageGrammar
+    [Language("TemporalStreamGrammar", "0.4", "")]
+    internal sealed class TemporalStreamGrammar : InterpretedLanguageGrammar
     {
         /// <summary>
         /// Expression grammar
         /// </summary>
         private ExpressionGrammar expressionGrammar;
-                
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="QueryGrammar"/> class
+        /// Terminal empty of the parent grammar.
         /// </summary>
-        public QueryGrammar()
+        private Terminal terminalEmpty;
+
+        /// <summary>
+        /// Query for metadata.
+        /// </summary>
+        private NonTerminal temporalStream;
+
+        /// <summary>
+        /// MakeStarRule function of the parent grammar.
+        /// </summary>
+        private Func<NonTerminal, BnfTerm, BnfExpression> makeStarRuleOfParentGrammar;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemporalStreamGrammar"/> class
+        /// </summary>
+        public TemporalStreamGrammar()
             : base(false)
         {
             this.expressionGrammar = new ExpressionGrammar();
             this.CreateGrammar();
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TemporalStreamGrammar"/> class
+        /// </summary>
+        /// <param name="empty">Terminal empty of the parent grammar.</param>
+        /// <param name="makeStarRuleOfParentGrammar">MakeStarRule function of the parent grammar.</param>
+        public TemporalStreamGrammar(Terminal empty, Func<NonTerminal, BnfTerm, BnfExpression> makeStarRuleOfParentGrammar)
+            : base(false)
+        {
+            this.expressionGrammar = new ExpressionGrammar();
+            this.terminalEmpty = empty;
+            this.makeStarRuleOfParentGrammar = makeStarRuleOfParentGrammar;
+            this.CreateGrammar();
+        }
+
+        /// <summary>
+        /// Gets the non-terminal for a temporal stream.
+        /// </summary>
+        public NonTerminal TemporalStream
+        {
+            get
+            {
+                return this.temporalStream;
+            }
         }
 
         /// <summary>
@@ -65,12 +106,14 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalWith = ToTerm("with", "with");
             KeyTerm terminalgroup = ToTerm("group", "group");
             KeyTerm terminalSelect = ToTerm("select", "select");
-            KeyTerm terminalTop = ToTerm("top", "top");
+            KeyTerm terminalTop = ToTerm("top", "top");            
+            KeyTerm terminalRepetition = ToTerm("repetition", "repetition");
+            KeyTerm terminalDuration = ToTerm("duration", "duration");
             KeyTerm terminalInto = ToTerm("into", "into");
 
             // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
-
+            
             /* SIMBOLOS */
             KeyTerm terminalComa = ToTerm(",", "coma");
             KeyTerm terminalPunto = ToTerm(".", "punto");
@@ -84,9 +127,10 @@ namespace Integra.Space.Language.Grammars
             terminalNumero.AstConfig.NodeType = null;
             terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
             NumberLiteral terminalUnsignedIntValue = new NumberLiteral("unsigned_int_value", NumberOptions.IntOnly);
+            terminalUnsignedIntValue.AstConfig.NodeType = null;
+            terminalUnsignedIntValue.AstConfig.DefaultNodeCreator = () => new NumberNode();
 
-            RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
-            terminalId.Name = "identifier";
+            IdentifierTerminal terminalId = new IdentifierTerminal("identifier", IdOptions.None);
             terminalId.AstConfig.NodeType = null;
             terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierASTNode();
 
@@ -120,18 +164,33 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_JOIN_SOURCE = new NonTerminal("JOIN_SOURCE", typeof(SourceNode));
             nt_JOIN_SOURCE.AstConfig.NodeType = null;
             nt_JOIN_SOURCE.AstConfig.DefaultNodeCreator = () => new SourceNode(0);
+
             NonTerminal nt_APPLY_WINDOW = new NonTerminal("APPLY_WINDOW", typeof(ApplyWindowNode));
             nt_APPLY_WINDOW.AstConfig.NodeType = null;
-            nt_APPLY_WINDOW.AstConfig.DefaultNodeCreator = () => new ApplyWindowNode();            
+            nt_APPLY_WINDOW.AstConfig.DefaultNodeCreator = () => new ApplyWindowNode();
+
+            NonTerminal nt_APPLY_EXTENSIONS = new NonTerminal("APPLY_EXTENSION", typeof(ApplyExtensionListASTNode<PassASTNode>));
+            nt_APPLY_EXTENSIONS.AstConfig.NodeType = null;
+            nt_APPLY_EXTENSIONS.AstConfig.DefaultNodeCreator = () => new ApplyExtensionListASTNode<PassASTNode>();
+            NonTerminal nt_APPLY_EXTENSION = new NonTerminal("APPLY_EXTENSION", typeof(PassASTNode));
+            nt_APPLY_EXTENSION.AstConfig.NodeType = null;
+            nt_APPLY_EXTENSION.AstConfig.DefaultNodeCreator = () => new PassASTNode();
+            NonTerminal nt_APPLY_DURATION = new NonTerminal("APPLY_DURATION", typeof(ApplyExtesnsionNode));
+            nt_APPLY_DURATION.AstConfig.NodeType = null;
+            nt_APPLY_DURATION.AstConfig.DefaultNodeCreator = () => new ApplyExtesnsionNode();
+            NonTerminal nt_APPLY_REPETITION = new NonTerminal("APPLY_REPETITION", typeof(ApplyExtesnsionNode));
+            nt_APPLY_REPETITION.AstConfig.NodeType = null;
+            nt_APPLY_REPETITION.AstConfig.DefaultNodeCreator = () => new ApplyExtesnsionNode();
+
             NonTerminal nt_ORDER_BY = new NonTerminal("ORDER_BY", typeof(OrderByNode));
             nt_ORDER_BY.AstConfig.NodeType = null;
             nt_ORDER_BY.AstConfig.DefaultNodeCreator = () => new OrderByNode();
             NonTerminal nt_LIST_OF_VALUES_FOR_ORDER_BY = new NonTerminal("LIST_OF_VALUES", typeof(ListNodeOrderBy));
             nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.NodeType = null;
             nt_LIST_OF_VALUES_FOR_ORDER_BY.AstConfig.DefaultNodeCreator = () => new ListNodeOrderBy();
-            NonTerminal nt_USER_QUERY = new NonTerminal("USER_QUERY", typeof(UserQueryNode));
-            nt_USER_QUERY.AstConfig.NodeType = null;
-            nt_USER_QUERY.AstConfig.DefaultNodeCreator = () => new UserQueryNode();            
+            this.temporalStream = new NonTerminal("USER_QUERY", typeof(TemporalStreamASTNode));
+            this.temporalStream.AstConfig.NodeType = null;
+            this.temporalStream.AstConfig.DefaultNodeCreator = () => new TemporalStreamASTNode();            
             NonTerminal nt_ID_WITH_ALIAS = new NonTerminal("ID_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
             nt_ID_WITH_ALIAS.AstConfig.NodeType = null;
             nt_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
@@ -185,17 +244,29 @@ namespace Integra.Space.Language.Grammars
             nt_INTO.AstConfig.DefaultNodeCreator = () => new IntoASTNode();
 
             /* USER QUERY */
-            nt_USER_QUERY.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_INTO
-                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY + nt_INTO;
+            this.temporalStream.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_APPLY_EXTENSIONS + nt_INTO
+                                    | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY + nt_APPLY_EXTENSIONS + nt_INTO;
             /* **************************** */
             /* APPLY WINDOW */
             nt_APPLY_WINDOW.Rule = terminalApply + terminalWindow + terminalOf + terminalDateTimeValue;
+            /* **************************** */
+            /* APPLY DURATION */
+            nt_APPLY_DURATION.Rule = terminalApply + terminalDuration + terminalOf + terminalDateTimeValue;
+            /* **************************** */
+            /* APPLY REPETITION */
+            nt_APPLY_REPETITION.Rule = terminalApply + terminalRepetition + terminalOf + terminalUnsignedIntValue;
+            /* **************************** */
+            /* APPLY REPETITION */
+            nt_APPLY_EXTENSION.Rule = nt_APPLY_REPETITION
+                                        | nt_APPLY_DURATION;
+            
+            nt_APPLY_EXTENSIONS.Rule = this.makeStarRuleOfParentGrammar.Invoke(nt_APPLY_EXTENSIONS, nt_APPLY_EXTENSION);
             /* **************************** */
             /* ORDER BY */
             nt_ORDER_BY.Rule = terminalOrder + terminalBy + nt_LIST_OF_VALUES_FOR_ORDER_BY
                                 | terminalOrder + terminalBy + terminalAsc + nt_LIST_OF_VALUES_FOR_ORDER_BY
                                 | terminalOrder + terminalBy + terminalDesc + nt_LIST_OF_VALUES_FOR_ORDER_BY
-                                | this.Empty;
+                                | this.terminalEmpty;
 
             nt_LIST_OF_VALUES_FOR_ORDER_BY.Rule = nt_LIST_OF_VALUES_FOR_ORDER_BY + terminalComa + terminalId
                                                     | terminalId;
@@ -225,7 +296,7 @@ namespace Integra.Space.Language.Grammars
                                 | terminalRight
                                 | terminalCross
                                 | terminalInner
-                                | this.Empty;
+                                | this.terminalEmpty;
             /* **************************** */
             /* ON */
             nt_ON.Rule = terminalOn + nt_LOGIC_EXPRESSION_FOR_ON_CONDITION;
@@ -235,11 +306,11 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* WHERE */
             nt_WHERE.Rule = terminalWhere + nt_LOGIC_EXPRESSION
-                            | this.Empty;
+                            | this.terminalEmpty;
             /* **************************** */
             /* OPTIONAL GROUP BY */
             nt_GROUP_BY_OP.Rule = nt_GROUP_BY
-                                    | this.Empty;
+                                    | this.terminalEmpty;
             /* **************************** */            
             /* GROUP BY */
             nt_GROUP_BY.Rule = terminalgroup + terminalBy + nt_LIST_OF_VALUES_FOR_GROUP_BY;
@@ -264,6 +335,7 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* VALORES CON ALIAS */
             nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = this.expressionGrammar.ProjectionValue + terminalAs + terminalId;
+            /* **************************** */
 
             /* SYSTEM OBJECT IDENTIFIER */
             nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.Rule = terminalId + terminalPunto + terminalId + terminalPunto + terminalId
@@ -272,10 +344,11 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
 
             /* INTO */
-            nt_INTO.Rule = terminalInto + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER; // | this.Empty;
+            nt_INTO.Rule = terminalInto + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER
+                            | this.terminalEmpty;
             /* **************************** */
 
-            this.Root = nt_USER_QUERY;
+            this.Root = this.temporalStream;
 
             this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;
         }

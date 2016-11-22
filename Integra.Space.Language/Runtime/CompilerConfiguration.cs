@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CompileContext.cs" company="Integra.Space.Language">
+// <copyright file="CompilerConfiguration.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -12,7 +12,7 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Space compile context
     /// </summary>
-    internal class CompileContext
+    internal class CompilerConfiguration
     {
         /// <summary>
         /// Query name.

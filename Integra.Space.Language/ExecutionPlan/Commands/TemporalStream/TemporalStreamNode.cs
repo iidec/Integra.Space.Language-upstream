@@ -1,47 +1,44 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CreateStreamNode.cs" company="Integra.Space.Common">
+// <copyright file="TemporalStreamNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Common. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
     using System.Collections.Generic;
-    using Common;
+    using System.Diagnostics.Contracts;
 
     /// <summary>
-    /// Action over object node class.
+    /// Command object class.
     /// </summary>
-    internal sealed class CreateStreamNode : CreateObjectNode<StreamOptionEnum>
+    internal sealed class TemporalStreamNode : DMLCommand
     {
         /// <summary>
         /// Referenced sources.
         /// </summary>
-        private List<ReferencedSource> inputSources;
+        private List<ReferencedSource> referencedSources;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CreateStreamNode"/> class.
+        /// Initializes a new instance of the <see cref="TemporalStreamNode"/> class.
         /// </summary>
-        /// <param name="commandObject">Command object.</param>
-        /// <param name="query">Query of the stream.</param>
+        /// <param name="action">Command action.</param>
         /// <param name="executionPlan">Execution plan.</param>
-        /// <param name="options">Login options.</param>
-        /// <param name="sourceInto">Source where events will be written</param>
+        /// <param name="source">Source where events will be written</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateStreamNode(CommandObject commandObject, string query, PlanNode executionPlan, Dictionary<StreamOptionEnum, object> options, CommandObject sourceInto, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
+        /// <param name="schemaName">Schema name for the command execution.</param>
+        /// <param name="databaseName">Database name for the command execution.</param>
+        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, CommandObject source, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, line, column, nodeText, schemaName, databaseName)
         {
-            System.Diagnostics.Contracts.Contract.Assert(!string.IsNullOrWhiteSpace(query));
-            System.Diagnostics.Contracts.Contract.Assert(sourceInto != null);
-            this.Query = query;
+            Contract.Assert(executionPlan != null);
             this.ExecutionPlan = executionPlan;
-
-            this.inputSources = new List<ReferencedSource>();
+            this.referencedSources = new List<ReferencedSource>();
             List<PlanNode> fromNodes = Language.Runtime.NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
-                string schemaNameOfSource = commandObject.SchemaName;
-                string databaseNameOfSource = commandObject.DatabaseName;
+                string schemaNameOfSource = schemaName;
+                string databaseNameOfSource = databaseName;
                 if (fromNode.Properties.ContainsKey("SchemaName") && fromNode.Properties["SchemaName"] != null)
                 {
                     schemaNameOfSource = fromNode.Properties["SchemaName"].ToString();
@@ -53,41 +50,39 @@ namespace Integra.Space.Language
                 }
 
                 string sourceName = fromNode.Properties["SourceName"].ToString();
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, PermissionsEnum.Read, false));
-                
-                this.inputSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
+                this.CommandObjects.Add(new CommandObject(Common.SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, Common.PermissionsEnum.Read, false));
+
+                this.referencedSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
             }
 
             // agrego la fuente si fue especificada.
-            this.CommandObjects.Add(sourceInto);
-            this.OutputSource = sourceInto;
+            if (source != null)
+            {
+                this.CommandObjects.Add(source);
+                this.Source = source;
+            }
         }
-
-        /// <summary>
-        /// Gets the query of the stream.
-        /// </summary>
-        public string Query { get; private set; }
-
-        /// <summary>
-        /// Gets the source where events will be written
-        /// </summary>
-        public CommandObject OutputSource { get; private set; }
-
-        /// <summary>
-        /// Gets the execution plan of the query.
-        /// </summary>
-        public PlanNode ExecutionPlan { get; private set; }
 
         /// <summary>
         /// Gets the referenced sources at the stream query.
         /// </summary>
-        public ReferencedSource[] InputSources
+        public ReferencedSource[] ReferencedSources
         {
             get
             {
-                return this.inputSources.ToArray();
+                return this.referencedSources.ToArray();
             }
         }
+
+        /// <summary>
+        /// Gets the execution plan.
+        /// </summary>
+        public PlanNode ExecutionPlan { get; private set; }
+
+        /// <summary>
+        /// Gets the source where events will be written
+        /// </summary>
+        public CommandObject Source { get; private set; }
 
         /// <summary>
         /// Stream referenced sources class.

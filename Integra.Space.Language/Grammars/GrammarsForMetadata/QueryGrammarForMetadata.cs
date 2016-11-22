@@ -131,9 +131,9 @@ namespace Integra.Space.Language.Grammars
             this.queryForMetadata = new NonTerminal("METADATA_QUERY", typeof(QueryForMetadataASTNode));
             this.queryForMetadata.AstConfig.NodeType = null;
             this.queryForMetadata.AstConfig.DefaultNodeCreator = () => new QueryForMetadataASTNode();
-            NonTerminal nt_SOURCE_DEFINITION = new NonTerminal("SOURCE_DEFINITION", typeof(PassNode));
+            NonTerminal nt_SOURCE_DEFINITION = new NonTerminal("SOURCE_DEFINITION", typeof(PassASTNode));
             nt_SOURCE_DEFINITION.AstConfig.NodeType = null;
-            nt_SOURCE_DEFINITION.AstConfig.DefaultNodeCreator = () => new PassNode();
+            nt_SOURCE_DEFINITION.AstConfig.DefaultNodeCreator = () => new PassASTNode();
             NonTerminal nt_ID_OR_ID_WITH_ALIAS = new NonTerminal("ID_OR_ID_WITH_ALIAS", typeof(ConstantValueWithOptionalAliasNode));
             nt_ID_OR_ID_WITH_ALIAS.AstConfig.NodeType = null;
             nt_ID_OR_ID_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithOptionalAliasNode();

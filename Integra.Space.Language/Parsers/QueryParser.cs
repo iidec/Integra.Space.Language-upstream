@@ -27,9 +27,9 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands.
         /// </summary>
         /// <returns>Execution plan.</returns>
-        public PlanNode Evaluate()
+        public System.Tuple<PlanNode, CommandObject> Evaluate()
         {
-            return (PlanNode)this.EvaluateParseTree();
+            return (System.Tuple<PlanNode, CommandObject>)this.EvaluateParseTree();
         }
     }
 }

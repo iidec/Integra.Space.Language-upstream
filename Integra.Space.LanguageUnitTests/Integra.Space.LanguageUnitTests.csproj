@@ -177,6 +177,7 @@
     <Compile Include="Queries\Join\CrossJoinTests.cs" />
     <Compile Include="Queries\Others.cs" />
     <Compile Include="Queries\MetadataQueriesTests.cs" />
+    <Compile Include="Queries\TemporalStreamsTests.cs" />
     <Compile Include="Queries\UserQueryNodeTests.cs" />
     <Compile Include="SchedulerTypeEnum.cs" />
     <Compile Include="TestObjects.cs" />

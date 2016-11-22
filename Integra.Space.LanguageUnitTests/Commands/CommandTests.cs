@@ -396,7 +396,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                    "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }}";
             this.Process(command);
@@ -411,7 +411,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                    "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }} with status = on";
             this.Process(command);
@@ -426,7 +426,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                    "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }} with status = off";
             this.Process(command);
@@ -693,7 +693,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                    "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream stream123 with query = {{ {eql} }}, status = on";
             this.Process(command);
@@ -708,7 +708,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                    "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream stream123 with query = {{ {eql} }}, status = off";
             this.Process(command);
@@ -823,7 +823,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                       "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                       "TIMEOUT '00:00:02' " +
                                       //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream Stream1 with query = {{ {eql} }}, name = Stream2";
             this.Process(command);
@@ -838,7 +838,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
                                       "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                       "TIMEOUT '00:00:02' " +
                                       //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX ";
+                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream Schema1.Stream1 with query = {{ {eql} }}";
             this.Process(command);
@@ -879,7 +879,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void GrantPermissionsToUser1()
         {
-            string command = "grant create source, read on stream Stream1, alter on stream Stream1, create stream, read on source Source1 to user oscar";
+            string command = "grant create source, alter on stream Stream1, create stream, read on source Source1 to user oscar";
             this.Process(command);
         }
 
@@ -888,14 +888,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region read
 
         #region to user
-        [TestMethod]
-        public void GrantReadPermissionToUser1()
-        {
-            string command = "grant read on stream Stream1 to user oscar";
-            this.Process(command);
-            
-            
-        }
 
         [TestMethod]
         public void GrantReadPermissionToUser2()
@@ -909,15 +901,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to user
 
         #region to role
-
-        [TestMethod]
-        public void GrantReadPermissionToRole1()
-        {
-            string command = "grant read on stream Stream1 to role oscar";
-            this.Process(command);
-            
-            
-        }
 
         [TestMethod]
         public void GrantReadPermissionToRole2()
@@ -1067,7 +1050,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void revokePermissionsToUser1()
         {
-            string command = "revoke create source, read on stream Stream1, alter on stream Stream1, create stream, read on source Source1 to user oscar";
+            string command = "revoke create source, alter on stream Stream1, create stream, read on source Source1 to user oscar";
             this.Process(command);
         }
 
@@ -1076,14 +1059,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region read
 
         #region to user
-        [TestMethod]
-        public void revokeReadPermissionToUser1()
-        {
-            string command = "revoke read on stream Stream1 to user oscar";
-            this.Process(command);
-
-
-        }
 
         [TestMethod]
         public void revokeReadPermissionToUser2()
@@ -1097,15 +1072,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to user
 
         #region to role
-
-        [TestMethod]
-        public void revokeReadPermissionToRole1()
-        {
-            string command = "revoke read on stream Stream1 to role oscar";
-            this.Process(command);
-
-
-        }
 
         [TestMethod]
         public void revokeReadPermissionToRole2()
@@ -1251,7 +1217,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void denyPermissionsToUser1()
         {
-            string command = "deny create source, read on stream Stream1, alter on stream Stream1, create stream, read on source Source1 to user oscar";
+            string command = "deny create source, alter on stream Stream1, create stream, read on source Source1 to user oscar";
             this.Process(command);
         }
 
@@ -1260,14 +1226,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #region read
 
         #region to user
-        [TestMethod]
-        public void denyReadPermissionToUser1()
-        {
-            string command = "deny read on stream Stream1 to user oscar";
-            this.Process(command);
-
-
-        }
 
         [TestMethod]
         public void denyReadPermissionToUser2()
@@ -1281,16 +1239,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to user
 
         #region to role
-
-        [TestMethod]
-        public void denyReadPermissionToRole1()
-        {
-            string command = "deny read on stream Stream1 to role oscar";
-            this.Process(command);
-
-
-        }
-
+        
         [TestMethod]
         public void denyReadPermissionToRole2()
         {

@@ -132,6 +132,9 @@
   <data name="AgentProperty" xml:space="preserve">
     <value>agent</value>
   </data>
+  <data name="ApplyExtensionsRole" xml:space="preserve">
+    <value>ApplyExtensions</value>
+  </data>
   <data name="ApplyWindowRole" xml:space="preserve">
     <value>ApplyWindow</value>
   </data>
@@ -173,6 +176,9 @@
   </data>
   <data name="InterpretationException" xml:space="preserve">
     <value>An exception has ocurred on command interpretation. The inner exception may contain more information.</value>
+  </data>
+  <data name="IntoRole" xml:space="preserve">
+    <value>Into</value>
   </data>
   <data name="JoinRole" xml:space="preserve">
     <value>Join</value>

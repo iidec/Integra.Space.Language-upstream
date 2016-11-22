@@ -14,7 +14,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
             ExpressionParser parser = new ExpressionParser("\"hello world! :D\"");
             PlanNode plan = parser.Evaluate();
 
-            CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+            CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
             Func<string> result = te.Compile<string>(plan);
 
             Assert.AreEqual<string>("hello world! :D", result(), "El plan obtenido difiere del plan esperado.");

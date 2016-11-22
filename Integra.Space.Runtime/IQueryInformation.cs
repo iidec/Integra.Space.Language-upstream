@@ -20,6 +20,6 @@ namespace Integra.Space
         /// Gets the referenced assemblies by the dll.
         /// </summary>
         /// <returns>The referenced assemblies</returns>
-        System.Reflection.AssemblyName[] GetReferencedAssemblies();
+        System.Reflection.AssemblyName[] GetReferencedAssemblies();        
     }
 }

@@ -21,7 +21,7 @@ namespace Integra.Space.LanguageUnitTests.Events
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -41,7 +41,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         {
             eventList.Add(TestObjects.EventObjectTest1);
 
-            string eql = "from SpaceObservable1 select @event.agent.Name as nombre";
+            string eql = "from SpaceObservable1 select @event.agent.Name as nombre into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -68,7 +68,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAdapterNameValue()
         {
-            string eql = "from SpaceObservable1 select @event.Adapter.Name as nombre";
+            string eql = "from SpaceObservable1 select @event.Adapter.Name as nombre into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -95,7 +95,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAgentMachineNameValue()
         {
-            string eql = "from SpaceObservable1 select @event.Agent.MachineName as machineName";
+            string eql = "from SpaceObservable1 select @event.Agent.MachineName as machineName into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -122,7 +122,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAgentTimeStampType()
         {
-            string eql = "from SpaceObservable1 select @event.Agent.Timestamp as ts";
+            string eql = "from SpaceObservable1 select @event.Agent.Timestamp as ts into SourceXYZ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -138,7 +138,7 @@ namespace Integra.Space.LanguageUnitTests.Events
         [TestMethod]
         public void EventPropertyAdapterTimeStampType()
         {
-            string eql = "from SpaceObservable1 select @event.adapter.Timestamp as ts";
+            string eql = "from SpaceObservable1 select @event.adapter.Timestamp as ts into SourceXYZ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 

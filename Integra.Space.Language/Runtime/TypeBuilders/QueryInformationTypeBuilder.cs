@@ -18,7 +18,7 @@ namespace Integra.Space.Language.Runtime
         /// Type created for the actual query. This type inherits from SpaceQuery abstract class.
         /// </summary>
         private Type queryType;
-
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="QueryInformationTypeBuilder"/> class.
         /// </summary>

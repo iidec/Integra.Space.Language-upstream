@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="PassNode.cs" company="Integra.Space.Language">
+// <copyright file="PassASTNode.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -16,7 +16,7 @@ namespace Integra.Space.Language.ASTNodes
     /// <summary>
     /// SourceDefinitionNode class
     /// </summary>
-    internal sealed class PassNode : AstNodeBase
+    internal sealed class PassASTNode : AstNodeBase
     {
         /// <summary>
         /// Non terminal node
@@ -43,7 +43,7 @@ namespace Integra.Space.Language.ASTNodes
             base.Init(context, treeNode);
             if (ChildrenNodes.Count != 0)
             {
-                this.nonTerminal = AddChild(NodeUseType.Parameter, "source", ChildrenNodes[0]) as AstNodeBase;
+                this.nonTerminal = AddChild(NodeUseType.Parameter, "CopiedNode", ChildrenNodes[0]) as AstNodeBase;
 
                 if (this.nonTerminal == null)
                 {

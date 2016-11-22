@@ -69,8 +69,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             if (optionsAux.ContainsKey(StreamOptionEnum.Query))
             {
                 QueryParser parser = new QueryParser(optionsAux[StreamOptionEnum.Query].ToString());
-                PlanNode executionPlan = parser.Evaluate();
-                return new AlterStreamNode(commandObject, executionPlan, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+                Tuple<PlanNode, CommandObject> query = parser.Evaluate();
+                return new AlterStreamNode(commandObject, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.GetNodeText());
             }
 
             this.EndEvaluate(thread);

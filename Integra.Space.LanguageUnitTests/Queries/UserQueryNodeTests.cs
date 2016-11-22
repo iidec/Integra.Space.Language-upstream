@@ -20,7 +20,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -38,7 +38,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaProyeccionCampoNuloConWhere()
         {
-            string eql = string.Format("from {0} where {1} select {2} as CampoNulo",
+            string eql = string.Format("from {0} where {1} select {2} as CampoNulo into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                 "@event.Message.#0.[\"Campo que no existe\"]");
@@ -74,7 +74,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaProyeccionCampoNuloSinWhere()
         {
-            string eql = string.Format("from {0} select {1} as CampoNulo",
+            string eql = string.Format("from {0} select {1} as CampoNulo into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "@event.Message.#0.[\"Campo que no existe\"]");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
@@ -109,7 +109,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYCount()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Contador",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Contador into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -150,7 +150,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_0()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -188,7 +188,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_1()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -227,7 +227,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_2()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado1, {4} as Resultado2",
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -269,7 +269,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_4()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -307,7 +307,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_5()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -347,7 +347,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventosOrderByDesc()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -386,7 +386,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSelectDiezEventosTop()
         {
-            string eql = string.Format("from {0} select top 1 {3} as monto",
+            string eql = string.Format("from {0} select top 1 {3} as monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -432,7 +432,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereSelectDosEventosTop()
         {
-            string eql = string.Format("from {0} where {1} select top 1 {3} as monto",
+            string eql = string.Format("from {0} where {1} select top 1 {3} as monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -470,7 +470,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTop()
         {
-            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto",
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -508,7 +508,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderByDesc()
         {
-            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by desc monto",
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -546,7 +546,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderByAsc()
         {
-            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by asc monto",
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -584,7 +584,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderBy()
         {
-            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by monto",
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -622,7 +622,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByDesc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by desc monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -660,7 +660,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByAsc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by asc monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -698,7 +698,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderBy()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -736,7 +736,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTop()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -774,7 +774,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -815,7 +815,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m /*@event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 4m*/",
                                                                                             "'00:00:00:01'",
@@ -856,7 +856,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -897,7 +897,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTop()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -938,7 +938,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria, Llave",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria, Llave into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -979,7 +979,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1020,7 +1020,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1061,7 +1061,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectTopUnaLlaveYSum()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1104,7 +1104,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByDesc()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1143,7 +1143,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByAsc()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by asc monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1182,7 +1182,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderBy()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1221,7 +1221,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDesc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by desc monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1260,7 +1260,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByAsc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by asc monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1299,7 +1299,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderBy()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by monto",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1338,7 +1338,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1379,7 +1379,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1420,7 +1420,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1461,7 +1461,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSum()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1502,7 +1502,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1543,7 +1543,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1584,7 +1584,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1625,7 +1625,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSum()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1668,7 +1668,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_0()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1705,7 +1705,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_1()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1744,7 +1744,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_2()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado1, {4} as Resultado2",
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -1786,7 +1786,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSum()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1827,7 +1827,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYCount()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1870,7 +1870,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYSum()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Sumatoria",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -1913,7 +1913,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYCountSinWhere()
         {
-            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Contador",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Contador into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#0.MessageType as grupo1",
@@ -1953,7 +1953,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSumSinWhere()
         {
-            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Sumatoria",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#0.MessageType as grupo1",
@@ -1993,7 +1993,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSumSinWhere2()
         {
-            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:10'",
                                                                                             "@event.Message.#0.#0 as grupo1",
@@ -2032,7 +2032,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYCountSinWhere()
         {
-            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
@@ -2074,7 +2074,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYSumSinWhere()
         {
-            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Sumatoria",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
@@ -2120,13 +2120,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
-                    string.Format("from {0} select {1} as Llave",
+                    string.Format("from {0} select {1} as Llave into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "key")
                                                                 );
-                PlanNode plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
                 Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
@@ -2151,14 +2151,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
-                    string.Format("from {0} where {1} select {2} as Llave",
+                    string.Format("from {0} where {1} select {2} as Llave into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                 "key")
                                                                 );
-                PlanNode plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
                 Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
@@ -2183,13 +2183,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
-                    string.Format("from {0} select {1} as Llave",
+                    string.Format("from {0} select {1} as Llave into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "count()")
                                                                 );
-                PlanNode plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty });
+                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty });
                 Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
@@ -2214,13 +2214,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
-                    string.Format("from {0} select {1} as Llave",
+                    string.Format("from {0} select {1} as Llave into SourceXYZ",
                                                                 "SpaceObservable1",
                                                                 "sum((decimal)@event.Message.#1.TransactionAmount)")
                                                                 );
-                PlanNode plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
                 Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
@@ -2295,7 +2295,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(
-                    string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
+                    string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
                                                                                                 "SpaceObservable1",
                                                                                                 "@event.Message.#0.MessageType == \"0100\"",
                                                                                                 "'00:00:00:01'",
@@ -2303,9 +2303,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                                 "key.grupo1",
                                                                                                 "sum(@event.Message.#1.CardAcceptorNameLocation)")
                                                                                                 );
-                PlanNode plan = parser.Evaluate();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
                 Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
 
                 Assert.Inconclusive();
@@ -2326,7 +2326,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion1()
         {
-            string command = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador, {7} as Sumatoria",
+            string command = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador, {7} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -2336,7 +2336,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate();
+            PlanNode plan = parser.Evaluate().Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2344,7 +2344,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion2()
         {
-            string command = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador, {6} as Sumatoria",
+            string command = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador, {6} as Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "'00:00:00:01'",
                                                                                             "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
@@ -2353,7 +2353,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((decimal)@event.Message.#1.TransactionAmount)");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate();
+            PlanNode plan = parser.Evaluate().Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2361,7 +2361,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion3()
         {
-            string command = string.Format("from {0} where {1} select {2} as PrimaryAccountNumber, {3} as CardAcceptorNameLocation, {4} as TransactionAmount, {5} as TransactionCurrencyCode",
+            string command = string.Format("from {0} where {1} select {2} as PrimaryAccountNumber, {3} as CardAcceptorNameLocation, {4} as TransactionAmount, {5} as TransactionCurrencyCode into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
                                                                                             "@event.Message.#0.PrimaryAccountNumber",
@@ -2369,7 +2369,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate();
+            PlanNode plan = parser.Evaluate().Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2377,14 +2377,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion4()
         {
-            string command = string.Format("from {0} select {1} as PrimaryAccountNumber, {2} as CardAcceptorNameLocation, {3} as TransactionAmount, {4} as TransactionCurrencyCode",
+            string command = string.Format("from {0} select {1} as PrimaryAccountNumber, {2} as CardAcceptorNameLocation, {3} as TransactionAmount, {4} as TransactionCurrencyCode into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.PrimaryAccountNumber",
                                                                                             "@event.Message.#0.CardAcceptorNameLocation",
                                                                                             "@event.Message.#0.TransactionAmount",
                                                                                             "@event.Message.#0.TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate();
+            PlanNode plan = parser.Evaluate().Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2392,7 +2392,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByAsc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2441,7 +2441,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderBy()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2490,7 +2490,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDesc()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2539,7 +2539,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLowerWithNullValue()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null and lower((string)null) like \"%shell%\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2590,7 +2590,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescUpperWithNullValue()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null and upper((string)null) like \"%shell%\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2641,7 +2641,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLeftWithNullValue()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null and left((string)null, 5) like \"%shell%\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
@@ -2692,7 +2692,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescRightWithNullValue()
         {
-            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.Body.#43 != null and right((string)null, 3) like \"%shell%\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject

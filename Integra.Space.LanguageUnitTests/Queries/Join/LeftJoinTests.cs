@@ -15,7 +15,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
     {
         private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input1, ITestableObservable<EventObject> input2, bool printLog = false, bool debugMode = false, bool measureElapsedTime = false)
         {
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -41,7 +41,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -88,7 +88,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -135,7 +135,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "WITH SpaceObservable1 as t2 " +
                                  "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                  "TIMEOUT '00:00:02' " +
-                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -182,7 +182,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:20' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -229,7 +229,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -278,7 +278,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -348,7 +348,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -427,7 +427,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -480,7 +480,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -527,7 +527,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -574,7 +574,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "WITH SpaceObservable1 as t2 " +
                                  "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                  "TIMEOUT '00:00:02' " +
-                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -621,7 +621,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:01' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -668,7 +668,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -717,7 +717,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -786,7 +786,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -847,8 +847,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -877,8 +877,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -912,8 +912,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -942,8 +942,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -973,8 +973,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1004,8 +1004,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1035,8 +1035,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1066,8 +1066,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1097,8 +1097,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1121,15 +1121,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 $"ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and {condition} " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1151,15 +1151,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1181,15 +1181,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 $"WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == {instruction} " +
                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1"; // , t2.@event.Message.#1.#2 as c2 
+                                "SELECT t1.@event.Message.#1.#2 as c1 into SourceXYZ"; // , t2.@event.Message.#1.#2 as c2 
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             try
             {
                 QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate();
-                CompileContext context = new CompileContext() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                PlanNode plan = parser.Evaluate().Item1;
+                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }

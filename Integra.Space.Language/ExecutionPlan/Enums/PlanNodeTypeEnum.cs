@@ -808,6 +808,16 @@ namespace Integra.Space.Language
         /// <summary>
         /// Observable to enumerable type.
         /// </summary>
-        ObservableToEnumerable = 711
+        ObservableToEnumerable = 711,
+
+        /// <summary>
+        /// Apply repetition extension.
+        /// </summary>
+        ApplyRepetition = 712,
+
+        /// <summary>
+        /// Apply duration extension.
+        /// </summary>
+        ApplyDuration = 713
     }
 }

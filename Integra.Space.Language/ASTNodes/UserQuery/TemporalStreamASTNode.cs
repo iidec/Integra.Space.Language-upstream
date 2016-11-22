@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="UserQueryNode.cs" company="Ingetra.Vision.Language">
+// <copyright file="TemporalStreamASTNode.cs" company="Ingetra.Vision.Language">
 //     Copyright (c) Ingetra.Vision.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -9,6 +9,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
     using System.Collections.Generic;
     using System.Configuration;
     using System.Linq;
+    using Commands;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
@@ -19,7 +20,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
     /// <summary>
     /// User query node.
     /// </summary>
-    internal sealed class UserQueryNode : AstNodeBase
+    internal sealed class TemporalStreamASTNode : AstNodeBase
     {
         /// <summary>
         /// Query from section.
@@ -50,7 +51,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         /// Sixth section of the query.
         /// </summary>
         private AstNodeBase sixth;
-        
+
+        /// <summary>
+        /// Apply extensions node.
+        /// </summary>
+        private ApplyExtensionListASTNode<PassASTNode> applyExtensions;
+
         /// <summary>
         /// Into node.
         /// </summary>
@@ -71,14 +77,15 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             base.Init(context, treeNode);
 
             int childrenCount = ChildrenNodes.Count;
-            if (childrenCount == 4)
+            if (childrenCount == 5)
             {
                 this.from = AddChild(NodeUseType.Keyword, SR.FromRole, ChildrenNodes[0]) as AstNodeBase;
                 this.where = AddChild(NodeUseType.Keyword, SR.WhereRole, ChildrenNodes[1]) as AstNodeBase;
                 this.select = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[2]) as AstNodeBase;
-                this.into = AddChild(NodeUseType.Keyword, SR.IntoRole, ChildrenNodes[3]) as AstNodeBase;
-            }            
-            else if (childrenCount == 7)
+                this.applyExtensions = AddChild(NodeUseType.Keyword, SR.ApplyExtensionsRole, ChildrenNodes[3]) as ApplyExtensionListASTNode<PassASTNode>;
+                this.into = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[4]) as AstNodeBase;
+            }
+            else if (childrenCount == 8)
             {
                 this.from = AddChild(NodeUseType.Keyword, SR.FromRole, ChildrenNodes[0]) as AstNodeBase;
                 this.where = AddChild(NodeUseType.Keyword, SR.WhereRole, ChildrenNodes[1]) as AstNodeBase;
@@ -86,7 +93,8 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 this.groupBy = AddChild(NodeUseType.Keyword, SR.GroupByRole, ChildrenNodes[3]) as AstNodeBase;
                 this.select = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[4]) as AstNodeBase;
                 this.sixth = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[5]) as AstNodeBase;
-                this.into = AddChild(NodeUseType.Keyword, SR.IntoRole, ChildrenNodes[6]) as AstNodeBase;
+                this.applyExtensions = AddChild(NodeUseType.Keyword, SR.ApplyExtensionsRole, ChildrenNodes[6]) as ApplyExtensionListASTNode<PassASTNode>;
+                this.into = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[7]) as AstNodeBase;
             }
 
             this.result = new PlanNode();
@@ -121,7 +129,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 sources = concatNode;
             }
 
-            if (childrenCount == 4)
+            if (childrenCount == 5)
             {
                 PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
                 PlanNode projectionAux = (PlanNode)this.select.Evaluate(thread);
@@ -136,7 +144,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                     this.AuxThreeParts(sources, secondArgument, projectionAux);
                 }
             }
-            else if (childrenCount == 7)
+            else if (childrenCount == 8)
             {
                 PlanNode secondArgument = (PlanNode)this.where.Evaluate(thread);
                 PlanNode thirdArgument = (PlanNode)this.applyWindow.Evaluate(thread);
@@ -179,6 +187,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 }
             }
 
+            List<PlanNode> applyExtensionsAux = null;
+            if (this.applyExtensions != null)
+            {
+                applyExtensionsAux = (List<PlanNode>)this.applyExtensions.Evaluate(thread);
+            }
+
             // creo el objeto de comando para la fuente si fué definida.
             Tuple<string, string, string> intoAux = (Tuple<string, string, string>)this.into.Evaluate(thread);
             CommandObject source = null;
@@ -187,7 +201,32 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 source = new CommandObject(Common.SystemObjectEnum.Source, intoAux.Item1, intoAux.Item2, intoAux.Item3, Common.PermissionsEnum.Write, false);
             }
 
+            Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+            string databaseName = (string)databaseBinding.GetValueRef(thread);
+
             this.EndEvaluate(thread);
+
+            this.result.Column = sources.Column;
+            this.result.Line = sources.Line;
+            /* ******************************************************************************************************************************************************** */
+
+            PlanNode lastExtension = this.result;
+            if (applyExtensionsAux != null && applyExtensionsAux.Count > 0)
+            {
+                // agrego las extensiones apply al árbol de ejecución.
+                applyExtensionsAux.First().Children.Insert(0, this.result);
+                lastExtension = applyExtensionsAux.First();
+                this.result.NodeText += " " + lastExtension.NodeText;
+                applyExtensionsAux.RemoveAt(0);
+                foreach (PlanNode extension in applyExtensionsAux)
+                {
+                    extension.Children.Insert(0, lastExtension);
+                    this.result.NodeText += " " + extension.NodeText;
+                    lastExtension = extension;
+                }
+            }
+
+            /* ******************************************************************************************************************************************************** */
 
             // se actualiza el texto del nodo con el 'into'.
             if (intoAux != null)
@@ -195,16 +234,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 this.result.NodeText += " into " + source.GetStringPath();
             }
 
-            this.result.Column = sources.Column;
-            this.result.Line = sources.Line;
-            /* ******************************************************************************************************************************************************** */
-
             // nodos para crear el objeto QueryResult resultante
             PlanNode scopeFinalResult = new PlanNode();
             scopeFinalResult.NodeType = PlanNodeTypeEnum.NewScope;
             scopeFinalResult.Children = new List<PlanNode>();
 
-            scopeFinalResult.Children.Add(this.result);
+            scopeFinalResult.Children.Add(lastExtension);
 
             PlanNode fromForLambda = new PlanNode();
             fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
@@ -229,8 +264,8 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             {
                 finalResult = this.AddSubscribeAndCreate(finalSelect);
             }
-            
-            return Tuple.Create(finalResult, source);
+
+            return new TemporalStreamNode(Common.ActionCommandEnum.Read, finalResult, source, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
         }
 
         /// <summary>

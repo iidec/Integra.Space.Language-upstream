@@ -106,6 +106,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ApplyExtensions.
+        /// </summary>
+        internal static string ApplyExtensionsRole {
+            get {
+                return ResourceManager.GetString("ApplyExtensionsRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ApplyWindow.
         /// </summary>
         internal static string ApplyWindowRole {
@@ -228,6 +237,15 @@ namespace Integra.Space.Language {
         internal static string InterpretationException {
             get {
                 return ResourceManager.GetString("InterpretationException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Into.
+        /// </summary>
+        internal static string IntoRole {
+            get {
+                return ResourceManager.GetString("IntoRole", resourceCulture);
             }
         }
         

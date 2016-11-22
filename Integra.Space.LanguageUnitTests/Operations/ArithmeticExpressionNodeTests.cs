@@ -19,7 +19,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -37,7 +37,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaPositivosIgualdad()
         {
-            string eql = "from SpaceObservable1 where 1 - 1 == 0 select true as resultado";
+            string eql = "from SpaceObservable1 where 1 - 1 == 0 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -64,7 +64,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaNegativosIgualdad()
         {
-            string eql = "from SpaceObservable1 where -1 - -1 == 0 select true as resultado";
+            string eql = "from SpaceObservable1 where -1 - -1 == 0 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -91,7 +91,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaPositivoNegativoIgualdad()
         {
-            string eql = "from SpaceObservable1 where 1 - -1 == 2 select true as resultado";
+            string eql = "from SpaceObservable1 where 1 - -1 == 2 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -118,7 +118,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaNegativoPositivoIgualdad()
         {
-            string eql = "from SpaceObservable1 where -1 - 1 == -2 select true as resultado";
+            string eql = "from SpaceObservable1 where -1 - 1 == -2 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -145,7 +145,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaHourFunctionIgualdadWithoutHour()
         {
-            string eql = "from SpaceObservable1 where hour('02/01/2014') - hour('01/01/2014') == 0 select true as resultado";
+            string eql = "from SpaceObservable1 where hour('02/01/2014') - hour('01/01/2014') == 0 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -172,7 +172,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaHourFunctionIgualdadWithHour()
         {
-            string eql = "from SpaceObservable1 where hour('02/01/2014 12:11:10') - hour('01/01/2014 11:11:10') == 1 select true as resultado";
+            string eql = "from SpaceObservable1 where hour('02/01/2014 12:11:10') - hour('01/01/2014 11:11:10') == 1 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -199,7 +199,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaYearFunctionIgualdad()
         {
-            string eql = "from SpaceObservable1 where year('02/03/2015') - year('01/01/2014') == 1 select true as resultado";
+            string eql = "from SpaceObservable1 where year('02/03/2015') - year('01/01/2014') == 1 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(

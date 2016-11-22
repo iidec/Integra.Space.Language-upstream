@@ -19,7 +19,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -37,7 +37,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosProyeccionMixta()
         {
-            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo";
+            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -76,7 +76,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosProyeccionMixta()
         {
-            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo";
+            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -115,7 +115,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma";
+            string eql = "from SpaceObservable1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -154,7 +154,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma";
+            string eql = "from SpaceObservable1 where 1 == 1 apply window of '00:00:01' select sum((decimal)@event.Message.#1.#4) as suma, @event.Message.#1.#4 as monto, \"campoXX\" as campo order by suma into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -193,7 +193,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventos()
         {
-            string eql = string.Format("from {0} apply window of {2} select {3} as monto",
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
@@ -232,7 +232,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSelect()
         {
-            string eql = "from SpaceObservable1 select @event.Message.Body.#43 as campo1";
+            string eql = "from SpaceObservable1 select @event.Message.Body.#43 as campo1 into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(

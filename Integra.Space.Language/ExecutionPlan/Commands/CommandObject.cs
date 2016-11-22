@@ -130,5 +130,31 @@ namespace Integra.Space.Language
                 this.isNew = value;
             }
         }
+
+        /// <summary>
+        /// Gets the path of the system object.
+        /// </summary>
+        /// <returns>Path of the system object.</returns>
+        public string GetStringPath()
+        {
+            string path = this.Name;
+
+            if (!string.IsNullOrWhiteSpace(this.GranularObjectName))
+            {
+                path += "." + this.GranularObjectName;
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.SchemaName))
+            {
+                path = string.Concat(this.SchemaName, ".", path);
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.DatabaseName))
+            {
+                path = string.Concat(this.DatabaseName, ".", path);
+            }
+
+            return path;
+        }
     }
 }

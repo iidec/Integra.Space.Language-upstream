@@ -136,6 +136,7 @@
     <Compile Include="ASTNodes\Commands\DictionaryCommandOptionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CommandListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\DictionaryASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\ApplyExtensionListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Metadata\TruncateASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
@@ -149,8 +150,10 @@
     <Compile Include="ASTNodes\Commands\SpaceObjectASTNode.cs" />
     <Compile Include="ASTNodes\Commands\SpaceObjectWithIdASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\GranularPermissionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\TemporalStream\TemporalStreamCommandASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Use\UseASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ValueASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\FourthLevelIdentifierPlanNodeASTNode.cs" />
     <Compile Include="ASTNodes\Identifier\SecondLevelIdentifierASTNode.cs" />
     <Compile Include="ASTNodes\Identifier\ThirdLevelIdentifierASTNode.cs" />
     <Compile Include="ASTNodes\Identifier\FourthLevelIdentifierASTNode.cs" />
@@ -160,8 +163,11 @@
     <Compile Include="ASTNodes\Commands\MetadataQuery\CommandQueryForMetadataASTNode.cs" />
     <Compile Include="ASTNodes\Commands\MetadataQuery\QueryForMetadataASTNode.cs" />
     <Compile Include="ASTNodes\Commands\MetadataQuery\SourceForMetadataASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\ApplyExtensions\ApplyExtesnsionNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\IntoASTNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Projections\TopNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Windows\TimeStatementNode.cs" />
+    <Compile Include="ASTNodes\UserQuery\TemporalStreamASTNode.cs" />
     <Compile Include="ASTNodes\Values\Cast\ExplicitCast.cs" />
     <Compile Include="ASTNodes\Values\Cast\TypeNode.cs" />
     <Compile Include="ASTNodes\Values\Constants\BooleanNode.cs" />
@@ -200,7 +206,7 @@
     <Compile Include="ASTNodes\QuerySections\Projections\SelectNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Conditions\ConditionNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Conditions\WhereNode.cs" />
-    <Compile Include="ASTNodes\PassNode.cs" />
+    <Compile Include="ASTNodes\PassASTNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Windows\TimeoutNode.cs" />
     <Compile Include="ASTNodes\Root\CommandNode.cs" />
     <Compile Include="ASTNodes\UserQuery\UserQueryNode.cs" />
@@ -241,16 +247,22 @@
     <Compile Include="ExecutionPlan\Commands\Permissions\PermissionsCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Status\StatusCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\DDLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\TemporalStream\TemporalStreamNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Use\UseCommandNode.cs" />
     <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
     <Compile Include="Grammars\GrammarsForMetadata\ExpressionGrammarForMetadata.cs" />
     <Compile Include="Grammars\GrammarsForMetadata\ExpressionLanguageForMetadataRuntime.cs" />
     <Compile Include="Grammars\GrammarsForMetadata\QueryGrammarForMetadata.cs" />
     <Compile Include="Grammars\GrammarsForMetadata\QueryLanguageForMetadataRuntime.cs" />
+    <Compile Include="Grammars\TemporalStreamGrammar.cs" />
+    <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
     <Compile Include="Parsers\CommandParser.cs" />
     <Compile Include="Parsers\ExpressionForMetadataParser.cs" />
     <Compile Include="Parsers\MetadataQueryParser.cs" />
     <Compile Include="Parsers\SpaceParser.cs" />
+    <Compile Include="Runtime\CompilationContext.cs" />
+    <Compile Include="Runtime\Generators\ConverterBase.cs" />
+    <Compile Include="Runtime\Generators\ObservableNeverConverter.cs" />
     <Compile Include="Runtime\Scope\ScopeParameter.cs" />
     <Compile Include="ExecutionPlan\SpaceASTNode.cs" />
     <Compile Include="Grammars\CommandGrammar.cs" />
@@ -302,7 +314,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
-    <Compile Include="Runtime\CompileContext.cs" />
+    <Compile Include="Runtime\CompilerConfiguration.cs" />
     <Compile Include="Runtime\FakePipeline.cs" />
     <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
     <Compile Include="Runtime\Helpers\Validations.cs" />
@@ -313,6 +325,7 @@
     <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
     <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />
     <Compile Include="Runtime\TypeBuilders\QueryInformationTypeBuilder.cs" />
+    <Compile Include="Runtime\TypeBuilders\SourceTypeBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceAssemblyBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceModuleBuilder.cs" />
     <Compile Include="Runtime\TypeBuilders\SpaceQueryTypeBuilder.cs" />

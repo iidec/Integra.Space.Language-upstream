@@ -24,7 +24,7 @@ namespace Integra.Space.Language.Grammars
     /// </summary>
     [Language("CommandGrammar", "0.4", "")]
     internal class CommandGrammar : InterpretedLanguageGrammar
-    {        
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandGrammar"/> class.
         /// </summary>
@@ -72,6 +72,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalConnect = ToTerm("connect", "connect");
             KeyTerm terminalAuthenticate = ToTerm("authenticate", "authenticate");
             KeyTerm terminalRead = ToTerm("read", "read");
+            KeyTerm terminalWrite = ToTerm("write", "write");
             /* 
              Otras palabras reservadas para permisos que estan definidas en otras partes: create, alter, start, stop, view
              */
@@ -192,6 +193,10 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_METADATA_QUERY = new NonTerminal("METADATA_QUERY", typeof(CommandQueryForMetadataASTNode));
             nt_METADATA_QUERY.AstConfig.NodeType = null;
             nt_METADATA_QUERY.AstConfig.DefaultNodeCreator = () => new CommandQueryForMetadataASTNode();
+
+            NonTerminal nt_TEMPORAL_STREAM = new NonTerminal("TEMPORAL_STREAM", typeof(TemporalStreamCommandASTNode));
+            nt_TEMPORAL_STREAM.AstConfig.NodeType = null;
+            nt_TEMPORAL_STREAM.AstConfig.DefaultNodeCreator = () => new TemporalStreamCommandASTNode();
 
             NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND", typeof(CommandNode));
             nt_COMMAND_NODE.AstConfig.NodeType = null;
@@ -505,8 +510,7 @@ namespace Integra.Space.Language.Grammars
             nt_THIRD_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.Rule = terminalRole
                                                             | terminalSchema;
 
-            nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS.Rule = terminalSource
-                                                        | terminalStream;
+            nt_SPACE_OBJECTS_FOR_STATUS_PERMISSIONS.Rule = terminalSource;
 
             nt_SPACE_SERVER_PRINCIPALS.Rule = terminalLogin;
 
@@ -561,7 +565,8 @@ namespace Integra.Space.Language.Grammars
                                                     | terminalAlter
                                                     | terminalTake + terminalOwnership;
 
-            nt_GRANULAR_PERMISSION_FOR_ON_2.Rule = terminalRead;
+            nt_GRANULAR_PERMISSION_FOR_ON_2.Rule = terminalRead
+                                                    | terminalWrite;
 
             nt_GRANULAR_PERMISSION_FOR_ON_3.Rule = terminalConnect;
 
@@ -707,7 +712,13 @@ namespace Integra.Space.Language.Grammars
             /* QUERY METADATA */
 
             nt_METADATA_QUERY.Rule = new QueryGrammarForMetadata(this.Empty).QueryForMetadata; // this.CreateQueryForMetadataGrammar();
-            
+
+            /************************************************/
+
+            /* TEMPORAL STREAM */
+
+            nt_TEMPORAL_STREAM.Rule = new TemporalStreamGrammar(this.Empty, this.MakeStarRule).TemporalStream;
+
             /************************************************/
 
             nt_COMMAND_NODE.Rule = nt_PERMISSIONS_COMMANDS
@@ -729,8 +740,9 @@ namespace Integra.Space.Language.Grammars
                                     | nt_ALTER_STREAM
                                     | nt_USE
                                     | nt_TAKE_OWNERSHIP
-                                    | nt_METADATA_QUERY
-                                    | nt_TRUNCATE_SOURCE;
+                                    | nt_TRUNCATE_SOURCE
+                                    /*| nt_METADATA_QUERY*/
+                                    | nt_TEMPORAL_STREAM;
 
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
 

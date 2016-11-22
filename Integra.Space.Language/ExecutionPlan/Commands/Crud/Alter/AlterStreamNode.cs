@@ -16,7 +16,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Referenced sources.
         /// </summary>
-        private List<ReferencedSource> referencedSources;
+        private List<ReferencedSource> inputSources;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AlterStreamNode"/> class.
@@ -28,7 +28,7 @@ namespace Integra.Space.Language
         /// <param name="nodeText">Text of the actual node.</param>
         public AlterStreamNode(CommandObject commandObject, Dictionary<StreamOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
-            this.referencedSources = new List<ReferencedSource>();
+            this.inputSources = new List<ReferencedSource>();
             if (options.ContainsKey(StreamOptionEnum.Name))
             {
                 this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Stream, commandObject.DatabaseName, commandObject.SchemaName, options[StreamOptionEnum.Name].ToString(), PermissionsEnum.None, true));
@@ -41,12 +41,13 @@ namespace Integra.Space.Language
         /// <param name="commandObject">Command object.</param>
         /// <param name="executionPlan">Execution plan.</param>
         /// <param name="options">Login options.</param>
+        /// <param name="sourceInto">Source where events will be written</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public AlterStreamNode(CommandObject commandObject, PlanNode executionPlan, Dictionary<StreamOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
+        public AlterStreamNode(CommandObject commandObject, PlanNode executionPlan, Dictionary<StreamOptionEnum, object> options, CommandObject sourceInto, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
-            this.referencedSources = new List<ReferencedSource>();
+            this.inputSources = new List<ReferencedSource>();
 
             if (options.ContainsKey(StreamOptionEnum.Name))
             {
@@ -56,7 +57,7 @@ namespace Integra.Space.Language
             if (options.ContainsKey(StreamOptionEnum.Query))
             {
                 this.ExecutionPlan = executionPlan;
-                this.referencedSources = new List<ReferencedSource>();
+                this.inputSources = new List<ReferencedSource>();
                 List<PlanNode> fromNodes = Language.Runtime.NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
                 foreach (PlanNode fromNode in fromNodes)
                 {
@@ -75,9 +76,13 @@ namespace Integra.Space.Language
                     string sourceName = fromNode.Properties["SourceName"].ToString();
                     this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, PermissionsEnum.Read, false));
 
-                    this.referencedSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
+                    this.inputSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
                 }
             }
+
+            // agrego la fuente si fue especificada.
+            this.CommandObjects.Add(sourceInto);
+            this.OutputSource = sourceInto;
         }
 
         /// <summary>
@@ -86,13 +91,18 @@ namespace Integra.Space.Language
         public PlanNode ExecutionPlan { get; private set; }
 
         /// <summary>
+        /// Gets the source where events will be written
+        /// </summary>
+        public CommandObject OutputSource { get; private set; }
+
+        /// <summary>
         /// Gets the referenced sources at the stream query.
         /// </summary>
-        public ReferencedSource[] ReferencedSources
+        public ReferencedSource[] InputSources
         {
             get
             {
-                return this.referencedSources.ToArray();
+                return this.inputSources.ToArray();
             }
         }
 

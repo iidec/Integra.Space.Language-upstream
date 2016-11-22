@@ -71,7 +71,7 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Compilation context.
         /// </summary>
-        private CompileContext context;
+        private CompilerConfiguration config;
 
         /// <summary>
         /// Observer of the ObservableCreate node.
@@ -106,14 +106,14 @@ namespace Integra.Space.Language.Runtime
         /// Initializes a new instance of the <see cref="CodeGenerator"/> class
         /// </summary>
         /// <param name="context">Compilation context.</param>
-        public CodeGenerator(CompileContext context)
+        public CodeGenerator(CompilerConfiguration context)
         {
             if (context.Scheduler == null)
             {
                 throw new CompilationException(COMPILATION_ERRORS.CE65);
             }
 
-            this.context = context;
+            this.config = context;
 
             this.scopeLevel = 0;
             this.parameterList = new List<ParameterExpression>();
@@ -178,7 +178,7 @@ namespace Integra.Space.Language.Runtime
             Expression rootExpression = this.GenerateExpressionTree(plan);
 
             Expression setSchedulerExp = null;
-            if (this.context.IsTestMode)
+            if (this.config.IsTestMode)
             {
                 ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
                 setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
@@ -186,7 +186,7 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.config.Scheduler.GetScheduler());
             }
 
             Expression rootBlock = Expression.Block(
@@ -200,7 +200,7 @@ namespace Integra.Space.Language.Runtime
 
             LambdaExpression lambda = Expression.Lambda(rootBlock, this.parameterList.ToArray());
             
-            SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.context.AsmBuilder, this.context.QueryName, lambda);
+            SpaceQueryTypeBuilder sqtb = new SpaceQueryTypeBuilder(this.config.AsmBuilder, this.config.QueryName, lambda);
             Assembly assembly = sqtb.CreateNewAssembly();
 
             this.actualScope = null;
@@ -295,7 +295,7 @@ namespace Integra.Space.Language.Runtime
             Expression rootExpression = this.GenerateExpressionTree(plan);
             
             Expression setSchedulerExp = null;
-            if (this.context.IsTestMode)
+            if (this.config.IsTestMode)
             {
                 ParameterExpression schedulerParam = Expression.Parameter(typeof(System.Reactive.Concurrency.IScheduler), "SchedulerGlobalParam");
                 setSchedulerExp = Expression.Assign(this.schedulerExpression, schedulerParam);
@@ -303,7 +303,7 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler());
+                setSchedulerExp = Expression.Assign(this.schedulerExpression, this.config.Scheduler.GetScheduler());
             }
 
             Expression rootBlock = Expression.Block(
@@ -329,7 +329,7 @@ namespace Integra.Space.Language.Runtime
             
             Expression rootBlock = Expression.Block(
                                         new[] { this.schedulerExpression },
-                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        Expression.Assign(this.schedulerExpression, this.config.Scheduler.GetScheduler()),
                                         rootExpression
                                         );
 
@@ -349,7 +349,7 @@ namespace Integra.Space.Language.Runtime
 
             Expression rootBlock = Expression.Block(
                                         new[] { this.schedulerExpression },
-                                        Expression.Assign(this.schedulerExpression, this.context.Scheduler.GetScheduler()),
+                                        Expression.Assign(this.schedulerExpression, this.config.Scheduler.GetScheduler()),
                                         rootExpression
                                         );
 
@@ -469,6 +469,8 @@ namespace Integra.Space.Language.Runtime
                 case PlanNodeTypeEnum.EnumerableWhere:
                     expResult = this.CreateEnumerableWhere(actualNode, leftNode, rightNode);
                     break;
+                case PlanNodeTypeEnum.ApplyDuration:
+                case PlanNodeTypeEnum.ApplyRepetition:
                 case PlanNodeTypeEnum.ObservableTake:
                     expResult = this.CreateObservableTake(actualNode, leftNode, rightNode);
                     break;
@@ -578,6 +580,7 @@ namespace Integra.Space.Language.Runtime
                     expResult = this.CreateObservableCreate(actualNode, leftNode);
                     break;
                 case PlanNodeTypeEnum.ObservableNever:
+                    // expResult = new ObservableNeverConverter(this.config).Transform(new CompilationContext() { ActualNode = actualNode }).ResultExpression;
                     expResult = this.CreateObservableNever(actualNode);
                     break;
                 case PlanNodeTypeEnum.ObservableEmpty:
@@ -710,7 +713,7 @@ namespace Integra.Space.Language.Runtime
             Contract.Requires(runtimeError != null && runtimeError != string.Empty);
 
             Expression aux = null;
-            if (this.context.DebugMode)
+            if (this.config.DebugMode)
             {
                 if (assignable)
                 {
@@ -725,7 +728,7 @@ namespace Integra.Space.Language.Runtime
             }
             else
             {
-                if ((actionsBeforeMainAction != null && actionsBeforeMainAction.Count > 0) || this.context.MeasureElapsedTime)
+                if ((actionsBeforeMainAction != null && actionsBeforeMainAction.Count > 0) || this.config.MeasureElapsedTime)
                 {
                     if (assignable)
                     {
@@ -777,7 +780,7 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Doc goes here.</returns>
         private Expression[] GenerateExpressionBlockBody(PlanNode actualNode, List<Expression> actionsBeforeResultExpression, List<ParameterExpression> parameters, ParameterExpression resultParameter, string startMessage, string endMessage, string runtimeError)
         {
-            if (this.context.MeasureElapsedTime)
+            if (this.config.MeasureElapsedTime)
             {
                 ParameterExpression watcher = Expression.Variable(typeof(System.Diagnostics.Stopwatch), "Watcher_" + actualNode.NodeType.ToString());
                 parameters.Add(watcher);
@@ -793,7 +796,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeResultExpression.Insert(actionsBeforeResultExpression.Count, printValue);
             }
 
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 Expression start = Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(startMessage));
                 Expression end = Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant(startMessage));
@@ -801,7 +804,7 @@ namespace Integra.Space.Language.Runtime
                 actionsBeforeResultExpression.Insert(actionsBeforeResultExpression.Count, end);
             }
 
-            if (this.context.DebugMode)
+            if (this.config.DebugMode)
             {
                 actionsBeforeResultExpression.Add(Expression.Empty());
                 Expression tryCatch = this.WrapWithTryCatch(actualNode, runtimeError, actionsBeforeResultExpression);
@@ -863,30 +866,30 @@ namespace Integra.Space.Language.Runtime
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
             Expression aux = null;
             Expression aux2 = null;
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
-                if (this.context.DebugMode)
+                if (this.config.DebugMode)
                 {
                     aux2 = Expression.Block(
-                             Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the get property operation: " + property))),
+                             Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the get property operation: " + property))),
                              Expression.Assign(paramValorObtenido, this.StandardizeType(expGetProperty, expGetProperty.Type)),
-                             Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the get property operation: " + property)))
+                             Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the get property operation: " + property)))
                           );
                 }
                 else
                 {
                     aux2 = Expression.Block(
                         new[] { paramValorObtenido },
-                             Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the get property operation: " + property))),
+                             Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the get property operation: " + property))),
                              Expression.Assign(paramValorObtenido, this.StandardizeType(expGetProperty, expGetProperty.Type)),
-                             Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the get property operation: " + property))),
+                             Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the get property operation: " + property))),
                              paramValorObtenido
                           );
                 }
             }
             else
             {
-                if (this.context.DebugMode)
+                if (this.config.DebugMode)
                 {
                     aux2 = Expression.Block(
                         Expression.Assign(paramValorObtenido, this.StandardizeType(expGetProperty, expGetProperty.Type)),
@@ -899,7 +902,7 @@ namespace Integra.Space.Language.Runtime
                 }
             }
 
-            if (this.context.DebugMode)
+            if (this.config.DebugMode)
             {
                 aux =
                     Expression.Block(
@@ -1476,6 +1479,7 @@ namespace Integra.Space.Language.Runtime
                     this.sources.Add(RIGHTSOURCE, parameterName);
                 }
 
+                /* aqui se debe obtener el tipo de entrada del objeto */
                 currentParameter = Expression.Parameter((Type)actualNode.Properties["SourceType"], parameterName);
                 this.parameterList.Add(currentParameter);
             }
@@ -1895,9 +1899,9 @@ namespace Integra.Space.Language.Runtime
                                 Expression.Assign(param, Expression.Default(incomingObservable.Type)),
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'Abs' function"))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'Abs' function"))),
                                         Expression.Assign(param, Expression.Call(method, valorResultante)),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'Abs' function"))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'Abs' function"))),
                                         Expression.Empty()
                                         ),
                                     Expression.Catch(
@@ -2139,26 +2143,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
 
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new[] { result }, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted), new List<Expression>(), result, true, "Start of subscribe.", "End of subscribe.", RUNTIME_ERRORS.RE74);
-                /*Expression resultExpression =
-                    Expression.Block(
-                        new[] { result },
-                            Expression.TryCatch(
-                                Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of subscribe."))),
-                                    Expression.Assign(result, Expression.Call(subscribeMethod, incomingObservable, lambdaOfTheOnNext, lambdaOfTheOnCompleted)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of subscribe.")))
-                                    ),
-                                Expression.Catch(
-                                    paramException,
-                                     Expression.Block(
-                                        Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Property(paramException, "Message")),
-                                        Expression.Throw(Expression.New(typeof(RuntimeException).GetConstructor(new Type[] { typeof(string), typeof(Exception) }), Expression.Constant(Resources.SR.RuntimeError(actualNode.Line, actualNode.Column, RUNTIME_ERRORS.RE2, actualNode.NodeText), typeof(string)), paramException))
-                                    )
-                                )
-                            ),
-                        result
-                        );*/
-
+                
                 return resultExpression;
             }
             catch (Exception e)
@@ -2310,7 +2295,7 @@ namespace Integra.Space.Language.Runtime
                     return m.Name == "Take" && m.GetParameters().Length == 3 && m.GetParameters()[1].ParameterType.Equals(takeSize.Type) && m.GetParameters()[2].ParameterType.Equals(typeof(System.Reactive.Concurrency.IScheduler));
                 })
                 .Single().MakeGenericMethod(incomingObservable.Type.GetGenericArguments()[0]);
-
+                
                 Expression resultExpression = this.GenerateEventBlock(actualNode, new ParameterExpression[] { result }, Expression.Call(methodTake, incomingObservable, takeSize, this.schedulerExpression), new List<Expression>(), result, true, "Start of the observable 'top' function", "End of the observable 'top' function", RUNTIME_ERRORS.RE16);
 
                 return resultExpression;
@@ -2767,9 +2752,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { param },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'count' function"))),
                                     Expression.Assign(param, Expression.Call(methodCount, incomingObservable)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'count' function"))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
@@ -2855,9 +2840,9 @@ namespace Integra.Space.Language.Runtime
                         new[] { param },
                             Expression.TryCatch(
                                 Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'sum' function"))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'sum' function"))),
                                     Expression.Assign(param, Expression.Call(methodSum, incomingObservable, selectorLambda)),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'sum' function"))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'sum' function"))),
                                     Expression.Empty()
                                     ),
                                 Expression.Catch(
@@ -3228,7 +3213,7 @@ namespace Integra.Space.Language.Runtime
                                                 .Where(m => { return m.Name == "Lock"; })
                                                 .Single();
 
-                Expression lockBlock = this.GenerateEventBlock(actualNode, new ParameterExpression[] { lambdaResult }, Expression.Call(this.actualScope.GetFirstParameter(), lockMethod, Expression.Constant(this.context.QueryName)), new List<Expression>(), lambdaResult, true, "Start call event lock method.", "End call event lock method.", RUNTIME_ERRORS.RE78);
+                Expression lockBlock = this.GenerateEventBlock(actualNode, new ParameterExpression[] { lambdaResult }, Expression.Call(this.actualScope.GetFirstParameter(), lockMethod, Expression.Constant(this.config.QueryName)), new List<Expression>(), lambdaResult, true, "Start call event lock method.", "End call event lock method.", RUNTIME_ERRORS.RE78);
 
                 Type delegateType = typeof(Func<,>).MakeGenericType(incomingObservable.Type.GetGenericArguments()[0], lockBlock.Type);
                 LambdaExpression lambdaSelect = Expression.Lambda(delegateType, lockBlock, new ParameterExpression[] { this.actualScope.GetFirstParameter() });
@@ -3266,7 +3251,7 @@ namespace Integra.Space.Language.Runtime
             List<Expression> expressionList = new List<Expression>();
 
             // se agrega el print log que indica el inicio de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the projection")));
             }
@@ -3302,7 +3287,7 @@ namespace Integra.Space.Language.Runtime
             if (((PlanNodeTypeEnum)plans.Properties["ProjectionType"]).Equals(PlanNodeTypeEnum.ObservableSelect))
             {
                 // myType = LanguageTypeBuilder.CompileResultType(listOfFields);
-                EventResultTypeBuilder ertb = new EventResultTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
+                EventResultTypeBuilder ertb = new EventResultTypeBuilder(this.config.AsmBuilder, this.config.QueryName, listOfFields);
                 myType = ertb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType.GetConstructor(new Type[] { }))));
@@ -3347,7 +3332,7 @@ namespace Integra.Space.Language.Runtime
                 this.PopScope();
 
                 // myType = LanguageTypeBuilder.CompileExtractedEventDataComparerTypeForJoin(listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
-                JoinSideObjectComparerTypeBuilder jsoctb = new JoinSideObjectComparerTypeBuilder(this.context.AsmBuilder, listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
+                JoinSideObjectComparerTypeBuilder jsoctb = new JoinSideObjectComparerTypeBuilder(this.config.AsmBuilder, listOfFields, leftSourceExtractedEventDataType, rightSourceExtractedEventDataType, this.IsSecondSource, lambdaOnCondition);
                 myType = jsoctb.CreateNewType();
 
                 // this.isSecondSource = true;
@@ -3357,7 +3342,7 @@ namespace Integra.Space.Language.Runtime
             else
             {
                 // myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
-                DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
+                DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.config.AsmBuilder, this.config.QueryName, listOfFields);
                 myType = dotb.CreateNewType();
                 y = Expression.Variable(myType);
                 expressionList.Add(Expression.Assign(y, Expression.New(myType)));
@@ -3384,7 +3369,7 @@ namespace Integra.Space.Language.Runtime
             }
 
             // se agrega el print log que indica la finalización de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the projection")));
             }
@@ -3415,7 +3400,7 @@ namespace Integra.Space.Language.Runtime
             List<Expression> expressionList = new List<Expression>();
 
             // se agrega el print log que indica el inicio de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the constants projection")));
             }
@@ -3440,7 +3425,7 @@ namespace Integra.Space.Language.Runtime
             }
 
             // Type myType = LanguageTypeBuilder.CompileResultType(listOfFields, bool.Parse(plans.Properties["OverrideGetHashCodeMethod"].ToString()));
-            DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.context.AsmBuilder, this.context.QueryName, listOfFields);
+            DynamicObjectTypeBuilder dotb = new DynamicObjectTypeBuilder(this.config.AsmBuilder, this.config.QueryName, listOfFields);
             Type myType = dotb.CreateNewType();
 
             ParameterExpression y = Expression.Variable(myType);
@@ -3456,7 +3441,7 @@ namespace Integra.Space.Language.Runtime
             }
 
             // se agrega el print log que indica la finalización de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the constants projection")));
             }
@@ -3485,12 +3470,12 @@ namespace Integra.Space.Language.Runtime
             List<Expression> expressionList = new List<Expression>();
 
             // se agrega el print log que indica el inicio de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the result projection")));
             }
 
-            QueryResultTypeBuilder qrtb = new QueryResultTypeBuilder(this.context.AsmBuilder, this.context.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
+            QueryResultTypeBuilder qrtb = new QueryResultTypeBuilder(this.config.AsmBuilder, this.config.QueryName, incomingObservable.Type.GetGenericArguments()[0]);
             Type resultType = qrtb.CreateNewType();
 
             // inicializo el observer con el tipo creado a partir de la proyección
@@ -3515,7 +3500,7 @@ namespace Integra.Space.Language.Runtime
                         y,
                         Expression.New(
                             resultType.GetConstructors()[0],
-                            Expression.Constant(this.context.QueryName),
+                            Expression.Constant(this.config.QueryName),
                             Expression.Property(null, typeof(DateTime).GetProperty("Now")),
                             arrayDeResultados
                         )
@@ -3523,7 +3508,7 @@ namespace Integra.Space.Language.Runtime
             );
 
             // se agrega el print log que indica la finalización de la proyección
-            if (this.context.PrintLog)
+            if (this.config.PrintLog)
             {
                 expressionList.Add(Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the result projection")));
             }
@@ -3660,7 +3645,7 @@ namespace Integra.Space.Language.Runtime
                                         Expression.Block(
                                             Expression.IfThen(
                                                 Expression.NotEqual(Expression.Call(evento, evento.Type.GetMethod("get_Message")), Expression.Constant(null, typeof(Integra.Messaging.Message))),
-                                                Expression.Call(evento, unlockMethod, Expression.Constant(this.context.QueryName))
+                                                Expression.Call(evento, unlockMethod, Expression.Constant(this.config.QueryName))
                                             )
                                         )
                                     );
@@ -3691,7 +3676,7 @@ namespace Integra.Space.Language.Runtime
                                 Expression.NotEqual(evento, Expression.Constant(null, evento.Type)),
                                 Expression.IfThen(
                                 Expression.NotEqual(Expression.Call(evento, evento.Type.GetMethod("get_Message")), Expression.Constant(null, typeof(Integra.Messaging.Message))),
-                                Expression.Call(evento, unlockMethod, Expression.Constant(this.context.QueryName))
+                                Expression.Call(evento, unlockMethod, Expression.Constant(this.config.QueryName))
                             )
                         )
                     );
@@ -3760,13 +3745,13 @@ namespace Integra.Space.Language.Runtime
 
                 Expression aux = null;
 
-                if (this.context.PrintLog)
+                if (this.config.PrintLog)
                 {
                     aux = Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the value of " + actualNode.NodeText))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the value of " + actualNode.NodeText))),
                                     Expression.Assign(param, Expression.Call(f, typeof(MessageField).GetMethod("get_Value"))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of " + actualNode.NodeText + " is: "))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), param))
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of " + actualNode.NodeText + " is: "))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), param))
                                     );
                 }
                 else
@@ -3900,7 +3885,7 @@ namespace Integra.Space.Language.Runtime
                 Expression mainAction = null;
                 if (tipo.IsGenericType && tipo.GetGenericTypeDefinition().Equals(typeof(Tuple<,>)))
                 {
-                    if (this.context.PrintLog)
+                    if (this.config.PrintLog)
                     {
                         mainAction =
                             Expression.Block(
@@ -3908,8 +3893,8 @@ namespace Integra.Space.Language.Runtime
                                     Expression.AndAlso(Expression.NotEqual(auxVar, Expression.Constant(null, tipo)), Expression.NotEqual(Expression.Call(auxVar, getItemNMethod), Expression.Constant(null, tupleItem.Type))),
                                     Expression.Assign(param, this.StandardizeType(expGetProperty, expGetProperty.Type))
                                 ),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Tupla " + position + ": " + propiedad + " Valor: "))),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object))))
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("Tupla " + position + ": " + propiedad + " Valor: "))),
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object))))
                                 );
                     }
                     else
@@ -3923,7 +3908,7 @@ namespace Integra.Space.Language.Runtime
                 }
                 else
                 {
-                    if (this.context.PrintLog)
+                    if (this.config.PrintLog)
                     {
                         mainAction =
                                 Expression.Block(
@@ -3931,8 +3916,8 @@ namespace Integra.Space.Language.Runtime
                                         Expression.NotEqual(auxVar, Expression.Constant(null, tipo)),
                                         Expression.Assign(param, this.StandardizeType(expGetProperty, expGetProperty.Type))
                                     ),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object))))
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The value of the property is: "))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Convert(param, typeof(object))))
                                 );
                     }
                     else
@@ -3977,12 +3962,12 @@ namespace Integra.Space.Language.Runtime
             {
                 Expression aux = null;
 
-                if (this.context.PrintLog)
+                if (this.config.PrintLog)
                 {
                     aux = Expression.Block(
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the subfield: " + auxSubField.Value))),
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the subfield: " + auxSubField.Value))),
                                 Expression.Assign(v, Expression.Call(f, typeof(MessageField).GetMethod("get_Item", new Type[] { tipo }), auxSubField)),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The subfield was obtained: " + auxSubField.Value)))
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The subfield was obtained: " + auxSubField.Value)))
                             );
                 }
                 else
@@ -4028,12 +4013,12 @@ namespace Integra.Space.Language.Runtime
             {
                 Expression aux = null;
 
-                if (this.context.PrintLog)
+                if (this.config.PrintLog)
                 {
                     aux = Expression.Block(
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the field: " + auxField.Value))),
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the field: " + auxField.Value))),
                                 Expression.Assign(v, Expression.Call(p, typeof(MessagePart).GetMethod("get_Item", new Type[] { tipo }), auxField)),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The field was obtained: " + auxField.Value)))
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The field was obtained: " + auxField.Value)))
                             );
                 }
                 else
@@ -4079,12 +4064,12 @@ namespace Integra.Space.Language.Runtime
             {
                 Expression aux = null;
 
-                if (this.context.PrintLog)
+                if (this.config.PrintLog)
                 {
                     aux = Expression.Block(
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the part: " + auxPart.Value))),
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the part: " + auxPart.Value))),
                                 Expression.Assign(v, Expression.Call(m, typeof(Message).GetMethod("get_Item", new Type[] { tipo }), auxPart)),
-                                Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The part was obtained: " + auxPart.Value)))
+                                Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("The part was obtained: " + auxPart.Value)))
                             );
                 }
                 else
@@ -4288,9 +4273,9 @@ namespace Integra.Space.Language.Runtime
                                 Expression.Assign(param, Expression.Constant(false)),
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with two wildcards: "))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with two wildcards: "))),
                                         Expression.Assign(param, Expression.Call(auxl, typeof(string).GetMethod("Contains", new Type[] { typeof(string) }), Expression.Constant(cadenaAComparar))),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with two wildcards")))
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with two wildcards")))
                                         ),
                                     Expression.Catch(
                                         paramException,
@@ -4317,9 +4302,9 @@ namespace Integra.Space.Language.Runtime
                                 Expression.Assign(param, Expression.Constant(false)),
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with left wildcard: "))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with left wildcard: "))),
                                         Expression.Assign(param, Expression.Call(auxl, typeof(string).GetMethod("EndsWith", new Type[] { typeof(string) }), Expression.Constant(cadenaAComparar))),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with left wildcard")))
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with left wildcard")))
                                         ),
                                     Expression.Catch(
                                         paramException,
@@ -4346,9 +4331,9 @@ namespace Integra.Space.Language.Runtime
                                 Expression.Assign(param, Expression.Constant(false)),
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with right wildcard: "))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation with right wildcard: "))),
                                         Expression.Assign(param, Expression.Call(auxl, typeof(string).GetMethod("StartsWith", new Type[] { typeof(string) }), Expression.Constant(cadenaAComparar))),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with right wildcard")))
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation with right wildcard")))
                                         ),
                                     Expression.Catch(
                                         paramException,
@@ -4375,9 +4360,9 @@ namespace Integra.Space.Language.Runtime
                                 Expression.Assign(param, Expression.Constant(false)),
                                 Expression.TryCatch(
                                     Expression.Block(
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation without wildcards: "))),
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("Start of the 'like' operation without wildcards: "))),
                                         Expression.Assign(param, Expression.Call(auxl, typeof(string).GetMethod("Equals", new Type[] { typeof(string) }), Expression.Constant(cadenaAComparar))),
-                                        Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation without wildcards")))
+                                        Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("End of the 'like' operation without wildcards")))
                                         ),
                                     Expression.Catch(
                                         paramException,
@@ -4972,13 +4957,13 @@ namespace Integra.Space.Language.Runtime
                 ParameterExpression gkp = Expression.Variable(groupKeyProperty.Type, "PropiedadDeLlaveDeGrupoResultante");
 
                 Expression aux = null;
-                if (this.context.PrintLog)
+                if (this.config.PrintLog)
                 {
                     aux = Expression.Block(
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the property value of " + actualNode.NodeText))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), Expression.Constant("You will get the property value of " + actualNode.NodeText))),
                                     Expression.Assign(param, gkp),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The group key property value of " + actualNode.NodeText + " is: "))),
-                                    Expression.IfThen(Expression.Constant(this.context.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), param))
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("Write", new Type[] { typeof(object) }), Expression.Constant("The group key property value of " + actualNode.NodeText + " is: "))),
+                                    Expression.IfThen(Expression.Constant(this.config.PrintLog), Expression.Call(typeof(System.Diagnostics.Debug).GetMethod("WriteLine", new Type[] { typeof(object) }), param))
                                     );
                 }
                 else

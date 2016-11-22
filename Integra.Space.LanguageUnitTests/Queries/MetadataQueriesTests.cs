@@ -20,10 +20,10 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool debugMode = false;
             bool measureElapsedTime = false;
             bool isTestMode = true;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = isTestMode };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = isTestMode };
 
             FakePipeline fp = new FakePipeline();
-            Delegate d = fp.ProcessWithMetadataQueryParser<T>(context, eql);
+            Delegate d = fp.ProcessWithCommandParserForMetadata<T>(context, eql);
 
             if (isTestMode)
             {
@@ -39,17 +39,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void TestQueryForMetadata()
         {
             string command = "from sys.Servers as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select 1 as servId order by servId";
-            
+            Assembly[] asms = AppDomain.CurrentDomain.GetAssemblies();
             command = "from sys.Servers as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest";
             //command = "from sys.Servers select ServerId as servId";
-
+            //command = "from Servers select @event.Message.#1.#1 as servId";
+            
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
             using (Space.Database.SpaceDbContext context = new Space.Database.SpaceDbContext())
             {
                 ITestableObservable<Space.Database.Server> input = dsf.TestScheduler.CreateColdObservable(
                     this.GetRecoredList<Space.Database.Server>(context.Servers)
                 );
-
+                
                 ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => this.Process<Space.Database.Server>(command, dsf, input)
                 .Select(x =>

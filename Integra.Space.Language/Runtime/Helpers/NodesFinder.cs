@@ -5,8 +5,10 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.Runtime
 {
+    using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Language.Runtime;
 
     /// <summary>
     /// Nodes finder class.
@@ -64,7 +66,7 @@ namespace Integra.Space.Language.Runtime
             {
                 return resultList;
             }
-            
+
             List<PlanNode> children = plan.Children;
 
             if (children != null)
@@ -121,6 +123,38 @@ namespace Integra.Space.Language.Runtime
             }
 
             return resultList;
+        }
+
+        /// <summary>
+        /// Gets the columns of the projection of the query.
+        /// </summary>
+        /// <param name="plan">Execution plan of the query.</param>
+        /// <returns>List of columns of the projection of the query.</returns>
+        internal static List<Tuple<string, Type>> GetQueryProyection(this PlanNode plan)
+        {
+            PlanNode projectionNode = plan.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.Projection }).Single(x => (PlanNodeTypeEnum)x.Properties["ProjectionType"] == PlanNodeTypeEnum.ObservableSelect && (Type)x.Properties["ParentType"] == typeof(Integra.Space.EventResult));
+
+            List<Tuple<string, Type>> result = new List<Tuple<string, Type>>();
+
+            foreach (PlanNode tuple in projectionNode.Children)
+            {
+                PlanNode identifierNode = tuple.Children.Single(x => x.NodeType == PlanNodeTypeEnum.Identifier);
+                string propertyName = identifierNode.Properties["Value"].ToString();
+                Type propertyType = (Type)identifierNode.Properties["DataType"];
+
+                /*PlanNode columnValue = tuple.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.Cast, PlanNodeTypeEnum.Constant }).SingleOrDefault();*/
+
+                if (tuple.Children[1].NodeType == PlanNodeTypeEnum.Cast || tuple.Children[1].NodeType == PlanNodeTypeEnum.Constant)
+                {
+                    propertyType = (Type)tuple.Children[1].Properties["DataType"];
+                }
+
+                result.Add(Tuple.Create(propertyName, propertyType));
+            }
+
+            System.Diagnostics.Contracts.Contract.Ensures(result.Count > 0);
+
+            return result;
         }
     }
 }

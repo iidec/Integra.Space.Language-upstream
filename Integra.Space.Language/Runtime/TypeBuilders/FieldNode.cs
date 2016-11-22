@@ -41,6 +41,18 @@ namespace Integra.Space.Language.Runtime
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="FieldNode" /> class.
+        /// </summary>
+        /// <param name="fieldName">Field name.</param>
+        /// <param name="fieldType">Field type.</param>
+        public FieldNode(string fieldName, Type fieldType)
+        {
+            this.fieldName = fieldName;
+            this.fieldType = fieldType;
+            this.incidenciasEnOnCondition = 0;
+        }
+
+        /// <summary>
         /// Gets or sets the field name.
         /// </summary>
         public string FieldName

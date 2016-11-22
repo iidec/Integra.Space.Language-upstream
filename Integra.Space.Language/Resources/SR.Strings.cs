@@ -64,6 +64,12 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	ApplyExtensions
+		/// </summary>
+		public static string ApplyExtensionsRole { get { return global::Integra.Space.Language.SR.ApplyExtensionsRole; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	ApplyWindow
 		/// </summary>
 		public static string ApplyWindowRole { get { return global::Integra.Space.Language.SR.ApplyWindowRole; } }
@@ -172,6 +178,12 @@ namespace Integra.Space.Language.Resources
 		///	An exception has ocurred on command interpretation. The inner exception may contain more information.
 		/// </summary>
 		public static string InterpretationException { get { return global::Integra.Space.Language.SR.InterpretationException; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	Into
+		/// </summary>
+		public static string IntoRole { get { return global::Integra.Space.Language.SR.IntoRole; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

@@ -673,6 +673,21 @@ namespace Integra.Space.Language
         /// <summary>
         /// Doc goes here.
         /// </summary>
-        between = 189
+        between = 189,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        FOURTH_LEVEL_OBJECT_IDENTIFIER = 190,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        INTO = 191,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        into = 192,
     }
 }

@@ -42,7 +42,7 @@ namespace Integra.Space.Language.Analysis
                         if (string.IsNullOrWhiteSpace(eql))
                         {
                             
-                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria, Llave",
+                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria, Llave into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -62,7 +62,7 @@ namespace Integra.Space.Language.Analysis
                         }
 
                         QueryParser parser = new QueryParser(eql);
-                        PlanNode plan = parser.Evaluate();
+                        PlanNode plan = parser.Evaluate().Item1;
 
                         Console.WriteLine("Plan generated.");
                         Console.WriteLine("Creating graph...");
@@ -108,7 +108,7 @@ namespace Integra.Space.Language.Analysis
                     if (string.IsNullOrWhiteSpace(eql))
                     {
                         
-                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
@@ -124,10 +124,10 @@ namespace Integra.Space.Language.Analysis
                                                                                             "(decimal)@event.Message.#1.#4");
                                                                                             */
 
-                        eql = "from Streams as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest";
-                        eql = "from Streams as x select ServerId as servId, max(1) as maxTest";
+                        eql = "from Streams as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest  into SourceXYZ";
+                        eql = "from Streams as x select ServerId as servId, max(1) as maxTest  into SourceXYZ";
 
-                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
                                                                                             "SpaceObservable1",
                                                                                             "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m",
                                                                                             //"@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 3m",
@@ -144,7 +144,7 @@ namespace Integra.Space.Language.Analysis
                                 "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#43 " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
-                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 ";
+                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 apply duration of \"00:00:01\" apply repetition of 2 into SourceXYZ";
                     }
 
                     //MetadataQueryParser parser = new MetadataQueryParser(eql);
@@ -160,7 +160,7 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Metadata created.");
                     Console.WriteLine("Transforming plan...");
 
-                    PlanNode executionPlanNode = parser.Evaluate();
+                    PlanNode executionPlanNode = parser.Evaluate().Item1;
 
                     SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + string.Empty);
                     AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();

@@ -19,7 +19,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompileContext context = new CompileContext() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -37,7 +37,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeInteger()
         {
-            string eql = "from SpaceObservable1 select -1 as resultado";
+            string eql = "from SpaceObservable1 select -1 as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -64,7 +64,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeDouble()
         {
-            string eql = "from SpaceObservable1 select -10.21 as resultado";
+            string eql = "from SpaceObservable1 select -10.21 as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
@@ -91,7 +91,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeDecimal()
         {
-            string eql = "from SpaceObservable1 select -1m as resultado";
+            string eql = "from SpaceObservable1 select -1m as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
