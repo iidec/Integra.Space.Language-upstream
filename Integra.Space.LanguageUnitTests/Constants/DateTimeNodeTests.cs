@@ -15,7 +15,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<DateTime> result = te.Compile<DateTime>(plan);
+            Func<DateTime> result = (Func<DateTime>)te.CompileDelegate(plan);
 
             DateTime parsedDate;
             DateTime.TryParse("01/01/2014", out parsedDate);
@@ -30,7 +30,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<TimeSpan> result = te.Compile<TimeSpan>(plan);
+            Func<TimeSpan> result = (Func<TimeSpan>)te.CompileDelegate(plan);
 
             TimeSpan parsedDate;
             TimeSpan.TryParse("00:00:00:01", out parsedDate);

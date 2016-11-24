@@ -105,15 +105,15 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Initializes a new instance of the <see cref="CodeGenerator"/> class
         /// </summary>
-        /// <param name="context">Compilation context.</param>
-        public CodeGenerator(CompilerConfiguration context)
+        /// <param name="config">Compilation context.</param>
+        public CodeGenerator(CompilerConfiguration config)
         {
-            if (context.Scheduler == null)
+            if (config.Scheduler == null)
             {
                 throw new CompilationException(COMPILATION_ERRORS.CE65);
             }
 
-            this.config = context;
+            this.config = config;
 
             this.scopeLevel = 0;
             this.parameterList = new List<ParameterExpression>();
@@ -236,51 +236,6 @@ namespace Integra.Space.Language.Runtime
             return funcResult;
         }
 
-        /// <summary>
-        /// Compile the result function.
-        /// </summary>
-        /// <typeparam name="In">Input type.</typeparam>
-        /// <typeparam name="Out">Output type.</typeparam>
-        /// <param name="plan">Execution plan.</param>
-        /// <returns>Result function.</returns>
-        public Func<In, Out> Compile<In, Out>(PlanNode plan)
-        {
-            Func<In, Out> funcResult = this.CreateLambda<In, Out>(plan).Compile();
-
-            this.actualScope = null;
-            this.parameterList.Clear();
-            this.sources.Clear();
-            this.projectionWithDispose = false;
-            this.scopeLevel = 0;
-            this.isInConditionOn = false;
-            this.IsSecondSource = false;
-
-            Console.WriteLine("La función fue compilada exitosamente.");
-            return funcResult;
-        }
-
-        /// <summary>
-        /// Compile the result function.
-        /// </summary>
-        /// <typeparam name="Out">Output type.</typeparam>
-        /// <param name="plan">Execution plan.</param>
-        /// <returns>Result function.</returns>
-        public Func<Out> Compile<Out>(PlanNode plan)
-        {
-            Func<Out> funcResult = this.CreateLambda<Out>(plan).Compile();
-
-            this.actualScope = null;
-            this.parameterList.Clear();
-            this.sources.Clear();
-            this.projectionWithDispose = false;
-            this.scopeLevel = 0;
-            this.isInConditionOn = false;
-            this.IsSecondSource = false;
-
-            Console.WriteLine("La función fue compilada exitosamente.");
-            return funcResult;
-        }
-
         #endregion Compile methods
 
         #region CreateLambda methods
@@ -292,6 +247,11 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Expression lambda</returns>
         public LambdaExpression CreateLambda(PlanNode plan)
         {
+            ConstructorInfo ctrTimeSpan = typeof(TimeSpan).GetConstructor(new Type[] { typeof(int), typeof(int), typeof(int), typeof(int), typeof(int) });
+            int bufferSize = int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]);
+            this.lagVariables.Add(0, Expression.Variable(typeof(TimeSpan), "lagIzq"));
+            this.lagVariables.Add(1, Expression.Variable(typeof(TimeSpan), "lagDer"));
+
             Expression rootExpression = this.GenerateExpressionTree(plan);
             
             Expression setSchedulerExp = null;
@@ -307,8 +267,11 @@ namespace Integra.Space.Language.Runtime
             }
 
             Expression rootBlock = Expression.Block(
-                                        new[] { this.schedulerExpression },
+                                        new[] { this.lagVariables[0], this.lagVariables[1], this.bufferSizeOfJoinSourcesExpression, this.schedulerExpression },
                                         setSchedulerExp,
+                                        Expression.Assign(this.bufferSizeOfJoinSourcesExpression, Expression.New(ctrTimeSpan, Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(0), Expression.Constant(bufferSize))),
+                                        Expression.Assign(this.lagVariables[0], Expression.Default(this.lagVariables[0].Type)),
+                                        Expression.Assign(this.lagVariables[1], Expression.Default(this.lagVariables[1].Type)),
                                         rootExpression
                                         );
 
@@ -334,27 +297,6 @@ namespace Integra.Space.Language.Runtime
                                         );
 
             Expression<Func<In, Out>> result = Expression.Lambda<Func<In, Out>>(rootBlock, this.parameterList.ToArray());
-            return result;
-        }
-
-        /// <summary>
-        /// Creates a lambda expression
-        /// </summary>
-        /// <typeparam name="Out">Output type</typeparam>
-        /// <param name="plan">Execution plan</param>
-        /// <returns>Expression lambda</returns>
-        public Expression<Func<Out>> CreateLambda<Out>(PlanNode plan)
-        {
-            Expression rootExpression = this.GenerateExpressionTree(plan);
-
-            Expression rootBlock = Expression.Block(
-                                        new[] { this.schedulerExpression },
-                                        Expression.Assign(this.schedulerExpression, this.config.Scheduler.GetScheduler()),
-                                        rootExpression
-                                        );
-
-            Expression<Func<Out>> result = Expression.Lambda<Func<Out>>(rootBlock, this.parameterList.ToArray());
-
             return result;
         }
 

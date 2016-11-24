@@ -15,7 +15,7 @@ namespace Integra.Space.LanguageUnitTests.Constants
             PlanNode plan = parser.Evaluate();
 
             CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<int> result = te.Compile<int>(plan);
+            Func<int> result = (Func<int>)te.CompileDelegate(plan);
 
             Assert.AreEqual<int>(10, result(), "El plan obtenido difiere del plan esperado.");
         }

@@ -2127,7 +2127,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate().Item1;
 
                 CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2159,7 +2159,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate().Item1;
 
                 CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2190,7 +2190,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate().Item1;
 
                 CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty });
-                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2221,7 +2221,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate().Item1;
 
                 CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2306,7 +2306,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 PlanNode plan = parser.Evaluate().Item1;
 
                 CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan);
+                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
