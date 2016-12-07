@@ -1466,7 +1466,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
                                 "ON (string)t1.@event.Message.#1.#0 == (string)t2.@event.Message.#1.#0 and (string)t1.@event.Message.#1.#1 == (string)t2.@event.Message.#1.#1 " +
                                 "TIMEOUT '00:00:04' " +
-                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') > '00:00:01' " +
+                                "WHERE  isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') <= '00:00:01' " +
                                 "SELECT isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(t1.@event.SourceTimestamp, '01/01/2016') as o1, " +
                                         "1 as o2, " +
                                         "isnull(t2.@event.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
@@ -1478,7 +1478,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             #endregion Compiler
 
             #region parameters
-
+            
             // contexto
             bool printLog = false;
             bool debugMode = false;
@@ -1488,13 +1488,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
             decimal tolerance = 0.5M;
             int eventNumber = 10000;
             int limiteSuperiorOcurrenciaEventos = 10000;
-            int timeoutPercentage = 100;
+            int timeoutPercentage = 0;
             int timeout = 4000;
             int whereDifference = 1000;
-            bool evaluateMatchedEvents = false;
+            bool evaluateMatchedEvents = true;
 
             #endregion parameters
-                        
+
             #region Creation of events
 
             LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
