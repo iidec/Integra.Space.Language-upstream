@@ -1279,7 +1279,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             // para la creación de eventos
             decimal tolerance = 0.5M;
-            int eventNumber = 10;
+            int eventNumber = 10000;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 0;
             int timeout = 4000;
@@ -1512,7 +1512,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             // para la creación de eventos
             decimal tolerance = 0.5M;
-            int eventNumber = 10000;
+            int eventNumber = 25000;
             int limiteSuperiorOcurrenciaEventos = 10000;
             int timeoutPercentage = 0;
             int timeout = 4000;
