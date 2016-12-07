@@ -1705,6 +1705,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 if (exactitudAlcanzada == 100)
                 {
+                    //Debug.WriteLine(report);
+                    Console.WriteLine(report);
                     return;
                 }
                 if (exactitudAlcanzada < (100 - tolerance))
@@ -1716,7 +1718,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     Assert.Inconclusive("Number of expected results is differ from number of actual results.\n" + report);
                 }
             }
-
+            
             #endregion  Report generation from result information
         }
 
