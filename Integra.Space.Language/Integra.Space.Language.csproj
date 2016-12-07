@@ -215,7 +215,6 @@
     <Compile Include="Exceptions\CompilationException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\SyntaxException.cs" />
-    <Compile Include="ExecutionPlan\Commands\CommandObject.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandObjectComparer.cs" />
     <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSourceNode.cs" />

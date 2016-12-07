@@ -29,7 +29,7 @@ namespace Integra.Space.Language
         /// <param name="nodeText">Text of the actual node.</param>
         /// <param name="schemaName">Schema name for the command execution.</param>
         /// <param name="databaseName">Database name for the command execution.</param>
-        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, CommandObject source, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, line, column, nodeText, schemaName, databaseName)
+        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, Common.CommandObject source, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, line, column, nodeText, schemaName, databaseName)
         {
             Contract.Assert(executionPlan != null);
             this.ExecutionPlan = executionPlan;
@@ -50,7 +50,7 @@ namespace Integra.Space.Language
                 }
 
                 string sourceName = fromNode.Properties["SourceName"].ToString();
-                this.CommandObjects.Add(new CommandObject(Common.SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, Common.PermissionsEnum.Read, false));
+                this.CommandObjects.Add(new Common.CommandObject(Common.SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, Common.PermissionsEnum.Read, false));
 
                 this.referencedSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
             }
@@ -82,7 +82,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Gets the source where events will be written
         /// </summary>
-        public CommandObject Source { get; private set; }
+        public Common.CommandObject Source { get; private set; }
 
         /// <summary>
         /// Stream referenced sources class.

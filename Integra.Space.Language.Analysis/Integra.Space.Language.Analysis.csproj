@@ -37,6 +37,9 @@
       <HintPath>..\packages\GraphViz.NET.1.0.0\lib\net40\GraphVizWrapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Integra.Space.Common">
+      <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
       <Private>True</Private>

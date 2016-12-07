@@ -20,7 +20,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public TruncateNode(Common.ActionCommandEnum action, CommandObject commandObject, int line, int column, string nodeText) : base(action, commandObject, line, column, nodeText)
+        public TruncateNode(Common.ActionCommandEnum action, Common.CommandObject commandObject, int line, int column, string nodeText) : base(action, commandObject, line, column, nodeText)
         {
         }
     }

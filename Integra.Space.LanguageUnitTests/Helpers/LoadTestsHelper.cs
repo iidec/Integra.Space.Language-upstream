@@ -53,7 +53,7 @@ namespace Integra.Space.LanguageUnitTests.Helpers
         /// <param name="eventLifeTime">Timeout in events in milliseconds.</param>
         /// <param name="maxLimitTimeTest">Limit maximum test duration in milliseconds.</param>
         /// <param name="porcentajeTimeouts">Timeouts percentage.</param>
-        public LoadTestsHelper(int cantEventos, int eventLifeTime, int timeout, int maxLimitTimeTest, int porcentajeTimeouts, bool evaluateMatchedEvents)
+        public LoadTestsHelper(int cantEventos, int timeout, int eventLifeTime, int maxLimitTimeTest, int porcentajeTimeouts, bool evaluateMatchedEvents)
         {
             Contract.Requires(cantEventos > 0);
             Contract.Requires(eventLifeTime > 0 && eventLifeTime <= MAX_TIMEOUT && eventLifeTime < maxLimitTimeTest);
@@ -96,7 +96,7 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             DateTime now = DateTime.Now;
             int matches = this.CantidadMatched();
             int timeouts = this.CantidadTimeouts();
-            long lowerLimit = TimeSpan.FromMilliseconds(1000).Ticks;
+            long lowerLimit = TimeSpan.FromMilliseconds(10).Ticks;
             List<Tuple<EventObject, long>> rq = new List<Tuple<EventObject, long>>();
             List<Tuple<EventObject, long>> rs = new List<Tuple<EventObject, long>>();
             //List<Tuple<string, string, string, string, bool>> expectedResults = new List<Tuple<string, string, string, string, bool>>();
@@ -109,18 +109,31 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 long timeToAdd = this.LongRandom(0, this.maxLimitTimeTest, rand);
 
                 // requests
-                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
-                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
-                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, rqSystemTimestamp), relativeTimeRq));
+                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd; // momento en que fue generado
+                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd; // momento en que llegará al sistema
+                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, rqSystemTimestamp), relativeSystemTimestampRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
-                long relativeSystemTimestampRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
-                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, rsSystemTimestamp), relativeTimeRs));
+                long relativeTimeRs = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd; // momento en que fue generado
+                long relativeSystemTimestampRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd; // momento en que llegará al sistema
+                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, rsSystemTimestamp), relativeSystemTimestampRs));
+
+                var timeToAddTS = TimeSpan.FromTicks(timeToAdd);
+                var rtrq = TimeSpan.FromTicks(relativeTimeRq);
+                var rtsrq = TimeSpan.FromTicks(relativeSystemTimestampRq);
+                var rtrs = TimeSpan.FromTicks(relativeTimeRs);
+                var rtsrs = TimeSpan.FromTicks(relativeSystemTimestampRs);
+                var time1 = TimeSpan.FromTicks(Math.Abs(relativeTimeRs - relativeTimeRq));
+                var time2 = TimeSpan.FromTicks(Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq));
 
                 if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) >= this.timeout)
+                {
+                    throw new Exception("Diferencia inválida en eventos que deben coincidir.");
+                }
+
+                if (Math.Abs(relativeTimeRs - relativeTimeRq) > this.eventLifeTime)
                 {
                     throw new Exception("Diferencia inválida en eventos que deben coincidir.");
                 }
@@ -137,29 +150,22 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 // requests
                 long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
                 long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
-                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, auxNowRq), relativeTimeRq));
+                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, auxNowRq), relativeSystemTimestampRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(this.timeout + 100 /* mas 100 milisegundos */, this.eventLifeTime + MAX_TIMEOUT, rand) + timeToAdd;
-                long relativeSystemTimestampRs = this.LongRandom(relativeSystemTimestampRq + this.timeout + TimeSpan.FromMilliseconds(100).Ticks /* mas 100 milisegundos */, relativeSystemTimestampRq + this.timeout + MAX_TIMEOUT, rand) + timeToAdd;
-
-                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
-                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, auxNowRs), relativeTimeRs));
+                long relativeTimeRs = this.LongRandom(this.timeout + TimeSpan.FromMilliseconds(10).Ticks /* mas 10 milisegundos */, this.eventLifeTime + MAX_TIMEOUT, rand) + timeToAdd;
+                long relativeSystemTimestampRs = this.LongRandom(this.timeout + relativeSystemTimestampRq + TimeSpan.FromMilliseconds(10).Ticks /* mas 10 milisegundos */, this.timeout + relativeSystemTimestampRq + MAX_TIMEOUT, rand) + timeToAdd;
+                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, auxNowRs), relativeSystemTimestampRs));
 
                 if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) <= this.timeout)
                 {
                     throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
                 }
 
-                //if (auxNowRs.Subtract(auxNowRq) < TimeSpan.FromSeconds(0) || auxNowRs.Subtract(auxNowRq) <= TimeSpan.FromTicks(this.timeout))
-                //{
-                //    throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
-                //}
-
-                if (relativeTimeRs - relativeTimeRq <= this.eventLifeTime)
+                if (Math.Abs(relativeTimeRs - relativeTimeRq) <= this.eventLifeTime)
                 {
-
                     this.AddToExpectedResults(false, tarjeta, referencia, tarjeta, referencia);
                 }
                 else
