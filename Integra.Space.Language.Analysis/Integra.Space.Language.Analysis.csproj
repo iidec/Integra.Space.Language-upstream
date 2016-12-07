@@ -37,6 +37,10 @@
       <HintPath>..\packages\GraphViz.NET.1.0.0\lib\net40\GraphVizWrapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Integra.Space.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
+    </Reference>
     <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
       <Private>True</Private>
@@ -52,6 +56,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="SourceTypeFactory.cs" />
+    <Compile Include="TestObject1.cs" />
     <Compile Include="TreeAnalysis\TreeGraphGenerator.cs" />
     <Compile Include="CodeDomExpressionVisitor.cs" />
     <Compile Include="Metadata\MetadataEnums\AgregationFunctionsEnum.cs" />
@@ -73,6 +79,10 @@
     <Folder Include="TreeAnalysis\Graphs\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Integra.Space.Compiler.CodeGeneration\Integra.Space.Compiler.CodeGeneration.csproj">
+      <Project>{1d6451da-513d-4e88-bcb2-91ec86a52725}</Project>
+      <Name>Integra.Space.Compiler.CodeGeneration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Integra.Space.Language\Integra.Space.Language.csproj">
       <Project>{6d4d259b-281f-454f-9b47-4ce2d108ba6a}</Project>
       <Name>Integra.Space.Language</Name>

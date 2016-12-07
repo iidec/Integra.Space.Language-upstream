@@ -1,5 +1,5 @@
 ﻿using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
+using Integra.Space.Compiler;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -7,15 +7,42 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
+using Integra.Space.Database;
+using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class LeftJoinTests : ReactiveTest
     {
-        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input1, ITestableObservable<EventObject> input2, bool printLog = false, bool debugMode = false, bool measureElapsedTime = false)
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
         {
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<TestObject3> input1, ITestableObservable<TestObject3> input2, bool printLog = false, bool debugMode = false, bool measureElapsedTime = false)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -36,21 +63,21 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_1()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -84,20 +111,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_2()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -131,20 +158,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_3()
         {
             string eql = "Left " +
-                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                 "WITH SpaceObservable1 as t2 " +
-                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                 "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                 "WITH SourceParaPruebas3 as t2 " +
+                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                  "TIMEOUT '00:00:02' " +
-                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -178,20 +205,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_4()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:20' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -225,20 +252,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_5()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " +
-                                "WITH SpaceObservable1 as t2 " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 " +
+                                "WITH SourceParaPruebas3 as t2 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(3).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -272,29 +299,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinMultipleEventsTest_OnTrue()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                                                  //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(12).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(12).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -342,28 +369,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinMultipleEventsTest_OnTrue_2()
         {
             string eql = "left " +
-                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                                                  //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -422,21 +449,21 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnTrue_6()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode and t1.Track2Data == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -474,22 +501,22 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_1()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -523,20 +550,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_2()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -570,20 +597,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_3()
         {
             string eql = "Left " +
-                                 "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                 "WITH SpaceObservable1 as t2 " +
-                                 "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                 "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                 "WITH SourceParaPruebas3 as t2 " +
+                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                  "TIMEOUT '00:00:02' " +
-                                 "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -617,20 +644,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_4()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "JOIN SourceParaPruebas3 as t1 " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:01' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(2).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -664,20 +691,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_5()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " +
-                                "WITH SpaceObservable1 as t2 " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "JOIN SourceParaPruebas3 as t1 " +
+                                "WITH SourceParaPruebas3 as t2 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(3).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -711,29 +738,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinMultipleEventsTest_OnFalse()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                                                  //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest1())
-                , OnNext(TimeSpan.FromSeconds(12).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, new TestObject3())
+                , OnNext(TimeSpan.FromSeconds(12).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(6).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(8).Ticks, TestObjects.CreateEventObjectTest2())
-                , OnNext(TimeSpan.FromSeconds(10).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(8).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
+                , OnNext(TimeSpan.FromSeconds(10).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -781,21 +808,21 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_OnFalse_6()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#35 and t1.@event.Message.#1.#35 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data and t1.Track2Data == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input1 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(4).Ticks, TestObjects.CreateEventObjectTest1())
+            ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
 
-            ITestableObservable<EventObject> input2 = dsf.TestScheduler.CreateHotObservable(
-                OnNext<EventObject>(TimeSpan.FromSeconds(3).Ticks, TestObjects.CreateEventObjectTest2())
+            ITestableObservable<TestObject3> input2 = dsf.TestScheduler.CreateHotObservable(
+                OnNext<TestObject3>(TimeSpan.FromSeconds(3).Ticks, new TestObject3(primaryAccountNumber: "9999941616073663_2", processingCode: "302000", transactionAmount: 1000m))
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -835,12 +862,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_ConstantInOnCondition_1()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON \"constant\" == t1.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON \"constant\" == t1.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -848,7 +875,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -865,12 +892,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_ConstantInOnCondition_2()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == \"constant\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == \"constant\" " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -878,7 +905,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -898,14 +925,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_NotEqualThanInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 != t2.@event.Message.#1.#32";
+            string condition = "t1.AcquiringInstitutionIdentificationCode != t2.AcquiringInstitutionIdentificationCode";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -913,7 +940,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -930,12 +957,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void LeftJoinTest_LessThanInOnCondition()
         {
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 < t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode < t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -943,7 +970,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -959,14 +986,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_LessThanOrEqualsInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 <= t2.@event.Message.#1.#32";
+            string condition = "t1.AcquiringInstitutionIdentificationCode <= t2.AcquiringInstitutionIdentificationCode";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -974,7 +1001,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -990,14 +1017,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_GreaterThanOrEqualsInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 >= t2.@event.Message.#1.#32";
+            string condition = "t1.AcquiringInstitutionIdentificationCode >= t2.AcquiringInstitutionIdentificationCode";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1005,7 +1032,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1021,14 +1048,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_GreaterThanInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 > t2.@event.Message.#1.#32";
+            string condition = "t1.AcquiringInstitutionIdentificationCode > t2.AcquiringInstitutionIdentificationCode";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1036,7 +1063,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1052,14 +1079,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_LikeInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 like \"491381\"";
+            string condition = "t1.AcquiringInstitutionIdentificationCode like \"491381\"";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1067,7 +1094,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1083,14 +1110,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_OrInOnCondition()
         {
-            string condition = "t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 or t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35";
+            string condition = "t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode or t1.Track2Data == t2.Track2Data";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
                                 "ON " + condition + " " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1098,7 +1125,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1114,14 +1141,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_NotInOnCondition()
         {
-            string condition = "not(t1.@event.Message.#1.#35 == t2.@event.Message.#1.#35)";
+            string condition = "not(t1.Track2Data == t2.Track2Data)";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                $"ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 and {condition} " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                $"ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode and {condition} " +
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1129,7 +1156,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1145,13 +1172,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_MixedSources_1()
         {
-            string instruction = "t2.@event.Message.#1.#2";
+            string instruction = "t2.PrimaryAccountNumber";
             string eql = "Left " +
-                                $"JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == {instruction} " +
-                                "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                $"JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == {instruction} " +
+                                "WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2 into SourceXYZ ";
+                                "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1159,7 +1186,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }
@@ -1175,13 +1202,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void LeftJoinTest_MixedSources_2()
         {
-            string instruction = "t1.@event.Message.#1.#2";
+            string instruction = "t1.PrimaryAccountNumber";
             string eql = "Left " +
-                                "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                $"WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == {instruction} " +
-                                "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                $"WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == {instruction} " +
+                                "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
-                                "SELECT t1.@event.Message.#1.#2 as c1 into SourceXYZ"; // , t2.@event.Message.#1.#2 as c2 
+                                "SELECT t1.PrimaryAccountNumber as c1 into SourceXYZ"; // , t2.PrimaryAccountNumber as c2 
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1189,7 +1216,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 QueryParser parser = new QueryParser(eql);
                 PlanNode plan = parser.Evaluate().Item1;
-                CompilerConfiguration context = new CompilerConfiguration() { PrintLog = true, QueryName = string.Empty, Scheduler = dsf, DebugMode = true, IsTestMode = true, MeasureElapsedTime = false };
+                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
                 Assembly assembly = fp.Process(context, eql, dsf);
             }

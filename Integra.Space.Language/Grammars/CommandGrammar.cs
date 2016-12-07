@@ -6,14 +6,10 @@
 namespace Integra.Space.Language.Grammars
 {
     using System;
-    using System.Linq;
     using ASTNodes;
     using ASTNodes.Commands;
-    using ASTNodes.Constants;
     using ASTNodes.Identifier;
-    using ASTNodes.Lists;
     using ASTNodes.MetadataQuery;
-    using ASTNodes.QuerySections;
     using ASTNodes.Root;
     using Common;
     using Irony.Interpreter;
@@ -26,10 +22,16 @@ namespace Integra.Space.Language.Grammars
     internal class CommandGrammar : InterpretedLanguageGrammar
     {
         /// <summary>
+        /// Expression grammar.
+        /// </summary>
+        private ExpressionGrammar expressionGrammar;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="CommandGrammar"/> class.
         /// </summary>
         public CommandGrammar() : base(false)
         {
+            this.expressionGrammar = new ExpressionGrammar();
             this.CreateGrammar();
         }
 
@@ -49,6 +51,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalDeny = ToTerm("deny", "deny");
             KeyTerm terminalUse = ToTerm("use", "use");
             KeyTerm terminalTruncate = ToTerm("truncate", "truncate");
+            KeyTerm terminalInsert = ToTerm("insert", "insert");
 
             /* SPACE OBJECTS */
             KeyTerm terminalServer = ToTerm("server", "server");
@@ -118,6 +121,10 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalModify = ToTerm("modify", "modify");
             KeyTerm terminalName = ToTerm("name", "name");
 
+            /* PARA INSERTS */
+            KeyTerm terminalInto = ToTerm("into", "into");
+            KeyTerm terminalValues = ToTerm("values", "values");
+
             /* IDENTIFICADOR */
             IdentifierTerminal terminalId = new IdentifierTerminal("identifier", IdOptions.None);
             NumberLiteral terminalUnsignedIntValue = new NumberLiteral("unsigned_int_value", NumberOptions.IntOnly);
@@ -144,7 +151,7 @@ namespace Integra.Space.Language.Grammars
             terminalUserOptionValue.Add("disable", false);
             terminalUserOptionValue.AstConfig.NodeType = null;
             terminalUserOptionValue.AstConfig.DefaultNodeCreator = () => new ValueASTNode<bool>();
-            
+
             /* TIPOS */
             ConstantTerminal terminalType = new ConstantTerminal("dataTypes", typeof(Type));
             terminalType.Add("byte", typeof(byte));
@@ -189,7 +196,7 @@ namespace Integra.Space.Language.Grammars
             NonGrammarTerminals.Add(comentarioBloque);
 
             /* NON TERMINALS */
-            
+
             NonTerminal nt_METADATA_QUERY = new NonTerminal("METADATA_QUERY", typeof(CommandQueryForMetadataASTNode));
             nt_METADATA_QUERY.AstConfig.NodeType = null;
             nt_METADATA_QUERY.AstConfig.DefaultNodeCreator = () => new CommandQueryForMetadataASTNode();
@@ -204,7 +211,7 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_COMMAND_NODE_LIST = new NonTerminal("COMMAND_LIST", typeof(CommandListASTNode));
             nt_COMMAND_NODE_LIST.AstConfig.NodeType = null;
             nt_COMMAND_NODE_LIST.AstConfig.DefaultNodeCreator = () => new CommandListASTNode();
-            
+
             /* ID WITH PATH */
             NonTerminal nt_FOURTH_LEVEL_OBJECT_IDENTIFIER = new NonTerminal("FOURTH_LEVEL_OBJECT_IDENTIFIER", typeof(FourthLevelIdentifierASTNode));
             nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.AstConfig.NodeType = null;
@@ -276,8 +283,8 @@ namespace Integra.Space.Language.Grammars
             nt_PERMISSION.AstConfig.NodeType = null;
             nt_PERMISSION.AstConfig.DefaultNodeCreator = () => new PermissionASTNode();
             /************************************************/
-                        
-            /* OBJECT WITH IDENTIFIER */           
+
+            /* OBJECT WITH IDENTIFIER */
             NonTerminal nt_SPACE_SERVER_PRINCIPALS_WITH_ID = new NonTerminal("SPACE_USER_OR_ROLE_WITH_ID", typeof(SpaceObjectWithIdASTNode));
             nt_SPACE_SERVER_PRINCIPALS_WITH_ID.AstConfig.NodeType = null;
             nt_SPACE_SERVER_PRINCIPALS_WITH_ID.AstConfig.DefaultNodeCreator = () => new SpaceObjectWithIdASTNode();
@@ -299,6 +306,12 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_SECOND_LEVEL_ID_LIST = new NonTerminal("SECOND_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
             nt_SECOND_LEVEL_ID_LIST.AstConfig.NodeType = null;
             nt_SECOND_LEVEL_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            /************************************************/
+
+            /* INSERT COMMAND VALUE LIST */
+            NonTerminal nt_INSERT_VALUE_LIST = new NonTerminal("INSERT_VALUE_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_INSERT_VALUE_LIST.AstConfig.NodeType = null;
+            nt_INSERT_VALUE_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
             /************************************************/
 
             /* PERMISSION OPTIONS */
@@ -385,7 +398,7 @@ namespace Integra.Space.Language.Grammars
             /* SPACE PERMISSION LIST */
             NonTerminal nt_SPACE_PERMISSION_LIST = new NonTerminal("PERMISSION_LIST", typeof(ListASTNode<PermissionASTNode, PermissionNode>));
             nt_SPACE_PERMISSION_LIST.AstConfig.NodeType = null;
-            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<PermissionASTNode, PermissionNode>();            
+            nt_SPACE_PERMISSION_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<PermissionASTNode, PermissionNode>();
             NonTerminal nt_SPACE_PRINCIPAL_LIST = new NonTerminal("SERVER_PRINCIPAL_LIST", typeof(ListASTNode<SpaceObjectWithIdASTNode, CommandObject>));
             nt_SPACE_PRINCIPAL_LIST.AstConfig.NodeType = null;
             nt_SPACE_PRINCIPAL_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SpaceObjectWithIdASTNode, CommandObject>();
@@ -456,6 +469,7 @@ namespace Integra.Space.Language.Grammars
             nt_SOURCE_COLUMN_LIST.AstConfig.DefaultNodeCreator = () => new DictionaryASTNode<SourceColumnsASTNode, string, Type>();
             /************************************************/
 
+            /* PERMISSION COMMANDS */
             NonTerminal nt_PERMISSIONS_COMMANDS = new NonTerminal("PERMISSIONS_COMMANDS", typeof(PermissionCommandASTNode));
             nt_PERMISSIONS_COMMANDS.AstConfig.NodeType = null;
             nt_PERMISSIONS_COMMANDS.AstConfig.DefaultNodeCreator = () => new PermissionCommandASTNode();
@@ -465,20 +479,29 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_TAKE_OWNERSHIP = new NonTerminal("TAKE_OWNERSHIP", typeof(TakeOwnershipASTNode));
             nt_TAKE_OWNERSHIP.AstConfig.NodeType = null;
             nt_TAKE_OWNERSHIP.AstConfig.DefaultNodeCreator = () => new TakeOwnershipASTNode();
+            /************************************************/
 
+            /* TRUNCATE */
             NonTerminal nt_TRUNCATE_SOURCE = new NonTerminal("TRUNCATE_SOURCE", typeof(TruncateASTNode));
             nt_TRUNCATE_SOURCE.AstConfig.NodeType = null;
             nt_TRUNCATE_SOURCE.AstConfig.DefaultNodeCreator = () => new TruncateASTNode();
+            /************************************************/
+
+            /* INSERT */
+            NonTerminal nt_INSERT = new NonTerminal("INSERT", typeof(InsertASTNode));
+            nt_INSERT.AstConfig.NodeType = null;
+            nt_INSERT.AstConfig.DefaultNodeCreator = () => new InsertASTNode();
+            /************************************************/
 
             /* RULES */
-            
+
             nt_SECOND_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST, terminalComa, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
             nt_THIRD_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST, terminalComa, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
             nt_THIRD_LEVEL_ID_LIST_2.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST_2, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
             nt_FOURTH_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_FOURTH_LEVEL_ID_LIST, terminalComa, nt_FOURTH_LEVEL_OBJECT_IDENTIFIER);
 
             /* COMMAND ACTIONS */
-            
+
             /* SPACE OBJECTS CATEGORIES */
 
             nt_SPACE_OBJECTS.Rule = terminalServer
@@ -491,7 +514,7 @@ namespace Integra.Space.Language.Grammars
                                     | terminalSource
                                     | terminalStream
                                     | terminalView;
-            
+
             nt_SECOND_LEVEL_OBJECTS_TO_ALTER.Rule = terminalDatabase
                                                     | terminalLogin
                                                     | terminalEndpoint;
@@ -532,7 +555,7 @@ namespace Integra.Space.Language.Grammars
             /************************************************/
 
             /* OBJECT WITH IDENTIFIER */
-            
+
             nt_SPACE_SERVER_PRINCIPALS_WITH_ID.Rule = nt_SPACE_SERVER_PRINCIPALS + nt_SECOND_LEVEL_OBJECT_IDENTIFIER;
 
             nt_SPACE_DB_PRINCIPALS_WITH_ID.Rule = nt_SPACE_DB_PRINCIPALS + nt_THIRD_LEVEL_OBJECT_IDENTIFIER;
@@ -559,7 +582,7 @@ namespace Integra.Space.Language.Grammars
                                             | terminalCreate + terminalDatabase
                                             | terminalAuthenticate + terminalServer
                                             | terminalAuthenticate;
-            
+
             nt_GRANULAR_PERMISSION_FOR_ON_1.Rule = terminalView + terminalDefinition
                                                     | terminalControl
                                                     | terminalAlter
@@ -582,7 +605,7 @@ namespace Integra.Space.Language.Grammars
                                             | terminalAlter + terminalAny + terminalDatabase;
 
             /************************************************/
-            
+
             /* LIST OF PERMISSIONS AND PRINCIPALS */
 
             nt_SPACE_PERMISSION_LIST.Rule = this.MakePlusRule(nt_SPACE_PERMISSION_LIST, terminalComa, nt_PERMISSION);
@@ -599,7 +622,7 @@ namespace Integra.Space.Language.Grammars
             nt_USE.Rule = terminalUse + terminalId;
 
             /************************************************/
-            
+
             /* CRUD commands */
 
             /* CREATE */
@@ -678,7 +701,7 @@ namespace Integra.Space.Language.Grammars
             nt_DROP_COMMAND.Rule = terminalDrop + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_ID_LIST
                                     | terminalDrop + nt_THIRD_LEVEL_OBJECTS_TO_ALTER + nt_THIRD_LEVEL_ID_LIST
                                     | terminalDrop + nt_SECOND_LEVEL_OBJECTS_TO_ALTER + nt_SECOND_LEVEL_ID_LIST;
-            
+
             /************************************************/
 
             /* Permission commands */
@@ -702,10 +725,18 @@ namespace Integra.Space.Language.Grammars
                                     | terminalTake + terminalOwnership + terminalOn + nt_FOURTH_LEVEL_OBJECTS_TO_ALTER + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER;
 
             /************************************************/
-            
+
             /* TRUNCATE */
 
             nt_TRUNCATE_SOURCE.Rule = terminalTruncate + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER;
+
+            /************************************************/
+
+            /* INSERT */
+
+            nt_INSERT.Rule = terminalInsert + terminalInto + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalParentesisIz + nt_SECOND_LEVEL_ID_LIST + terminalParentesisDer + terminalValues + terminalParentesisIz + nt_INSERT_VALUE_LIST + terminalParentesisDer;
+
+            nt_INSERT_VALUE_LIST.Rule = this.MakePlusRule(nt_INSERT_VALUE_LIST, terminalComa, this.expressionGrammar.ConstantValues);
 
             /************************************************/
 
@@ -742,7 +773,8 @@ namespace Integra.Space.Language.Grammars
                                     | nt_TAKE_OWNERSHIP
                                     | nt_TRUNCATE_SOURCE
                                     /*| nt_METADATA_QUERY*/
-                                    | nt_TEMPORAL_STREAM;
+                                    | nt_TEMPORAL_STREAM
+                                    | nt_INSERT;
 
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
 

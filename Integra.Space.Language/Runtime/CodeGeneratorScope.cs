@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="CompilationContext.cs" company="Integra.Space.Language">
+// <copyright file="CodeGeneratorScope.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -10,12 +10,12 @@ namespace Integra.Space.Language.Runtime
     /// <summary>
     /// Compilation context class.
     /// </summary>
-    internal class CompilationContext
+    internal class CodeGeneratorScope
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompilationContext"/> class.
+        /// Initializes a new instance of the <see cref="CodeGeneratorScope"/> class.
         /// </summary>
-        public CompilationContext()
+        public CodeGeneratorScope()
         {
         }
 

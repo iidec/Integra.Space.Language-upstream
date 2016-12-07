@@ -5,10 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System.Collections.Generic;
-    using Exceptions;
-    using Integra.Space.Language.Grammars;
-    using Irony.Parsing;
+    using Common;
+    using Grammars;
 
     /// <summary>
     /// Class that implements the logic to parse commands

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
 using System.Reactive.Linq;
 using System.Collections.Generic;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
 using System.Reflection;
+using Integra.Space.Compiler;
+using Integra.Space.Database;
+using System.Reflection.Emit;
+using Ninject;
 
 namespace Integra.Space.LanguageUnitTests.Events
 {
@@ -15,13 +17,33 @@ namespace Integra.Space.LanguageUnitTests.Events
     public class EventValuesNodeTests
     {
         List<EventObject> eventList = new List<EventObject>();
-        
-        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
         {
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.Run),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);

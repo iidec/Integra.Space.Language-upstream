@@ -196,7 +196,9 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
             PlanNode getProperty = new PlanNode();
             getProperty.NodeType = PlanNodeTypeEnum.Property;
             getProperty.Properties.Add("Property", "Count");
+            getProperty.Properties.Add("InternalUse", true);
             getProperty.Properties.Add("FromInterface", "ICollection`1");
+            getProperty.Properties.Add("DataType", typeof(int).ToString());
             getProperty.Children = new List<PlanNode>();
             getProperty.Children.Add(getParam);
 

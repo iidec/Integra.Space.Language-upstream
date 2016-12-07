@@ -5,23 +5,46 @@ using Integra.Space.Language;
 using System.Reactive.Linq;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
-using Integra.Space.Language.Runtime;
 using System.Collections.Generic;
 using Integra.Space.Language.Exceptions;
 using System.Reflection;
+using Integra.Space.Compiler;
+using Integra.Space.Database;
+using System.Reflection.Emit;
+using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class UserQueryNodeTests
     {
-        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
         {
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
 
+            return config;
+        }
+
+        private IObservable<object> Process<T>(string eql, DefaultSchedulerFactory dsf, ITestableObservable<T> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
 
@@ -39,14 +62,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaProyeccionCampoNuloConWhere()
         {
             string eql = string.Format("from {0} where {1} select {2} as CampoNulo into SourceXYZ",
-                                                                "SpaceObservable1",
-                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                "@event.Message.#0.[\"Campo que no existe\"]");
+                                                                "SourceParaPruebas1",
+                                                                "MessageType == \"0100\"",
+                                                                "Campo_que_no_existe");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -75,13 +98,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaProyeccionCampoNuloSinWhere()
         {
             string eql = string.Format("from {0} select {1} as CampoNulo into SourceXYZ",
-                                                                "SpaceObservable1",
+                                                                "SourceParaPruebas1",
                                                                 "@event.Message.#0.[\"Campo que no existe\"]");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -110,18 +133,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByUnaLlaveYCount()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Contador into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -151,16 +174,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos1_0()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -189,16 +212,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos1_1()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -228,17 +251,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos1_2()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -270,16 +293,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos1_4()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "max((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "max((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -308,16 +331,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos1_5()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "min((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "min((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -348,16 +371,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventosOrderByDesc()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -387,24 +410,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSelectDiezEventosTop()
         {
             string eql = string.Format("from {0} select top 1 {3} as monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -433,16 +456,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereSelectDosEventosTop()
         {
             string eql = string.Format("from {0} where {1} select top 1 {3} as monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -471,16 +494,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosTop()
         {
             string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -509,16 +532,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosTopOrderByDesc()
         {
             string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -547,16 +570,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosTopOrderByAsc()
         {
             string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -585,16 +608,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosTopOrderBy()
         {
             string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -623,16 +646,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByDesc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -661,16 +684,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByAsc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -699,16 +722,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderBy()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -737,16 +760,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosTop()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -775,18 +798,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -816,18 +839,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m /*@event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 4m*/",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and TransactionAmount between 0m and 4m /*TransactionAmount > 0m and TransactionAmount < 4m*/",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -857,18 +880,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -898,18 +921,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTop()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -939,18 +962,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria, Llave into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -980,18 +1003,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1021,18 +1044,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1061,19 +1084,19 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectTopUnaLlaveYSum()
         {
-            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1105,16 +1128,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosOrderByDesc()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1144,16 +1167,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosOrderByAsc()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1183,16 +1206,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowSelectDosEventosOrderBy()
         {
             string eql = string.Format("from {0} apply window of {2} select {3} as monto order by monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1222,16 +1245,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDesc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1261,16 +1284,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByAsc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1300,16 +1323,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowSelectDosEventosOrderBy()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by monto into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(decimal)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1339,18 +1362,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1380,18 +1403,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1421,18 +1444,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1462,18 +1485,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSum()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1503,18 +1526,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1544,18 +1567,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1585,18 +1608,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1626,18 +1649,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSum()
         {
             string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1669,16 +1692,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos2_0()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1706,16 +1729,16 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos2_1()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1745,17 +1768,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaSoloApplyWindowDosEventos2_2()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1787,18 +1810,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByUnaLlaveYSum()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1828,19 +1851,19 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByDosLlavesYCount()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "grupo2",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1871,19 +1894,19 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByDosLlavesYSum()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "grupo2",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1914,17 +1937,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByUnaLlaveYCountSinWhere()
         {
             string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Contador into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1954,17 +1977,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByUnaLlaveYSumSinWhere()
         {
             string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -1994,17 +2017,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByUnaLlaveYSumSinWhere2()
         {
             string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:10'",
-                                                                                            "@event.Message.#0.#0 as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2033,18 +2056,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByDosLlavesYCountSinWhere()
         {
             string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "key.grupo2",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2075,18 +2098,18 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaGroupByDosLlavesYSumSinWhere()
         {
             string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "key.grupo2",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2121,13 +2144,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave into SourceXYZ",
-                                                                "SpaceObservable1",
+                                                                "SourceParaPruebas",
                                                                 "key")
                                                                 );
                 PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2152,14 +2175,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
                     string.Format("from {0} where {1} select {2} as Llave into SourceXYZ",
-                                                                "SpaceObservable1",
-                                                                "@event.Message.#0.MessageType == \"0100\"",
+                                                                "SourceParaPruebas",
+                                                                "MessageType == \"0100\"",
                                                                 "key")
                                                                 );
                 PlanNode plan = parser.Evaluate().Item1;
-
-                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
+                
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2184,13 +2207,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave into SourceXYZ",
-                                                                "SpaceObservable1",
+                                                                "SourceParaPruebas",
                                                                 "count()")
                                                                 );
                 PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty });
-                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2215,13 +2238,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 // no es posible utilizar key sin un group by
                 QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave into SourceXYZ",
-                                                                "SpaceObservable1",
-                                                                "sum((decimal)@event.Message.#1.TransactionAmount)")
+                                                                "SourceParaPruebas",
+                                                                "sum((decimal)TransactionAmount)")
                                                                 );
                 PlanNode plan = parser.Evaluate().Item1;
 
-                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2245,23 +2268,23 @@ namespace Integra.Space.LanguageUnitTests.Queries
             // esta es para probar las excepciones 
             EQLPublicParser parser = new EQLPublicParser(
                 string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.CardAcceptorNameLocation)")
+                                                                                            "sum((decimal)CardAcceptorNameLocation)")
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
             ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-            Func<IObservable<EventObject>, IObservable<object>> result = te.Compile<IObservable<EventObject>, IObservable<object>>(plan.First());
+            Func<IObservable<TestObject1>, IObservable<object>> result = te.Compile<IObservable<TestObject1>, IObservable<object>>(plan.First());
 
             TestScheduler dsf.TestScheduler = new TestScheduler();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2288,53 +2311,19 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 });
         }
         */
-
-        [TestMethod]
-        public void ConsultaGroupByUnaLlaveYSumCampoNoNumerico()
-        {
-            try
-            {
-                QueryParser parser = new QueryParser(
-                    string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
-                                                                                                "SpaceObservable1",
-                                                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                                                "'00:00:00:01'",
-                                                                                                "@event.Message.#0.MessageType as grupo1",
-                                                                                                "key.grupo1",
-                                                                                                "sum(@event.Message.#1.CardAcceptorNameLocation)")
-                                                                                                );
-                PlanNode plan = parser.Evaluate().Item1;
-
-                CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
-                Func<IObservable<EventObject>, IObservable<object>> result = (Func<IObservable<EventObject>, IObservable<object>>)te.CompileDelegate(plan);
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
+        
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion1()
         {
             string command = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador, {7} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "key.grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 
@@ -2345,13 +2334,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion2()
         {
             string command = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador, {6} as Sumatoria into SourceXYZ",
-                                                                                            "SpaceObservable1",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "key.grupo1",
                                                                                             "key.grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                                                                                            "sum((decimal)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 
@@ -2362,12 +2351,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion3()
         {
             string command = string.Format("from {0} where {1} select {2} as PrimaryAccountNumber, {3} as CardAcceptorNameLocation, {4} as TransactionAmount, {5} as TransactionCurrencyCode into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
-                                                                                            "@event.Message.#0.PrimaryAccountNumber",
-                                                                                            "@event.Message.#0.CardAcceptorNameLocation",
-                                                                                            "@event.Message.#0.TransactionAmount",
-                                                                                            "@event.Message.#0.TransactionCurrencyCode");
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and MessageType == \"0100\"",
+                                                                                            "PrimaryAccountNumber",
+                                                                                            "CardAcceptorNameLocation",
+                                                                                            "TransactionAmount",
+                                                                                            "TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 
@@ -2378,11 +2367,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion4()
         {
             string command = string.Format("from {0} select {1} as PrimaryAccountNumber, {2} as CardAcceptorNameLocation, {3} as TransactionAmount, {4} as TransactionCurrencyCode into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.PrimaryAccountNumber",
-                                                                                            "@event.Message.#0.CardAcceptorNameLocation",
-                                                                                            "@event.Message.#0.TransactionAmount",
-                                                                                            "@event.Message.#0.TransactionCurrencyCode");
+                                                                                            "SourceParaPruebas",
+                                                                                            "PrimaryAccountNumber",
+                                                                                            "CardAcceptorNameLocation",
+                                                                                            "TransactionAmount",
+                                                                                            "TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 
@@ -2393,24 +2382,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByAsc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2442,24 +2431,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderBy()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2491,24 +2480,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDesc()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2540,24 +2529,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLowerWithNullValue()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and lower((string)null) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and lower((string)null) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2591,24 +2580,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescUpperWithNullValue()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and upper((string)null) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and upper((string)null) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2642,24 +2631,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLeftWithNullValue()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and left((string)null, 5) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and left((string)null, 5) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(
@@ -2693,24 +2682,24 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescRightWithNullValue()
         {
             string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and right((string)null, 3) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and right((string)null, 3) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<object> results = dsf.TestScheduler.Start(

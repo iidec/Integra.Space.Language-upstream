@@ -78,34 +78,39 @@
       <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Reactive.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Core.3.0.0\lib\net45\System.Reactive.Core.dll</HintPath>
+    <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Interfaces.3.0.0\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Linq, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Linq.3.0.0\lib\net45\System.Reactive.Linq.dll</HintPath>
+    <Reference Include="System.Reactive.Linq, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.PlatformServices.3.0.0\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    <Reference Include="System.Reactive.PlatformServices, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.PlatformServices.3.1.1\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Providers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Providers.3.0.0\lib\net45\System.Reactive.Providers.dll</HintPath>
+    <Reference Include="System.Reactive.Providers, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Providers.3.1.1\lib\net45\System.Reactive.Providers.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Reactive.Windows.Threading.3.0.0\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
+    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="WindowsBase" />
@@ -115,6 +120,7 @@
     <Compile Include="ASTNodes\Commands\CommandOptionListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceStatementASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceColumnsStructureASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\InsertASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\SourceColumnsASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterCommandASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceASTNode.cs" />
@@ -138,7 +144,7 @@
     <Compile Include="ASTNodes\Commands\DictionaryASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ApplyExtensionListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
-    <Compile Include="ASTNodes\Commands\CRUD\Metadata\TruncateASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\TruncateASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\PermissionASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\TakeOwnershipASTNode.cs" />
@@ -186,11 +192,6 @@
     <Compile Include="ASTNodes\Values\Objects\NonConstantValueNode.cs" />
     <Compile Include="ASTNodes\QuerySections\Sources\JoinNode.cs" />
     <Compile Include="ASTNodes\Lists\PlanNodeListNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Event\EventNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Event\EventPropertiesNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Object\ObjectIdOrNumberNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Object\ObjectNode.cs" />
-    <Compile Include="ASTNodes\Values\Objects\Object\ObjectValueNode.cs" />
     <Compile Include="ASTNodes\Operations\ArithmeticExpressionNode.cs" />
     <Compile Include="ASTNodes\Operations\ComparativeExpressionNode.cs" />
     <Compile Include="ASTNodes\Operations\LogicExpressionNode.cs" />
@@ -215,8 +216,6 @@
     <Compile Include="Exceptions\CompilationException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
     <Compile Include="Exceptions\SyntaxException.cs" />
-    <Compile Include="ExecutionPlan\Commands\CommandObject.cs" />
-    <Compile Include="ExecutionPlan\Commands\CommandObjectComparer.cs" />
     <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSourceNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSchemaNode.cs" />
@@ -235,6 +234,7 @@
     <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateLoginNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\DropObjectNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\InsertNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
     <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
@@ -256,14 +256,13 @@
     <Compile Include="Grammars\GrammarsForMetadata\QueryLanguageForMetadataRuntime.cs" />
     <Compile Include="Grammars\TemporalStreamGrammar.cs" />
     <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
+    <Compile Include="Helpers\InternalPlanNodes.cs" />
+    <Compile Include="Helpers\NodesFinder.cs" />
+    <Compile Include="Helpers\ScopeParameter.cs" />
     <Compile Include="Parsers\CommandParser.cs" />
     <Compile Include="Parsers\ExpressionForMetadataParser.cs" />
     <Compile Include="Parsers\MetadataQueryParser.cs" />
     <Compile Include="Parsers\SpaceParser.cs" />
-    <Compile Include="Runtime\CompilationContext.cs" />
-    <Compile Include="Runtime\Generators\ConverterBase.cs" />
-    <Compile Include="Runtime\Generators\ObservableNeverConverter.cs" />
-    <Compile Include="Runtime\Scope\ScopeParameter.cs" />
     <Compile Include="ExecutionPlan\SpaceASTNode.cs" />
     <Compile Include="Grammars\CommandGrammar.cs" />
     <Compile Include="Grammars\CommandGrammarRuntime.cs" />
@@ -314,27 +313,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
-    <Compile Include="Runtime\CompilerConfiguration.cs" />
-    <Compile Include="Runtime\FakePipeline.cs" />
-    <Compile Include="Runtime\Helpers\ConstructionValidator.cs" />
-    <Compile Include="Runtime\Helpers\Validations.cs" />
-    <Compile Include="Runtime\TreeTransformations.cs" />
-    <Compile Include="Runtime\TypeBuilders\DynamicObjectTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\EventResultTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\ExtractedEventDataTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\FieldNode.cs" />
-    <Compile Include="Runtime\Helpers\InternalPlanNodes.cs" />
-    <Compile Include="Runtime\TypeBuilders\QueryInformationTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\SourceTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\SpaceAssemblyBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\SpaceModuleBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\SpaceQueryTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\SpaceTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\JoinSideObjectComparerTypeBuilder.cs" />
-    <Compile Include="Runtime\TypeBuilders\QueryResultTypeBuilder.cs" />
-    <Compile Include="Runtime\Scope\Scope.cs" />
-    <Compile Include="Runtime\Helpers\NodesFinder.cs" />
-    <Compile Include="Runtime\CodeGenerator.cs" />
     <Compile Include="ExecutionPlan\PlanNodeTypeExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -404,7 +382,9 @@
       <Name>Integra.Space.Runtime</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Runtime\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\StyleCop.Error.MSBuild.1.0.0\build\StyleCop.Error.MSBuild.Targets" Condition="Exists('packages\StyleCop.Error.MSBuild.1.0.0\build\StyleCop.Error.MSBuild.Targets')" />
   <Import Project="..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets" Condition="Exists('..\packages\StyleCop.MSBuild.4.7.49.0\build\StyleCop.MSBuild.Targets')" />

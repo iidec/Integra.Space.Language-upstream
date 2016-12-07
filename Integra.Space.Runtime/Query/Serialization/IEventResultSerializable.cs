@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IEventResultSerializable.cs" company="Ingetra.Space.Event">
-//     Copyright (c) Ingetra.Space.Event. All rights reserved.
+// <copyright file="IEventResultSerializable.cs" company="Ingetra.Space.Runtime">
+//     Copyright (c) Ingetra.Space.Runtime. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space

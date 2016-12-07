@@ -19,11 +19,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class AlterSourceASTNode : AlterCommandASTNode<SourceOptionEnum>
     {
         /// <summary>
-        /// Options AST node.
-        /// </summary>
-        private DictionaryCommandOptionASTNode<SourceOptionEnum> options;
-
-        /// <summary>
         /// Alter statements AST node.
         /// </summary>
         private AstNodeBase alterStatement;

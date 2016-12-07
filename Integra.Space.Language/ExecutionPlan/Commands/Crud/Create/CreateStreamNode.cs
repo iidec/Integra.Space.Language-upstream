@@ -37,7 +37,7 @@ namespace Integra.Space.Language
             this.ExecutionPlan = executionPlan;
 
             this.inputSources = new List<ReferencedSource>();
-            List<PlanNode> fromNodes = Language.Runtime.NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
+            List<PlanNode> fromNodes = NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
                 string schemaNameOfSource = commandObject.SchemaName;

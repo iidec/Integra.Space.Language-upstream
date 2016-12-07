@@ -7,6 +7,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 {
     using System.Collections.Generic;
     using System.Linq;
+    using Common;
     using Integra.Space.Language.ASTNodes.Base;    
     using Irony.Ast;
     using Irony.Interpreter;
@@ -82,28 +83,22 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 idFrom.Properties["DataType"] = typeof(string);
                 this.result.Children.Add(idFrom);
             }
-
-            this.result.Properties.Add("SourceType", typeof(System.IObservable<EventObject>));
+            
             this.result.Properties.Add("SourceName", idFrom.Children[0].Properties["Value"]);
+            if (idFrom.Children.Count > 1)
+            {
+                this.result.Properties.Add("SourceAlias", idFrom.Children[1].Properties["Value"]);
+            }
+
             this.result.Properties.Add("SchemaName", idFrom.Children[0].Properties["SchemaIdentifier"]);
             this.result.Properties.Add("DatabaseName", idFrom.Children[0].Properties["DatabaseIdentifier"]);
+            
+            CommandObject sourceObject = new CommandObject(Common.SystemObjectEnum.Source, (string)idFrom.Children[0].Properties["DatabaseIdentifier"], (string)idFrom.Children[0].Properties["SchemaIdentifier"], (string)idFrom.Children[0].Properties["Value"], Common.PermissionsEnum.Read, false);
+            this.result.Properties.Add("Source", sourceObject);
 
             this.result.NodeText = string.Format("{0} {1}", this.from, idFrom.NodeText);
             
-            PlanNode scopeWhereForEventLock = new PlanNode();
-            scopeWhereForEventLock.NodeType = PlanNodeTypeEnum.NewScope;
-            scopeWhereForEventLock.Children = new List<PlanNode>();
-
-            scopeWhereForEventLock.Children.Add(this.result);
-
-            PlanNode whereForEventLock = new PlanNode();
-            whereForEventLock.NodeType = PlanNodeTypeEnum.ObservableWhereForEventLock;
-            whereForEventLock.Properties.Add("Source", idFrom.Children.Last().Properties["Value"]);
-            whereForEventLock.NodeText = this.result.NodeText;
-            whereForEventLock.Children = new List<PlanNode>();
-            whereForEventLock.Children.Add(scopeWhereForEventLock);
-
-            return whereForEventLock;
+            return this.result;
         }
     }
 }

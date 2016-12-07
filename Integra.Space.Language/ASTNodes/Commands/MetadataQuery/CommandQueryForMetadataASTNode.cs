@@ -11,7 +11,6 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
     /// JoinNode class

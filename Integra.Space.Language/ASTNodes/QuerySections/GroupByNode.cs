@@ -96,10 +96,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 plan.Children.Add(tupla.Key);
                 plan.Children.Add(tupla.Value);
 
-                PlanNode fromForLambda = new PlanNode();
+                /*PlanNode fromForLambda = new PlanNode();
                 fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
 
-                /*List<PlanNode> last = tupla.Value.Children;
+                List<PlanNode> last = tupla.Value.Children;
                 List<PlanNode> tuplaActual = new List<PlanNode>();
 
                 while (last != null)
@@ -112,10 +112,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                         tuplaActual.First().Children = new List<PlanNode>();
                         tuplaActual.First().Children.Add(fromLambda);
                     }
-                }*/
+                }
 
                 // se agrega el nodo from for lambda al nodo valor del nodo tupla
-                this.SetFromForLambda(tupla.Value, fromForLambda);
+                this.SetFromForLambda(tupla.Value, fromForLambda);*/
 
                 if (isFirst)
                 {

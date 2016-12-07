@@ -7,6 +7,7 @@ namespace Integra.Space.Language
 {
     using System.Collections.Generic;
     using System.Diagnostics.Contracts;
+    using Common;
 
     /// <summary>
     /// Command object class.
@@ -34,7 +35,7 @@ namespace Integra.Space.Language
             Contract.Assert(executionPlan != null);
             this.ExecutionPlan = executionPlan;
             this.referencedSources = new List<ReferencedSource>();
-            List<PlanNode> fromNodes = Language.Runtime.NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
+            List<PlanNode> fromNodes = NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
                 string schemaNameOfSource = schemaName;

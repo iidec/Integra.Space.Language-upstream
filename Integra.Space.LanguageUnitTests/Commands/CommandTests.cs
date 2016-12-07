@@ -16,6 +16,68 @@ namespace Integra.Space.LanguageUnitTests.Commands
             Console.WriteLine();
         }
 
+        #region insert
+
+        [TestMethod]
+        public void InsertEvent()
+        {
+            string command = @"insert into SourceParaPruebas
+                                (
+                                MessageType,
+                                PrimaryAccountNumber,
+                                ProcessingCode,
+                                TransactionAmount,
+                                DateTimeTransmission,
+                                SystemTraceAuditNumber,
+                                LocalTransactionTime,
+                                LocalTransactionDate,
+                                SettlementDate,
+                                MerchantType,
+                                AcquiringInstitutionCountryCode,
+                                PointOfServiceEntryMode,
+                                PointOfServiceConditionCode,
+                                AcquiringInstitutionIdentificationCode,
+                                Track2Data,
+                                RetrievalReferenceNumber,
+                                CardAcceptorTerminalIdentification,
+                                CardAcceptorIdentificationCode,
+                                CardAcceptorNameLocation,
+                                TransactionCurrencyCode,
+                                AccountIdentification1,
+                                Campo104,
+                                Campo105
+                                )
+                                values
+                                (
+                                ""0100"",
+                                ""9999941616073663"",
+                                ""302000"",
+                                1m,
+                                ""0508152549"",
+                                ""212868"",
+                                ""152549"",
+                                ""0508"",
+                                ""0508"",
+                                ""6011"",
+                                ""320"",
+                                ""051"",
+                                ""02"",
+                                ""491381"",
+                                ""9999941616073663D18022011583036900000"",
+                                ""412815212868"",
+                                ""2906    "",
+                                ""Shell El Rodeo "",
+                                ""Shell El Rodeo1GUATEMALA    GT"",
+                                ""320"",
+                                ""00001613000000000001"",
+                                -1,
+                                1
+                                )";
+            this.Process(command);
+        }
+
+        #endregion insert
+
         #region take ownership
 
         [TestMethod]
@@ -391,12 +453,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void CreateStream()
         {
             string eql = "cross " +
-                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "JOIN SourceParaPruebas as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                   "WITH SourceParaPruebas as t2 WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                   "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                   "SELECT (string)t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }}";
             this.Process(command);
@@ -406,12 +468,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void CreateStreamWithStatusOn()
         {
             string eql = "cross " +
-                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                   "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                   "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                   "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }} with status = on";
             this.Process(command);
@@ -421,12 +483,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void CreateStreamWithStatusOff()
         {
             string eql = "cross " +
-                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                   "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                   "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                   "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"create stream stream123 {{ {eql} }} with status = off";
             this.Process(command);
@@ -688,12 +750,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void AlterStreamWithQueryStatusOn()
         {
             string eql = "cross " +
-                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                   "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                   "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                   "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream stream123 with query = {{ {eql} }}, status = on";
             this.Process(command);
@@ -703,12 +765,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void AlterStreamWithQueryStatusOff()
         {
             string eql = "cross " +
-                                   "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                   "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                   "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                   "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                   "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                   "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                    "TIMEOUT '00:00:02' " +
                                    //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                   "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                   "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream stream123 with query = {{ {eql} }}, status = off";
             this.Process(command);
@@ -818,12 +880,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void AlterStreamQueryAndName()
         {
             string eql = "cross " +
-                                      "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                      "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                      "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                      "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                      "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                      "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                       "TIMEOUT '00:00:02' " +
                                       //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                      "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream Stream1 with query = {{ {eql} }}, name = Stream2";
             this.Process(command);
@@ -833,12 +895,12 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void AlterStreamQuery()
         {
             string eql = "cross " +
-                                      "JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#1.#2 == \"9999941616073663_1\" " +
-                                      "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#1.#2 == \"9999941616073663_2\" " +
-                                      "ON t1.@event.Message.#1.#32 == t2.@event.Message.#1.#32 " +
+                                      "JOIN SourceParaPruebas as t1 WHERE PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                      "WITH SourceParaPruebas as t2 WHERE PrimaryAccountNumber == \"9999941616073663_2\" " +
+                                      "ON AcquiringInstitutionIdentificationCode == AcquiringInstitutionIdentificationCode " +
                                       "TIMEOUT '00:00:02' " +
                                       //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
-                                      "SELECT (string)t1.@event.Message.#1.#2 as c1, t2.@event.Message.#1.#2 as c2, 1 as numeroXXX into SourceXYZ ";
+                                      "SELECT (string)PrimaryAccountNumber as c1, PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
 
             string command = $"alter stream Schema1.Stream1 with query = {{ {eql} }}";
             this.Process(command);

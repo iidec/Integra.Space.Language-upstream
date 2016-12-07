@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Language", "Language", "{7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}"
 EndProject
@@ -32,6 +32,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integra.Space.Runtime", "In
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Runtime", "Runtime", "{17ACAA27-2BAE-456D-9BC0-3959A38547EA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Integra.Space.Compiler.CodeGeneration", "Integra.Space.Compiler.CodeGeneration\Integra.Space.Compiler.CodeGeneration.csproj", "{1D6451DA-513D-4E88-BCB2-91EC86A52725}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,6 +60,10 @@ Global
 		{87560B2C-3273-4F36-88A2-5FA49C2B6195}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87560B2C-3273-4F36-88A2-5FA49C2B6195}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87560B2C-3273-4F36-88A2-5FA49C2B6195}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1D6451DA-513D-4E88-BCB2-91EC86A52725}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1D6451DA-513D-4E88-BCB2-91EC86A52725}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1D6451DA-513D-4E88-BCB2-91EC86A52725}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1D6451DA-513D-4E88-BCB2-91EC86A52725}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -67,6 +73,7 @@ Global
 		{50D251F6-E471-4477-B6B9-D7811A705E26} = {7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}
 		{72AE5CF6-F8AF-49E7-8230-AEF0B5878BF4} = {7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}
 		{87560B2C-3273-4F36-88A2-5FA49C2B6195} = {17ACAA27-2BAE-456D-9BC0-3959A38547EA}
+		{1D6451DA-513D-4E88-BCB2-91EC86A52725} = {7D6B53D8-0F12-41C6-BE2A-BDC5655BA436}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45

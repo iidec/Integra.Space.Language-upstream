@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="IQueryInformation.cs" company="Integra.Space.Language">
-//     Copyright (c) Integra.Space.Language. All rights reserved.
+// <copyright file="IQueryInformation.cs" company="Integra.Space.Runtime">
+//     Copyright (c) Integra.Space.Runtime. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space

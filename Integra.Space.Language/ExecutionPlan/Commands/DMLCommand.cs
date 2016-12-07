@@ -51,6 +51,18 @@ namespace Integra.Space.Language
             System.Diagnostics.Contracts.Contract.Assert(commandObject != null);
             this.DatabaseName = commandObject.DatabaseName;
             this.SchemaName = commandObject.SchemaName;
+            this.MainCommandObject = commandObject;
+
+            if (!string.IsNullOrWhiteSpace(this.SchemaName))
+            {
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, commandObject.DatabaseName, null, commandObject.SchemaName, PermissionsEnum.None, false));
+            }
+
+            if (!string.IsNullOrWhiteSpace(this.DatabaseName))
+            {
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, commandObject.DatabaseName, PermissionsEnum.Connect, false));
+            }
+
             this.CommandObjects.Add(commandObject);
         }
 
@@ -63,5 +75,10 @@ namespace Integra.Space.Language
         /// Gets the schema name for the context.
         /// </summary>
         public string SchemaName { get; private set; }
+
+        /// <summary>
+        /// Gets the main command object.
+        /// </summary>
+        public CommandObject MainCommandObject { get; private set; }
     }
 }

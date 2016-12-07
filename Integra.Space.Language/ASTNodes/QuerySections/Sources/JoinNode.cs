@@ -6,8 +6,8 @@
 namespace Integra.Space.Language.ASTNodes.QuerySections
 {
     using System.Collections.Generic;
+    using System.Linq;
     using Integra.Space.Language.ASTNodes.Base;
-
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
@@ -148,7 +148,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             sourcesNewScope.Children.Add(refCountRight);
 
             this.result.Children.Add(sourcesNewScope);
-            onAux.NodeType = PlanNodeTypeEnum.On;
+            onAux.NodeType = PlanNodeTypeEnum.On;            
             this.result.Children.Add(onAux);
             this.result.Children.Add(timeoutAux);
             
@@ -201,12 +201,15 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
             PlanNode getParam = new PlanNode();
             getParam.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            getParam.Properties.Add("SourceName", child.FindNode(PlanNodeTypeEnum.Identifier).Single().Properties["Value"]);
             getParam.Properties.Add("ParameterPosition", 0);
 
             PlanNode getProperty = new PlanNode();
             getProperty.NodeType = PlanNodeTypeEnum.Property;
             getProperty.Properties.Add("Property", "Count");
+            getProperty.Properties.Add("InternalUse", true);
             getProperty.Properties.Add("FromInterface", "ICollection`1");
+            getProperty.Properties.Add("DataType", typeof(int).ToString());
             getProperty.Children = new List<PlanNode>();
             getProperty.Children.Add(getParam);
 

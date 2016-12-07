@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language.ASTNodes.MetadataQuery
 {
-    using System;
     using System.Collections.Generic;
     using System.Configuration;
     using System.Linq;
@@ -14,7 +13,6 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
     /// User query node.

@@ -9,12 +9,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
     using System.Collections.Generic;
     using System.Configuration;
     using System.Linq;
+    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
     /// User query node.
@@ -184,7 +184,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             CommandObject source = null;
             if (intoAux != null)
             {
-                source = new CommandObject(Common.SystemObjectEnum.Source, intoAux.Item1, intoAux.Item2, intoAux.Item3, Common.PermissionsEnum.Write, false);
+                source = new CommandObject(SystemObjectEnum.Source, intoAux.Item1, intoAux.Item2, intoAux.Item3, PermissionsEnum.Write, false);
             }
 
             this.EndEvaluate(thread);
@@ -277,7 +277,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         /// <returns>True or false.</returns>
         private bool CheckProjectionIfAllAreValues(PlanNode projection)
         {
-            return projection.Children.All(x => PlanNodeTypeEnum.Event.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Constant.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Identifier.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.GroupKey.Equals(x.Children[1].NodeType));
+            return projection.Children.All(x => PlanNodeTypeEnum.Property.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Constant.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Identifier.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.GroupKey.Equals(x.Children[1].NodeType));
         }
 
         /// <summary>

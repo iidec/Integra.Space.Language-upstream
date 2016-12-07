@@ -9,12 +9,11 @@ namespace Integra.Space.Language.Grammars
     using System.Linq;
     using ASTNodes;
     using ASTNodes.Cast;
+    using ASTNodes.Commands;
     using ASTNodes.Constants;
     using ASTNodes.Identifier;
     using ASTNodes.Lists;
     using ASTNodes.Objects;
-    using ASTNodes.Objects.Event;
-    using ASTNodes.Objects.Object;
     using ASTNodes.Operations;
     using ASTNodes.QuerySections;
     using ASTNodes.Values.Functions;
@@ -45,6 +44,11 @@ namespace Integra.Space.Language.Grammars
         /// <summary>
         /// Other values: string, boolean, null
         /// </summary>
+        private NonTerminal constantValues;
+
+        /// <summary>
+        /// Other values: string, boolean, null
+        /// </summary>
         private NonTerminal otherValues;
 
         /// <summary>
@@ -61,13 +65,24 @@ namespace Integra.Space.Language.Grammars
         /// Projection values
         /// </summary>
         private NonTerminal projectionValue;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionGrammar"/> class
         /// </summary>
         public ExpressionGrammar() : base(false)
         {
             this.Grammar();
+        }
+
+        /// <summary>
+        /// Gets the nonterminal for all constant values allowed in space
+        /// </summary>
+        public NonTerminal ConstantValues
+        {
+            get
+            {
+                return this.constantValues;
+            }
         }
 
         /// <summary>
@@ -91,7 +106,7 @@ namespace Integra.Space.Language.Grammars
                 return this.projectionValue;
             }
         }
-        
+
         /// <summary>
         /// Gets the nonterminal for expression conditions
         /// </summary>
@@ -143,7 +158,6 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalBetween = ToTerm("between", "between");
 
             /* EVENTOS */
-            KeyTerm terminalEvent = ToTerm("event", "event");
             KeyTerm terminalMessage = ToTerm("Message", "Message");
             KeyTerm terminalSystemTimestamp = ToTerm("SystemTimestamp", "SystemTimestamp");
             KeyTerm terminalSourceTimestamp = ToTerm("SourceTimestamp", "SourceTimestamp");
@@ -212,13 +226,9 @@ namespace Integra.Space.Language.Grammars
             /* SIMBOLOS */
             KeyTerm terminalParentesisIz = ToTerm("(", "leftParenthesis");
             KeyTerm terminalParentesisDer = this.ToTerm(")", "rightParenthesis");
-            KeyTerm terminalCorcheteIz = ToTerm("[", "leftBracket");
-            KeyTerm terminalCorcheteDer = ToTerm("]", "rightBracket");
             KeyTerm terminalPunto = ToTerm(".", "dot");
-            KeyTerm terminalNumeral = ToTerm("#", "sharp");
             KeyTerm terminalComillaSimple = ToTerm("'", "singleQuote");
             KeyTerm terminalComa = ToTerm(",", "coma");
-            KeyTerm terminalArroba = ToTerm("@", "arroba");
 
             /* COMENTARIOS */
             CommentTerminal comentarioLinea = new CommentTerminal("line_coment", "//", "\n", "\r\n");
@@ -227,7 +237,8 @@ namespace Integra.Space.Language.Grammars
             NonGrammarTerminals.Add(comentarioBloque);
 
             /* CONSTANTES E IDENTIFICADORES */
-            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
+            NumberLiteral terminalNumero = TerminalFactory.CreateCSharpNumber("number");
+            terminalNumero.Options = NumberOptions.AllowSign | NumberOptions.AllowLetterAfter;
             terminalNumero.AstConfig.NodeType = null;
             terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
             Terminal terminalCadena = TerminalFactory.CreateCSharpString("string");
@@ -246,22 +257,21 @@ namespace Integra.Space.Language.Grammars
             terminalNull.AstConfig.NodeType = null;
             terminalNull.AstConfig.DefaultNodeCreator = () => new NullValueNode();
 
-            RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
-            terminalId.Name = "identifier";
+            IdentifierTerminal terminalId = new IdentifierTerminal("identifier");
             terminalId.AstConfig.NodeType = null;
             terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierASTNode();
 
             /* PRECEDENCIA Y ASOCIATIVIDAD */
             this.RegisterBracePair("(", ")");
             this.RegisterBracePair("[", "]");
-            this.RegisterOperators(40, Associativity.Right, terminalParentesisIz, terminalParentesisDer, terminalCorcheteIz, terminalCorcheteDer);
+            this.RegisterOperators(40, Associativity.Right, terminalParentesisIz, terminalParentesisDer);
             this.RegisterOperators(35, Associativity.Right, terminalMas, terminalMenos);
             this.RegisterOperators(30, Associativity.Right, terminalIgualIgual, terminalNoIgual, terminalMayorIgual, terminalMayorQue, terminalMenorIgual, terminalMenorQue, terminalLike);
             this.RegisterOperators(20, Associativity.Right, terminalAnd);
             this.RegisterOperators(10, Associativity.Right, terminalOr);
             this.RegisterOperators(5, Associativity.Right, terminalNot);
-            this.MarkPunctuation(terminalParentesisIz, terminalParentesisDer, terminalCorcheteIz, terminalCorcheteDer, terminalPunto, terminalComa);
-            
+            this.MarkPunctuation(terminalParentesisIz, terminalParentesisDer, terminalPunto, terminalComa);
+
             /* NO TERMINALES */
             NonTerminal nt_COMPARATIVE_EXPRESSION = new NonTerminal("COMPARATIVE_EXPRESSION", typeof(ComparativeExpressionNode));
             nt_COMPARATIVE_EXPRESSION.AstConfig.NodeType = null;
@@ -287,9 +297,16 @@ namespace Integra.Space.Language.Grammars
             this.otherValues = new NonTerminal("OTHER_VALUES", typeof(PassASTNode));
             this.otherValues.AstConfig.NodeType = null;
             this.otherValues.AstConfig.DefaultNodeCreator = () => new PassASTNode();
+            this.constantValues = new NonTerminal("CONSTANT_VALUES", typeof(PassASTNode));
+            this.constantValues.AstConfig.NodeType = null;
+            this.constantValues.AstConfig.DefaultNodeCreator = () => new PassASTNode();
             NonTerminal nt_DATETIME_TIMESPAN_VALUES = new NonTerminal("DATETIME_TIMESPAN_VALUES", typeof(PassASTNode));
             nt_DATETIME_TIMESPAN_VALUES.AstConfig.NodeType = null;
             nt_DATETIME_TIMESPAN_VALUES.AstConfig.DefaultNodeCreator = () => new PassASTNode();
+
+            NonTerminal nt_ID_LIST = new NonTerminal("ID_LIST", typeof(ListASTNode<IdentifierASTNode, PlanNode>));
+            nt_ID_LIST.AstConfig.NodeType = null;
+            nt_ID_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<IdentifierASTNode, PlanNode>();
 
             NonTerminal nt_EXPLICIT_CAST = new NonTerminal("EXPLICIT_CAST", typeof(ExplicitCast));
             nt_EXPLICIT_CAST.AstConfig.NodeType = null;
@@ -307,30 +324,18 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_DATE_FUNCTIONS = new NonTerminal("DATE_FUNCTIONS", typeof(DateFunctionNode));
             nt_DATE_FUNCTIONS.AstConfig.NodeType = null;
             nt_DATE_FUNCTIONS.AstConfig.DefaultNodeCreator = () => new DateFunctionNode();
-            NonTerminal nt_EVENT = new NonTerminal("EVENT", typeof(EventNode));
-            nt_EVENT.AstConfig.NodeType = null;
-            nt_EVENT.AstConfig.DefaultNodeCreator = () => new EventNode();
             NonTerminal nt_GROUP_KEY = new NonTerminal("GROUP_KEY", typeof(GroupKeyNode));
             nt_GROUP_KEY.AstConfig.NodeType = null;
             nt_GROUP_KEY.AstConfig.DefaultNodeCreator = () => new GroupKeyNode();
             NonTerminal nt_GROUP_KEY_VALUE = new NonTerminal("GROUP_KEY_VALUE", typeof(GroupKeyValueNode));
             nt_GROUP_KEY_VALUE.AstConfig.NodeType = null;
             nt_GROUP_KEY_VALUE.AstConfig.DefaultNodeCreator = () => new GroupKeyValueNode();
-            NonTerminal nt_EVENT_PROPERTIES = new NonTerminal("EVENT_PROPERTY_VALUE", typeof(EventPropertiesNode));
-            nt_EVENT_PROPERTIES.AstConfig.NodeType = null;
-            nt_EVENT_PROPERTIES.AstConfig.DefaultNodeCreator = () => new EventPropertiesNode();
-            NonTerminal nt_OBJECT_ID_OR_NUMBER = new NonTerminal("OBJECT_ID_OR_NUMBER", typeof(ObjectIdOrNumberNode));
-            nt_OBJECT_ID_OR_NUMBER.AstConfig.NodeType = null;
-            nt_OBJECT_ID_OR_NUMBER.AstConfig.DefaultNodeCreator = () => new ObjectIdOrNumberNode();
-            NonTerminal nt_OBJECT = new NonTerminal("OBJECT", typeof(ObjectNode));
-            nt_OBJECT.AstConfig.NodeType = null;
-            nt_OBJECT.AstConfig.DefaultNodeCreator = () => new ObjectNode();
-            NonTerminal nt_OBJECT_VALUE = new NonTerminal("OBJECT_VALUE", typeof(ObjectValueNode));
-            nt_OBJECT_VALUE.AstConfig.NodeType = null;
-            nt_OBJECT_VALUE.AstConfig.DefaultNodeCreator = () => new ObjectValueNode();
             NonTerminal nt_UNARY_ARITHMETIC_EXPRESSION = new NonTerminal("UNARY_ARITHMETIC_EXPRESSION", typeof(UnaryArithmeticExpressionNode));
             nt_UNARY_ARITHMETIC_EXPRESSION.AstConfig.NodeType = null;
             nt_UNARY_ARITHMETIC_EXPRESSION.AstConfig.DefaultNodeCreator = () => new UnaryArithmeticExpressionNode();
+            NonTerminal nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION = new NonTerminal("CONSTANT_UNARY_ARITHMETIC_EXPRESSION", typeof(UnaryArithmeticExpressionNode));
+            nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION.AstConfig.NodeType = null;
+            nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION.AstConfig.DefaultNodeCreator = () => new UnaryArithmeticExpressionNode();
             NonTerminal nt_ARITHMETIC_EXPRESSION = new NonTerminal("ARITHMETIC_EXPRESSION", typeof(ArithmeticExpressionNode));
             nt_ARITHMETIC_EXPRESSION.AstConfig.NodeType = null;
             nt_ARITHMETIC_EXPRESSION.AstConfig.DefaultNodeCreator = () => new ArithmeticExpressionNode();
@@ -387,10 +392,13 @@ namespace Integra.Space.Language.Grammars
                                             | terminalParentesisIz + nt_ARITHMETIC_EXPRESSION + terminalParentesisDer;
             /* **************************** */
             /* OPERACION ARITMETICA UNARIA */
-            nt_UNARY_ARITHMETIC_EXPRESSION.Rule = terminalMenos + this.values
-                                                    | terminalMas + this.values
+            nt_UNARY_ARITHMETIC_EXPRESSION.Rule = terminalMenos + this.nonConstantValues
+                                                    | terminalMas + this.nonConstantValues
                                                     | this.values
                                                     | terminalParentesisIz + nt_UNARY_ARITHMETIC_EXPRESSION + terminalParentesisDer;
+
+            nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION.Rule = terminalMenos + this.numericValues
+                                                            | terminalMas + this.numericValues;
             /* **************************** */
 
             /* PROJECTION VALUES */
@@ -402,8 +410,8 @@ namespace Integra.Space.Language.Grammars
             nt_GROUP_KEY.Rule = nt_GROUP_KEY + terminalPunto + terminalId
                                 | terminalKey;
 
-            nt_GROUP_KEY_VALUE.Rule = nt_GROUP_KEY
-                                        | terminalId;
+            nt_GROUP_KEY_VALUE.Rule = nt_GROUP_KEY;
+            /*| terminalId;*/
             /* **************************** */
             /* VALUES */
             this.values.Rule = this.numericValues
@@ -420,10 +428,18 @@ namespace Integra.Space.Language.Grammars
             nt_EXPLICIT_CAST_FOR_ON_CONDITION.Rule = terminalParentesisIz + terminalType + terminalParentesisDer + this.nonConstantValues;
             /* **************************** */
             /* NO CONSTANTES */
-            this.nonConstantValues.Rule = nt_OBJECT_VALUE
-                                            | nt_EVENT_PROPERTIES;
+            this.nonConstantValues.Rule = nt_ID_LIST;
+
+            nt_ID_LIST.Rule = this.MakePlusRule(nt_ID_LIST, terminalPunto, terminalId);
             /* **************************** */
-            /* CONSTANTES */            
+            /* CONSTANTES */
+            this.constantValues.Rule = terminalNumero
+                                        | terminalBool
+                                        | terminalNull
+                                        | terminalCadena
+                                        | terminalDateTimeValue
+                                        | nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION;
+
             this.numericValues.Rule = terminalNumero
                                         | nt_DATE_FUNCTIONS
                                         | nt_MATH_FUNCTIONS;
@@ -433,7 +449,7 @@ namespace Integra.Space.Language.Grammars
                                 | terminalCadena;
 
             nt_DATETIME_TIMESPAN_VALUES.Rule = this.nonConstantValues /* verificar si se debe sustituir por nt_EXPLICIT_CAST */
-                                            | terminalDateTimeValue;
+                                                | terminalDateTimeValue;
             /* **************************** */
             /* FUNCIONES DE FECHAS */
             nt_DATE_FUNCTIONS.Rule = terminalYear + terminalParentesisIz + nt_DATETIME_TIMESPAN_VALUES + terminalParentesisDer
@@ -460,30 +476,7 @@ namespace Integra.Space.Language.Grammars
             nt_MATH_FUNCTIONS.Rule = terminalAbs + terminalParentesisIz + nt_ARITHMETIC_EXPRESSION + terminalParentesisDer;
             /* **************************** */
             /* FUNCIONES FUNCIONES DEL OBJETO */
-            nt_ISNULL_FUNCTION.Rule = terminalIsnull + terminalParentesisIz + this.values  + terminalComa + this.values + terminalParentesisDer;
-            /* **************************** */
-            /* VALORES DE LOS OBJETOS */
-            nt_OBJECT_VALUE.Rule = nt_OBJECT;
-            /* **************************** */
-            /* OBJETOS */
-            nt_OBJECT.Rule = nt_OBJECT + terminalPunto + nt_OBJECT_ID_OR_NUMBER
-                                | nt_EVENT + terminalPunto + terminalMessage + terminalPunto + nt_OBJECT_ID_OR_NUMBER + terminalPunto + nt_OBJECT_ID_OR_NUMBER;
-            /* **************************** */
-            /* IDENTIFICADORES DE PARTES Y CAMPOS DE OBJETOS */
-            nt_OBJECT_ID_OR_NUMBER.Rule = terminalNumeral + terminalNumero
-                                        | terminalId
-                                        | terminalCorcheteIz + terminalCadena + terminalCorcheteDer;
-            /* **************************** */
-            /* VALORES DEL EVENTO */
-            nt_EVENT_PROPERTIES.Rule = nt_EVENT_PROPERTIES + terminalPunto + terminalId
-                                        | nt_EVENT + terminalPunto + terminalAdapter
-                                        | nt_EVENT + terminalPunto + terminalAgent
-                                        | nt_EVENT + terminalPunto + terminalSystemTimestamp
-                                        | nt_EVENT + terminalPunto + terminalSourceTimestamp;
-            /* **************************** */
-            /* EVENTO */
-            nt_EVENT.Rule = terminalId + terminalPunto + terminalArroba + terminalEvent
-                            | terminalArroba + terminalEvent;
+            nt_ISNULL_FUNCTION.Rule = terminalIsnull + terminalParentesisIz + this.values + terminalComa + this.values + terminalParentesisDer;
             /* **************************** */
 
             this.Root = this.logicExpression;
