@@ -43,5 +43,17 @@ namespace Integra.Space.Compiler
             AssemblyBuilder assemblyBuilder = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.RunAndSave);
             return assemblyBuilder;
         }
+
+        /// <summary>
+        /// Creates the assembly builder.
+        /// </summary>
+        /// <param name="domain">App domain for the new assembly.</param>
+        /// <returns>The assembly builder created.</returns>
+        public AssemblyBuilder CreateAssemblyBuilder(AppDomain domain)
+        {
+            AssemblyName an = new AssemblyName(this.assemblySignature);
+            AssemblyBuilder assemblyBuilder = domain.DefineDynamicAssembly(an, AssemblyBuilderAccess.RunAndSave);
+            return assemblyBuilder;
+        }
     }
 }

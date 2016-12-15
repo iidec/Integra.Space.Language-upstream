@@ -1,6 +1,6 @@
 ﻿namespace Integra.Space.LanguageUnitTests.TestObject
 {
-    public class TestObject3 : InputBase
+    public class TestObject3 : EventBase
     {
         public TestObject3(string messageType = "0100", string primaryAccountNumber = "9999941616073663_1", string processingCode = "A02000", decimal transactionAmount = 10m, string dateTimeTransmission = "0508152549", string systemTraceAuditNumber = "212868", string localTransactionTime = "152549"
             , string localTransactionDate = "0508", string settlementDate = "0508", string merchantType = "6011", string acquiringInstitutionCountryCode = "320", string pointOfServiceEntryMode = "051", string pointOfServiceConditionCode = "02", string acquiringInstitutionIdentificationCode = "491381", string track2Data = "9999941616073663D18022011583036900000"

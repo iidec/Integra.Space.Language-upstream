@@ -43,17 +43,36 @@ namespace Integra.Space.Compiler
         /// <inheritdoc />
         protected override void CreateConstructor(TypeBuilder typeBuilder)
         {
+            // se obtiene el constructor de la clase padre.
+            ConstructorInfo baseConstructor = null;
+
+            if (this.ParentType.GetConstructors().Count() == 1)
+            {
+                // si solo tiene un constructor, se obtiene ese.
+                baseConstructor = this.ParentType.GetConstructors().First();
+            }
+            else
+            {
+                // si tiene mas de un constructor se obtiene el constructor que tenga como parametros a cada una de las propiedades de la clase padre.
+                baseConstructor = this.ParentType.GetConstructor(this.ParentType.GetProperties().Select(x => x.PropertyType).ToArray());
+
+                // si no se encontró un constructor que cumpla la condicion anterior de parametros entonces se toma el constructor sin parámetros de clase padre.
+                if (baseConstructor == null)
+                {
+                    baseConstructor = this.ParentType.GetConstructor(new Type[] { });
+                }
+            }            
+
             Type[] fieldTypes = this.Fields.Select(x => x.FieldType).ToArray();
-            Type[] allParameterTypes = this.ParentType.GetProperties().Select(x => x.PropertyType).Concat(fieldTypes).ToArray();
-            ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, allParameterTypes);
+            Type[] parentConstructorParameterTypes = baseConstructor.GetParameters().Select(x => x.ParameterType).ToArray(); // this.ParentType.GetProperties().Select(x => x.PropertyType).Concat(fieldTypes).ToArray();
+            ConstructorBuilder constructor = typeBuilder.DefineConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName, CallingConventions.Standard, fieldTypes.Concat(parentConstructorParameterTypes).ToArray());
             
             int fieldCount = fieldTypes.Count();
             for (int i = 1; i <= fieldCount; i++)
             {
                 constructor.DefineParameter(i, ParameterAttributes.Optional | ParameterAttributes.HasDefault, null);
             }
-
-            ConstructorInfo baseConstructor = this.ParentType.GetConstructor(this.ParentType.GetProperties().Select(x => x.PropertyType).ToArray());
+            
             ILGenerator ctorIL = constructor.GetILGenerator();
             ctorIL.Emit(OpCodes.Ldarg_0);                // push "this"
             ctorIL.Emit(OpCodes.Call, baseConstructor);

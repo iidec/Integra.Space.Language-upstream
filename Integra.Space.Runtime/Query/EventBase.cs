@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="InputBase.cs" company="Integra.Space.Runtime">
+// <copyright file="EventBase.cs" company="Integra.Space.Runtime">
 //     Copyright (c) Integra.Space.Runtime. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -8,7 +8,7 @@ namespace Integra.Space
     /// <summary>
     /// Event base.
     /// </summary>
-    public abstract class InputBase
+    public abstract class EventBase
     {
         /// <summary>
         /// Object to lock the change of the event state.
@@ -26,9 +26,9 @@ namespace Integra.Space
         private System.DateTime sourceTimestamp;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InputBase"/> class.
+        /// Initializes a new instance of the <see cref="EventBase"/> class.
         /// </summary>
-        public InputBase()
+        public EventBase()
         {
             this.systemTimestamp = System.DateTime.Now;
             this.State = ExtractedEventDataStateEnum.Created;

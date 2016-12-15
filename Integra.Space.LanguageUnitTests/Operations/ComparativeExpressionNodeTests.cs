@@ -868,7 +868,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
                     new Subscription(50, 200)
                 });
         }
-        public ITestableObservable<T> NewMethod<T>(IEnumerable<Tuple<long, object[]>> messages, long onCompletedTime, DefaultSchedulerFactory dsf) where T : InputBase
+        public ITestableObservable<T> NewMethod<T>(IEnumerable<Tuple<long, object[]>> messages, long onCompletedTime, DefaultSchedulerFactory dsf) where T : EventBase
         {
             List<Recorded<Notification<T>>> listOfNotifications = new List<Recorded<Notification<T>>>();
             foreach (Tuple<long, object[]> message in messages)

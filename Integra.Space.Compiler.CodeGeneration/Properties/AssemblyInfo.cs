@@ -38,4 +38,5 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Integra.Space.Language.Analysis")]
 [assembly: InternalsVisibleTo("Integra.Space")]
 [assembly: InternalsVisibleTo("Integra.Space.UnitTests")]
+[assembly: InternalsVisibleTo("ET_Test")]
 
