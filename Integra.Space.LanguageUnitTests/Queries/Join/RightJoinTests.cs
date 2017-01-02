@@ -1203,8 +1203,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
         {
             string instruction = "t1.PrimaryAccountNumber";
             string eql = "Right " +
-                                "JOIN SourceParaPruebas3 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
-                                $"WITH SourceParaPruebas3 as t2 WHERE t2.PrimaryAccountNumber == {instruction} " +
+                                "JOIN SourceParaPruebas1 as t1 WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
+                                $"WITH SourceParaPruebas1 as t2 WHERE t2.PrimaryAccountNumber == {instruction} " +
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1 into SourceXYZ"; // , t2.PrimaryAccountNumber as c2 
@@ -1221,7 +1221,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 171, instruction, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t1")), e.InnerException.InnerException.Message);
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 153, instruction, Language.Resources.COMPILATION_ERRORS.CE77("t1")), e.InnerException.InnerException.Message);
                 return;
             }
 

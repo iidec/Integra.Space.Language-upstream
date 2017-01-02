@@ -32,7 +32,7 @@ namespace Integra.Space.Compiler
         /// <returns>The module builder created.</returns>
         public ModuleBuilder CreateModuleBuilder()
         {
-            ModuleBuilder moduleBuilder = this.asmBuilder.DefineDynamicModule("SpaceMainModule", this.asmBuilder.GetName().Name + SpaceAssemblyBuilder.FILEEXTENSION);
+            ModuleBuilder moduleBuilder = this.asmBuilder.DefineDynamicModule("SpaceMainModule", this.asmBuilder.GetName().Name + "." + SpaceAssemblyBuilder.FILEEXTENSION);
             return moduleBuilder;
         }
     }

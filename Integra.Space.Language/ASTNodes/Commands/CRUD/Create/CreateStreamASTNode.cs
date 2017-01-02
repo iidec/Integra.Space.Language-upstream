@@ -71,7 +71,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.EndEvaluate(thread);
 
             QueryParser parser = new QueryParser(this.queryString);
-            Tuple<PlanNode, CommandObject> query = parser.Evaluate();
+            Tuple<PlanNode, CommandObject> query = parser.Evaluate(new BindingParameter("Database", databaseName));
             
             this.CheckAllowedOptions(optionsAux);
 

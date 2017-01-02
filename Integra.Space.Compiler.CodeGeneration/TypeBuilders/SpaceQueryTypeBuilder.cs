@@ -99,7 +99,7 @@ namespace Integra.Space.Compiler
         /// <returns>The assembly path.</returns>
         private string SaveAssembly(AssemblyBuilder asmBuilder)
         {
-            string assemblyFileName = asmBuilder.GetName().Name + SpaceAssemblyBuilder.FILEEXTENSION;
+            string assemblyFileName = asmBuilder.GetName().Name + "." + SpaceAssemblyBuilder.FILEEXTENSION;
             asmBuilder.Save(assemblyFileName); // , PortableExecutableKinds.PE32Plus, ImageFileMachine.IA64);
 
             string assemblyDirectoryPath = System.IO.Path.Combine(Environment.CurrentDirectory, "TempQueryAssemblies");

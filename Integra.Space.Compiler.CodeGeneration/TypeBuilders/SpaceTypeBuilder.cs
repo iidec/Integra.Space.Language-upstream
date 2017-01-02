@@ -122,7 +122,7 @@ namespace Integra.Space.Compiler
         /// Creates the new type based on the specified parameters.
         /// </summary>
         /// <returns>The new type created.</returns>
-        public abstract System.Type CreateNewType();
+        public abstract Type CreateNewType();
 
         /// <summary>
         /// Creates the type builder.

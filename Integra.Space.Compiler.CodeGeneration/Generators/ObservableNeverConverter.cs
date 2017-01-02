@@ -28,7 +28,7 @@ namespace Integra.Space.Compiler
         }
 
         /// <inheritdoc />
-        protected override Expression TranformNode(CodeGeneratorContext context)
+        protected override Expression TransformNode(CodeGeneratorContext context)
         {
             Type genericType = typeof(Unit);
             ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(genericType), "ObservableNever");

@@ -17,7 +17,7 @@ namespace Integra.Space.Compiler
         /// <summary>
         /// File extension of the assembly.
         /// </summary>
-        public const string FILEEXTENSION = ".dll";
+        public const string FILEEXTENSION = "dll";
 
         /// <summary>
         /// Assembly name.

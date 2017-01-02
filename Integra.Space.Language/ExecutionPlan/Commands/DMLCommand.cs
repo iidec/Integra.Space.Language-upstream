@@ -20,22 +20,19 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
         /// <param name="databaseName">Database name for the command execution.</param>
-        public DMLCommand(ActionCommandEnum action, int line, int column, string commandText, string schemaName, string databaseName) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText)
+        public DMLCommand(ActionCommandEnum action, int line, int column, string commandText, string databaseName) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), databaseName, line, column, commandText)
         {
+            /*
             if (!string.IsNullOrWhiteSpace(schemaName))
             {
                 this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Schema, databaseName, null, schemaName, PermissionsEnum.None, false));
             }
 
-            if (!string.IsNullOrWhiteSpace(databaseName))
-            {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, databaseName, PermissionsEnum.Connect, false));
-            }
+            this.SchemaName = schemaName;
+            */
 
             this.DatabaseName = databaseName;
-            this.SchemaName = schemaName;
         }
 
         /// <summary>
@@ -46,12 +43,11 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="commandText">Text of the actual node.</param>
-        public DMLCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText) : base(action, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText)
+        public DMLCommand(ActionCommandEnum action, CommandObject commandObject, int line, int column, string commandText) : base(action, commandObject, new HashSet<CommandObject>(new CommandObjectComparer()), line, column, commandText)
         {
             System.Diagnostics.Contracts.Contract.Assert(commandObject != null);
             this.DatabaseName = commandObject.DatabaseName;
             this.SchemaName = commandObject.SchemaName;
-            this.MainCommandObject = commandObject;
 
             if (!string.IsNullOrWhiteSpace(this.SchemaName))
             {
@@ -62,8 +58,6 @@ namespace Integra.Space.Language
             {
                 this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Database, commandObject.DatabaseName, PermissionsEnum.Connect, false));
             }
-
-            this.CommandObjects.Add(commandObject);
         }
 
         /// <summary>
@@ -75,10 +69,5 @@ namespace Integra.Space.Language
         /// Gets the schema name for the context.
         /// </summary>
         public string SchemaName { get; private set; }
-
-        /// <summary>
-        /// Gets the main command object.
-        /// </summary>
-        public CommandObject MainCommandObject { get; private set; }
     }
 }

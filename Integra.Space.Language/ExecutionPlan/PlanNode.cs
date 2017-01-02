@@ -21,6 +21,19 @@ namespace Integra.Space.Language
         private Dictionary<string, object> properties;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlanNode"/> class.
+        /// </summary>
+        /// <param name="line">Node line.</param>
+        /// <param name="column">Node column.</param>
+        /// <param name="text">Node text.</param>
+        public PlanNode(int line, int column, string text)
+        {
+            this.Line = line;
+            this.Column = column;
+            this.NodeText = text;
+        }
+
+        /// <summary>
         /// Gets or sets the plan node type
         /// </summary>
         public PlanNodeTypeEnum NodeType { get; set; }
@@ -67,7 +80,7 @@ namespace Integra.Space.Language
         /// <returns>The node cloned.</returns>
         public PlanNode Clone()
         {
-            PlanNode planCloned = new PlanNode();
+            PlanNode planCloned = new PlanNode(this.Line, this.Column, this.NodeText);
             planCloned.NodeType = this.NodeType;
             planCloned.Line = this.Line;
             planCloned.Column = this.Column;

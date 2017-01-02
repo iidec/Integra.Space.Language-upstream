@@ -5,7 +5,6 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System.Linq;
     using Exceptions;
     using Irony.Interpreter;
     using Irony.Parsing;
@@ -57,14 +56,20 @@ namespace Integra.Space.Language
         /// <summary>
         /// Implements the logic to parse commands.
         /// </summary>
+        /// <param name="parameters">Binding parameters.</param>
         /// <returns>Execution plan.</returns>
-        protected object EvaluateParseTree()
+        protected object EvaluateParseTree(params BindingParameter[] parameters)
         {
             try
             {
-                ParseTree parseTree = this.Parse();
-                Irony.Interpreter.ScriptApp app = new Irony.Interpreter.ScriptApp(new TLanguageRuntime());
-                return app.Evaluate(parseTree);
+                ScriptApp app = new ScriptApp(new TLanguageRuntime());
+
+                foreach (var parameter in parameters)
+                {
+                    app.Globals.Add(parameter.Name, parameter.Value);
+                }
+
+                return app.Evaluate(this.ParseTree);
             }
             catch (SyntaxException e)
             {

@@ -42,7 +42,7 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            TemporalStreamNode command = (TemporalStreamNode)this.metadataQuery.Evaluate(thread);
+            DMLCommand command = (DMLCommand)this.metadataQuery.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return command;

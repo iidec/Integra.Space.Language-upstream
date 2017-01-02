@@ -32,7 +32,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-
             this.permissionList = new List<TListItem>();
             foreach (TListItem child in this.GetChildNodes())
             {

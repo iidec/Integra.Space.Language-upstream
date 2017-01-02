@@ -24,13 +24,12 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="action">Command action.</param>
         /// <param name="executionPlan">Execution plan.</param>
-        /// <param name="source">Source where events will be written</param>
+        /// <param name="outputSource">Source where events will be written</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        /// <param name="schemaName">Schema name for the command execution.</param>
         /// <param name="databaseName">Database name for the command execution.</param>
-        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, CommandObject source, int line, int column, string nodeText, string schemaName, string databaseName) : base(action, line, column, nodeText, schemaName, databaseName)
+        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, CommandObject outputSource, int line, int column, string nodeText, string databaseName) : base(action, line, column, nodeText, databaseName)
         {
             Contract.Assert(executionPlan != null);
             this.ExecutionPlan = executionPlan;
@@ -38,7 +37,7 @@ namespace Integra.Space.Language
             List<PlanNode> fromNodes = NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
-                string schemaNameOfSource = schemaName;
+                string schemaNameOfSource = null;
                 string databaseNameOfSource = databaseName;
                 if (fromNode.Properties.ContainsKey("SchemaName") && fromNode.Properties["SchemaName"] != null)
                 {
@@ -57,10 +56,10 @@ namespace Integra.Space.Language
             }
 
             // agrego la fuente si fue especificada.
-            if (source != null)
+            if (outputSource != null)
             {
-                this.CommandObjects.Add(source);
-                this.Source = source;
+                this.CommandObjects.Add(outputSource);
+                this.OutputSource = outputSource;
             }
         }
 
@@ -83,7 +82,7 @@ namespace Integra.Space.Language
         /// <summary>
         /// Gets the source where events will be written
         /// </summary>
-        public CommandObject Source { get; private set; }
+        public CommandObject OutputSource { get; private set; }
 
         /// <summary>
         /// Stream referenced sources class.

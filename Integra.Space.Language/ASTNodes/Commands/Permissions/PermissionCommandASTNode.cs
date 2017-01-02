@@ -75,6 +75,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);
             List<PermissionNode> permissionListAux = (List<PermissionNode>)this.permissionList.Evaluate(thread);
             IEnumerable<CommandObject> principalsAux = (IEnumerable<CommandObject>)this.principals.Evaluate(thread);
+            
             bool permissionOptionAux = false;
 
             if (ChildrenNodes.Count == 5)
@@ -104,7 +105,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string nodeText = this.GetNodeText();
             foreach (PermissionNode permission in permissionListAux)
             {
-                listOfPermissionCommands.Add(new PermissionsCommandNode(actionAux, principalsHS, permission, permissionOptionAux, this.Location.Line, this.Location.Column, nodeText));
+                listOfPermissionCommands.Add(new PermissionsCommandNode(actionAux, principalsHS, databaseName, permission, permissionOptionAux, this.Location.Line, this.Location.Column, nodeText));
             }
 
             return listOfPermissionCommands.ToArray();

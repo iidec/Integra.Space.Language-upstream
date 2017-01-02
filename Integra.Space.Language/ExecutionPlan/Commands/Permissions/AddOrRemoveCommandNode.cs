@@ -31,12 +31,13 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="action">Space command action.</param>
         /// <param name="commandObjects">Command objects</param>
+        /// <param name="databaseName">Database name where the command will be executed.</param>
         /// <param name="roles">Roles objects to assign the permission.</param>
         /// <param name="users">Database users.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public AddOrRemoveCommandNode(ActionCommandEnum action, HashSet<CommandObject> commandObjects, HashSet<CommandObject> roles, HashSet<CommandObject> users, int line, int column, string nodeText) : base(action, commandObjects, line, column, nodeText)
+        public AddOrRemoveCommandNode(ActionCommandEnum action, HashSet<CommandObject> commandObjects, string databaseName, HashSet<CommandObject> roles, HashSet<CommandObject> users, int line, int column, string nodeText) : base(action, commandObjects, databaseName, line, column, nodeText)
         {
             Contract.Assert(roles != null);
             Contract.Assert(users != null);

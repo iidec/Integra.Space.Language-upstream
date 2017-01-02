@@ -38,6 +38,10 @@ namespace Integra.Space.LanguageUnitTests
             {
                 return typeof(TestObject3);
             }
+            else if(source.Name.Equals("servers", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return typeof(Integra.Space.Database.Server);
+            }
             else
             {
                 throw new Exception(string.Format("Define a type for the source {0}.", source.Name));

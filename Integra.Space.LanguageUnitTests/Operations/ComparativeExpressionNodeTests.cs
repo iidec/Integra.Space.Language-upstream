@@ -66,7 +66,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod()]
         public void IsNumericTypeFunctionTestTrue()
         {
-            ComparativeExpressionNode comp = new ComparativeExpressionNode();
+            ComparativeExpressionASTNode comp = new ComparativeExpressionASTNode();
 
             decimal a = 1;
             bool result = comp.IsNumericType(a.GetType());
@@ -132,7 +132,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod()]
         public void IsNumericTypeTestFalse()
         {
-            ComparativeExpressionNode comp = new ComparativeExpressionNode();
+            ComparativeExpressionASTNode comp = new ComparativeExpressionASTNode();
 
             string a = "cadena";
             bool result = comp.IsNumericType(a.GetType());

@@ -155,10 +155,10 @@ namespace Integra.Space.Compiler
 
             foreach (IGrouping<string, PlanNode> @object in objects)
             {
-                PlanNode newScopeForSelect = new PlanNode();
+                PlanNode newScopeForSelect = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
                 newScopeForSelect.NodeType = PlanNodeTypeEnum.NewScope;
 
-                PlanNode projection = new PlanNode();
+                PlanNode projection = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
                 projection.NodeType = PlanNodeTypeEnum.Projection;
                 projection.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableExtractedEventData);
                 projection.Properties.Add("ParentType", typeof(ExtractedEventData));
@@ -166,7 +166,7 @@ namespace Integra.Space.Compiler
                 projection.Properties.Add("OverrideGetHashCodeMethod", false);
                 projection.Children = new List<PlanNode>();
 
-                PlanNode selectNode = new PlanNode();
+                PlanNode selectNode = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
                 selectNode.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
                 selectNode.Properties.Add("SourceName", @object.Key);
                 selectNode.Children = new List<PlanNode>();
@@ -213,12 +213,12 @@ namespace Integra.Space.Compiler
 
                 foreach (PlanNode column in replicas)
                 {
-                    PlanNode tupleProjection = new PlanNode();
+                    PlanNode tupleProjection = new PlanNode(column.Line, column.Column, column.NodeText);
                     tupleProjection.NodeType = PlanNodeTypeEnum.TupleProjection;
                     tupleProjection.Children = new List<PlanNode>();
                     projection.Children.Add(tupleProjection);
 
-                    PlanNode alias = new PlanNode();
+                    PlanNode alias = new PlanNode(column.Line, column.Column, column.NodeText);
                     alias.NodeType = PlanNodeTypeEnum.Identifier;
                     alias.NodeText = column.Properties["Property"].ToString();
                     alias.NodeType = PlanNodeTypeEnum.Identifier;
@@ -227,7 +227,7 @@ namespace Integra.Space.Compiler
 
                     tupleProjection.Children.Add(alias);
 
-                    PlanNode copy = new PlanNode();
+                    PlanNode copy = new PlanNode(column.Line, column.Column, column.NodeText);
                     copy.Children = column.Children;
                     copy.Column = column.Column;
                     copy.Line = column.Line;
@@ -263,7 +263,7 @@ namespace Integra.Space.Compiler
             List<PlanNode> result = new List<PlanNode>();
             foreach (PlanNode column in objectAccessors)
             {
-                PlanNode replica = new PlanNode();
+                PlanNode replica = new PlanNode(column.Line, column.Column, column.NodeText);
                 replica.Column = column.Column;
                 replica.Line = column.Line;
                 replica.NodeText = column.NodeText;

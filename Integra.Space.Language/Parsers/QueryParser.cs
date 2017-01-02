@@ -24,10 +24,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Implements the logic to parse commands.
         /// </summary>
+        /// <param name="parameters">Binding parameters.</param>
         /// <returns>Execution plan.</returns>
-        public System.Tuple<PlanNode, CommandObject> Evaluate()
+        public System.Tuple<PlanNode, CommandObject> Evaluate(params BindingParameter[] parameters)
         {
-            return (System.Tuple<PlanNode, CommandObject>)this.EvaluateParseTree();
+            return (System.Tuple<PlanNode, CommandObject>)this.EvaluateParseTree(parameters);
         }
     }
 }

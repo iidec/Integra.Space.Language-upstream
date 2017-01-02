@@ -28,9 +28,7 @@ namespace Integra.Space.Language.ASTNodes.Identifier
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.result = new PlanNode();
-            this.result.Column = treeNode.Token.Location.Column;
-            this.result.Line = treeNode.Token.Location.Line;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
             this.result.NodeText = treeNode.Token.Text;
             this.result.NodeType = PlanNodeTypeEnum.Identifier;
             this.result.Properties.Add("Value", treeNode.Token.Value);

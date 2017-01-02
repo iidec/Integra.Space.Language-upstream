@@ -73,37 +73,24 @@ namespace Integra.Space.Compiler
             PlanNode executionPlan = parser.Evaluate();*/
 
             CommandParser parser = new CommandParser(script);
-            TemporalStreamNode metadataCommand = (TemporalStreamNode)parser.Evaluate().First();
-            
-            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
-            modBuilder.CreateModuleBuilder();
-                        
-            CodeGenerator te = new CodeGenerator(context);
-            
-            return te.CompileDelegate(/*executionPlan*/ metadataCommand.ExecutionPlan);
-        }
-
-        /// <summary>
-        /// Doc goes here.
-        /// </summary>
-        /// <typeparam name="T">Entity type.</typeparam>
-        /// <param name="context">Compilation context.</param>
-        /// <param name="script">EQL query.</param>
-        /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParserForMetadata<T>(CodeGeneratorConfiguration context, string script)
-        {
-            /*MetadataQueryParser parser = new MetadataQueryParser(script);
-            PlanNode executionPlan = parser.Evaluate();*/
-
-            CommandParser parser = new CommandParser(script);
-            QueryCommandForMetadataNode metadataCommand = (QueryCommandForMetadataNode)parser.Evaluate().First();
+            SystemCommand metadataCommand = parser.Evaluate().First();
             
             SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
             modBuilder.CreateModuleBuilder();
                         
             CodeGenerator te = new CodeGenerator(context);
 
-            return te.CompileDelegate(/*executionPlan*/ metadataCommand.ExecutionPlan);
+            PlanNode executionPlan = null;
+            if(metadataCommand is TemporalStreamNode)
+            {
+                executionPlan = ((TemporalStreamNode)metadataCommand).ExecutionPlan;
+            }
+            else
+            {
+                executionPlan = ((QueryCommandForMetadataNode)metadataCommand).ExecutionPlan;
+            }
+
+            return te.CompileDelegate(executionPlan);
         }
     }
 }

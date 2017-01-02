@@ -2657,6 +2657,8 @@ namespace Integra.Space.Compiler
         /// <returns>Enumerable sum expression.</returns>
         private Expression CreateEnumerableAgregationFunctionWithArgument<I>(PlanNode actualNode, Expression incomingObservable, Expression selector)
         {
+            string functionName = actualNode.Properties["FunctionName"].ToString();
+
             try
             {
                 ParameterExpression param = Expression.Variable(selector.Type, "resultExtensionWithoutParametersObservable");
@@ -2697,9 +2699,7 @@ namespace Integra.Space.Compiler
                 {
                     incommingTypeForFunction = incomingObservable.Type.GetGenericArguments()[0];
                 }
-
-                string functionName = actualNode.Properties["FunctionName"].ToString();
-
+                
                 Type delegateType = typeof(Func<,>).MakeGenericType(incommingTypeForFunction, selector.Type);
                 MethodInfo methodSum = typeof(System.Linq.Enumerable).GetMethods().Where(m => m.Name == functionName && m.GetParameters().Length == 2 && m.GetParameters()[1].ParameterType.ToString().Equals("System.Func`2[TSource," + selector.Type.ToString() + "]")).Single().MakeGenericMethod(incommingTypeForFunction);
 
@@ -2731,7 +2731,7 @@ namespace Integra.Space.Compiler
             }
             catch (Exception e)
             {
-                throw new CompilationException(Language.Resources.SR.CompilationError(actualNode.Line, actualNode.Column, COMPILATION_ERRORS.CE14, actualNode.NodeText), e);
+                throw new CompilationException(Language.Resources.SR.CompilationError(actualNode.Line, actualNode.Column, Language.Resources.COMPILATION_ERRORS.CE14(functionName), actualNode.NodeText), e);
             }
         }
 
@@ -4506,7 +4506,7 @@ namespace Integra.Space.Compiler
             }
             else
             {
-                if (type.Equals(typeof(TimeSpan)) || type.Equals(typeof(System.Guid)))
+                if (type.Equals(typeof(TimeSpan)) || type.Equals(typeof(Guid)))
                 {
                     return Expression.Convert(exp, this.ConvertToNullable(type));
                 }

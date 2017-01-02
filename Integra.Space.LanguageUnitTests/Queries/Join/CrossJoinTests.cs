@@ -1732,8 +1732,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "WITH SourceParaPruebas1 as t2 WHERE t2.MessageType == \"0110\" " +
                                 "ON t1.PrimaryAccountNumber == t2.PrimaryAccountNumber and t1.RetrievalReferenceNumber == t2.RetrievalReferenceNumber " +
                                 "TIMEOUT '00:00:04' " +
-                                "WHERE  isnull(t2.SourceTimestamp, '01/01/2017') - isnull(t1.SourceTimestamp, '01/01/2016') > '00:00:01' " +
-                                "SELECT isnull(t2.SourceTimestamp, '01/01/2017') - isnull(t1.SourceTimestamp, '01/01/2016') as o1, " +
+                                "WHERE  isnull(t2.SourceTimestamp, '01/01/2018') - isnull(t1.SourceTimestamp, '01/01/2017') > '00:00:01' " +
+                                "SELECT isnull(t2.SourceTimestamp, '01/01/2018') - isnull(t1.SourceTimestamp, '01/01/2017') as o1, " +
                                         "1 as o2, " +
                                         "isnull(t2.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.PrimaryAccountNumber as c1, t1.RetrievalReferenceNumber as c2, isnull(t1.SourceTimestamp, '01/01/2016') as ts1, " +

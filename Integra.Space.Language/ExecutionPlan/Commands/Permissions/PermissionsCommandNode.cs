@@ -36,12 +36,13 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="action">Space command action.</param>
         /// <param name="principals">Principals for the permissions.</param>
+        /// <param name="databaseName">Database name where the command will be executed.</param>
         /// <param name="permission">Space permission.</param>
         /// <param name="permissionOption">Permission option.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public PermissionsCommandNode(ActionCommandEnum action, HashSet<CommandObject> principals, PermissionNode permission, bool permissionOption, int line, int column, string nodeText) : base(action, principals, line, column, nodeText)
+        public PermissionsCommandNode(ActionCommandEnum action, HashSet<CommandObject> principals, string databaseName, PermissionNode permission, bool permissionOption, int line, int column, string nodeText) : base(action, principals, databaseName, line, column, nodeText)
         {
             this.permission = permission;
             this.principals = new HashSet<CommandObject>(new CommandObjectComparer());

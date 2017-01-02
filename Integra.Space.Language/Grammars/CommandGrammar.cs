@@ -186,6 +186,7 @@ namespace Integra.Space.Language.Grammars
             terminalType.Add("DateTime?", typeof(DateTime?));
             terminalType.Add("TimeSpan", typeof(TimeSpan));
             terminalType.Add("TimeSpan?", typeof(TimeSpan?));
+            terminalType.Add("guid", typeof(Guid));
             terminalType.AstConfig.NodeType = null;
             terminalType.AstConfig.DefaultNodeCreator = () => new ValueASTNode<Type>();
 
@@ -196,18 +197,14 @@ namespace Integra.Space.Language.Grammars
             NonGrammarTerminals.Add(comentarioBloque);
 
             /* NON TERMINALS */
-
-            NonTerminal nt_METADATA_QUERY = new NonTerminal("METADATA_QUERY", typeof(CommandQueryForMetadataASTNode));
-            nt_METADATA_QUERY.AstConfig.NodeType = null;
-            nt_METADATA_QUERY.AstConfig.DefaultNodeCreator = () => new CommandQueryForMetadataASTNode();
-
+            
             NonTerminal nt_TEMPORAL_STREAM = new NonTerminal("TEMPORAL_STREAM", typeof(TemporalStreamCommandASTNode));
             nt_TEMPORAL_STREAM.AstConfig.NodeType = null;
             nt_TEMPORAL_STREAM.AstConfig.DefaultNodeCreator = () => new TemporalStreamCommandASTNode();
 
-            NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND", typeof(CommandNode));
+            NonTerminal nt_COMMAND_NODE = new NonTerminal("COMMAND", typeof(CommandASTNode));
             nt_COMMAND_NODE.AstConfig.NodeType = null;
-            nt_COMMAND_NODE.AstConfig.DefaultNodeCreator = () => new CommandNode();
+            nt_COMMAND_NODE.AstConfig.DefaultNodeCreator = () => new CommandASTNode();
             NonTerminal nt_COMMAND_NODE_LIST = new NonTerminal("COMMAND_LIST", typeof(CommandListASTNode));
             nt_COMMAND_NODE_LIST.AstConfig.NodeType = null;
             nt_COMMAND_NODE_LIST.AstConfig.DefaultNodeCreator = () => new CommandListASTNode();
@@ -739,13 +736,7 @@ namespace Integra.Space.Language.Grammars
             nt_INSERT_VALUE_LIST.Rule = this.MakePlusRule(nt_INSERT_VALUE_LIST, terminalComa, this.expressionGrammar.ConstantValues);
 
             /************************************************/
-
-            /* QUERY METADATA */
-
-            nt_METADATA_QUERY.Rule = new QueryGrammarForMetadata(this.Empty).QueryForMetadata; // this.CreateQueryForMetadataGrammar();
-
-            /************************************************/
-
+            
             /* TEMPORAL STREAM */
 
             nt_TEMPORAL_STREAM.Rule = new TemporalStreamGrammar(this.Empty, this.MakeStarRule).TemporalStream;
@@ -772,7 +763,6 @@ namespace Integra.Space.Language.Grammars
                                     | nt_USE
                                     | nt_TAKE_OWNERSHIP
                                     | nt_TRUNCATE_SOURCE
-                                    /*| nt_METADATA_QUERY*/
                                     | nt_TEMPORAL_STREAM
                                     | nt_INSERT;
 

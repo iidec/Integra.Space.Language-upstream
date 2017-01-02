@@ -172,26 +172,60 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="plan">Execution plan of the query.</param>
         /// <returns>List of columns of the projection of the query.</returns>
-        internal static List<Tuple<string, Type>> GetQueryProyection(this PlanNode plan)
+        internal static List<ProjectionColumn> GetQueryProyection(this PlanNode plan)
         {
             PlanNode projectionNode = plan.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.Projection }).Single(x => (PlanNodeTypeEnum)x.Properties["ProjectionType"] == PlanNodeTypeEnum.ObservableSelect && (Type)x.Properties["ParentType"] == typeof(Integra.Space.EventResult));
+            List<PlanNode> fromNodes = plan.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
 
-            List<Tuple<string, Type>> result = new List<Tuple<string, Type>>();
+            List<ProjectionColumn> result = new List<ProjectionColumn>();
 
             foreach (PlanNode tuple in projectionNode.Children)
             {
-                PlanNode identifierNode = tuple.Children.Single(x => x.NodeType == PlanNodeTypeEnum.Identifier);
-                string propertyName = identifierNode.Properties["Value"].ToString();
-                Type propertyType = (Type)identifierNode.Properties["DataType"];
+                PlanNode propertyNode = tuple.Children.Last().FindNode(PlanNodeTypeEnum.Property).FirstOrDefault();
 
-                /*PlanNode columnValue = tuple.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.Cast, PlanNodeTypeEnum.Constant }).SingleOrDefault();*/
+                // se valida si se encontraron propiedades, un ejemplo de cuando no encuentra es cuando se hace lo siguiente: select 1 as entero.
+                string propertyName = null;
+                if (propertyNode != null)
+                {
+                    propertyName = propertyNode.Properties["Property"].ToString();
+                }
+
+                // si no hay propiedades tampoco habra una fuente, por lo tanto, se valida si existe el nodo ObservableFromForLambda.
+                PlanNode source = NodesFinder.FindNode(tuple, PlanNodeTypeEnum.ObservableFromForLambda).FirstOrDefault();
+                string sourceName = null;
+                string sourceAlias = null;
+                if (source != null && source.Properties.ContainsKey("SourceName"))
+                {
+                    sourceAlias = source.Properties["SourceName"].ToString();
+                    sourceName = fromNodes.Single(x => x.Children.Single(c => c.NodeType == PlanNodeTypeEnum.Identifier).Properties["Value"].ToString() == sourceAlias).Properties["SourceName"].ToString();
+                }
+
+                PlanNode identifierNode = tuple.Children.Single(x => x.NodeType == PlanNodeTypeEnum.Identifier);
+                string projectionColumnName = identifierNode.Properties["Value"].ToString();
+
+                Type propertyType = null;
+
+                /*
+                if (identifierNode.Properties.ContainsKey("DataType"))
+                {
+                    propertyType = (Type)identifierNode.Properties["DataType"];
+                }
+
+                PlanNode columnValue = tuple.FindNode(new PlanNodeTypeEnum[] { PlanNodeTypeEnum.Cast, PlanNodeTypeEnum.Constant }).SingleOrDefault();*/
 
                 if (tuple.Children[1].NodeType == PlanNodeTypeEnum.Cast || tuple.Children[1].NodeType == PlanNodeTypeEnum.Constant)
                 {
                     propertyType = (Type)tuple.Children[1].Properties["DataType"];
                 }
+                else if (tuple.Children[1].NodeType != PlanNodeTypeEnum.Property)
+                {
+                    if (tuple.Children[1].Children[1].Properties.ContainsKey("DataType"))
+                    {
+                        propertyType = (Type)tuple.Children[1].Children[1].Properties["DataType"];
+                    }
+                }
 
-                result.Add(Tuple.Create(propertyName, propertyType));
+                result.Add(new ProjectionColumn(propertyName, projectionColumnName, sourceAlias, sourceName, propertyType));
             }
 
             System.Diagnostics.Contracts.Contract.Ensures(result.Count > 0);

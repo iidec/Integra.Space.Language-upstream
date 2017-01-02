@@ -40,22 +40,15 @@ namespace Integra.Space.Language
             List<PlanNode> fromNodes = NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
             foreach (PlanNode fromNode in fromNodes)
             {
-                string schemaNameOfSource = commandObject.SchemaName;
-                string databaseNameOfSource = commandObject.DatabaseName;
-                if (fromNode.Properties.ContainsKey("SchemaName") && fromNode.Properties["SchemaName"] != null)
+                CommandObject inputSource = (CommandObject)fromNode.Properties["Source"];
+                this.CommandObjects.Add(inputSource);
+                string sourceAlias = null;
+                if (fromNode.Properties.ContainsKey("SourceAlias"))
                 {
-                    schemaNameOfSource = fromNode.Properties["SchemaName"].ToString();
+                    sourceAlias = (string)fromNode.Properties["SourceAlias"];
                 }
 
-                if (fromNode.Properties.ContainsKey("DatabaseName") && fromNode.Properties["DatabaseName"] != null)
-                {
-                    databaseNameOfSource = fromNode.Properties["DatabaseName"].ToString();
-                }
-
-                string sourceName = fromNode.Properties["SourceName"].ToString();
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.Source, databaseNameOfSource, schemaNameOfSource, sourceName, PermissionsEnum.Read, false));
-                
-                this.inputSources.Add(new ReferencedSource(databaseNameOfSource, schemaNameOfSource, sourceName));
+                this.inputSources.Add(new ReferencedSource(inputSource.DatabaseName, inputSource.SchemaName, inputSource.Name, sourceAlias));
             }
 
             // agrego la fuente si fue especificada.
@@ -87,40 +80,6 @@ namespace Integra.Space.Language
             {
                 return this.inputSources.ToArray();
             }
-        }
-
-        /// <summary>
-        /// Stream referenced sources class.
-        /// </summary>
-        internal class ReferencedSource
-        {
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ReferencedSource"/> class.
-            /// </summary>
-            /// <param name="databaseName">Database to which the source belongs.</param>
-            /// <param name="schemaName">Schema to which the source belongs.</param>
-            /// <param name="sourceName">Source referenced at the stream query.</param>
-            public ReferencedSource(string databaseName, string schemaName, string sourceName)
-            {
-                this.DatabaseName = databaseName;
-                this.SchemaName = schemaName;
-                this.SourceName = sourceName;
-            }
-
-            /// <summary>
-            /// Gets the source name.
-            /// </summary>
-            public string SourceName { get; private set; }
-
-            /// <summary>
-            /// Gets the schema name.
-            /// </summary>
-            public string SchemaName { get; private set; }
-
-            /// <summary>
-            /// Gets the database name.
-            /// </summary>
-            public string DatabaseName { get; private set; }
         }
     }
 }

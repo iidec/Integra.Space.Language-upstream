@@ -137,7 +137,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1855,7 +1855,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "grupo2",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
@@ -1898,7 +1898,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "grupo2",
                                                                                             "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
@@ -1940,7 +1940,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -1980,7 +1980,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -2020,7 +2020,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:10'",
                                                                                             "MessageType as grupo1",
-                                                                                            "key.grupo1",
+                                                                                            "grupo1",
                                                                                             "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -2059,8 +2059,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "count()");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -2101,8 +2101,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "sum((decimal)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
@@ -2134,69 +2134,6 @@ namespace Integra.Space.LanguageUnitTests.Queries
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
                     new Subscription(50, 200)
                 });
-        }
-
-        [TestMethod]
-        public void ConsultaLlaveSinGroupBySinWhere()
-        {
-            try
-            {
-                // no es posible utilizar key sin un group by
-                QueryParser parser = new QueryParser(
-                    string.Format("from {0} select {1} as Llave into SourceXYZ",
-                                                                "SourceParaPruebas",
-                                                                "key")
-                                                                );
-                PlanNode plan = parser.Evaluate().Item1;
-
-                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
-                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
-        [TestMethod]
-        public void ConsultaLlaveSinGroupByConWhere()
-        {
-            try
-            {
-                // no es posible utilizar key sin un group by
-                QueryParser parser = new QueryParser(
-                    string.Format("from {0} where {1} select {2} as Llave into SourceXYZ",
-                                                                "SourceParaPruebas",
-                                                                "MessageType == \"0100\"",
-                                                                "key")
-                                                                );
-                PlanNode plan = parser.Evaluate().Item1;
-                
-                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
-                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
         }
 
         [TestMethod]
@@ -2320,8 +2257,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType == \"0100\" and MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "count()",
                                                                                             "sum((decimal)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
@@ -2337,8 +2274,8 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "count()",
                                                                                             "sum((decimal)TransactionAmount)");
             QueryParser parser = new QueryParser(command);

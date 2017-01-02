@@ -29,7 +29,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
                 login,
                 dsf,
-                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.Run),
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
                 kernel,
                 printLog: printLog,
                 debugMode: debugMode,
@@ -49,7 +49,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
-            Delegate d = fp.ProcessWithCommandParserForMetadata<T>(context, eql);
+            Delegate d = fp.ProcessWithCommandParser<T>(context, eql);
 
             if (isTestMode)
             {
@@ -64,26 +64,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void TestQueryForMetadata()
         {
-            string command = "from sys.Servers as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select 1 as servId order by servId";
-            Assembly[] asms = AppDomain.CurrentDomain.GetAssemblies();
-            command = "from sys.Servers as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest";
+            string command = "from sys.Servers as x where (string)x.ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select 1 as servId order by servId into FuenteX";            
+            command = "from sys.Servers as x where (string)x.ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" apply window of '00:00:01' select ServerId as servId, max(1) as maxTest order by desc servId, maxTest into FuenteX";
             //command = "from sys.Servers select ServerId as servId";
-            //command = "from Servers select @event.Message.#1.#1 as servId";
-            
+            //command = "from sys.servers as x select x.ServerId as servId into FuenteX";
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            using (Space.Database.SpaceDbContext context = new Space.Database.SpaceDbContext())
+            using (SpaceDbContext context = new SpaceDbContext())
             {
-                ITestableObservable<Space.Database.Server> input = dsf.TestScheduler.CreateColdObservable(
+                ITestableObservable<Server> input = dsf.TestScheduler.CreateColdObservable(
                     this.GetRecoredList<Space.Database.Server>(context.Servers)
                 );
-                
+
                 ITestableObserver<object> results = dsf.TestScheduler.Start(
                 () => this.Process<Space.Database.Server>(command, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
                         servId = (Guid)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("servId").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)),
-                        abc = (int)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("maxTest").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
+                        maxTest = (int)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("maxTest").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
                     })
                 ),
                 created: 10,
@@ -91,7 +90,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
                 ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(150, Notification.CreateOnNext((object)(new { servId = Guid.Parse("59e858fc-c84d-48a7-8a98-c0e7adede20a"), abc = 1 }))),
+                    new Recorded<Notification<object>>(250, Notification.CreateOnNext((object)(new { servId = Guid.Parse("59e858fc-c84d-48a7-8a98-c0e7adede20a"), maxTest = 1 }))),
                     new Recorded<Notification<object>>(250, Notification.CreateOnCompleted<object>())
                 });
             }

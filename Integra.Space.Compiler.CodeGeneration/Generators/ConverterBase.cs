@@ -45,7 +45,7 @@ namespace Integra.Space.Compiler
         public CodeGeneratorContext Transform(CodeGeneratorContext context)
         {
             this.PreTransformation(context);
-            context.ResultExpression = this.TranformNode(context);
+            context.ResultExpression = this.TransformNode(context);
             this.PostTransformation(context);
 
             return context;
@@ -72,7 +72,7 @@ namespace Integra.Space.Compiler
         /// </summary>
         /// <param name="context">Compilation context.</param>
         /// <returns>The result expression of the execution plan node.</returns>
-        protected virtual Expression TranformNode(CodeGeneratorContext context)
+        protected virtual Expression TransformNode(CodeGeneratorContext context)
         {
             throw new NotImplementedException("Implementation for the node transormation is required.");
         }

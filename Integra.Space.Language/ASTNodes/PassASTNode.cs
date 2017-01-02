@@ -73,7 +73,7 @@ namespace Integra.Space.Language.ASTNodes
             }
             else
             {
-                this.result = new PlanNode();
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
                 this.result.Column = ChildrenNodes[0].Token.Location.Column;
                 this.result.Line = ChildrenNodes[0].Token.Location.Line;
                 this.result.NodeText = this.terminal;
