@@ -43,9 +43,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.function = (string)ChildrenNodes[0].Token.Value;
             this.date = AddChild(NodeUseType.Parameter, "DateTimeNode", ChildrenNodes[1]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.DateTimeFunction, this.NodeText);
         }
 
         /// <summary>
@@ -64,7 +62,6 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.Children.Add(auxDate);
             this.result.NodeText = string.Format("{0}({1})", this.function, auxDate.NodeText);
             this.result.Properties.Add("DataType", typeof(int?));
-            this.result.NodeType = PlanNodeTypeEnum.DateTimeFunction;
             this.result.Properties.Add("IsConstant", bool.Parse(auxDate.Properties["IsConstant"].ToString()));
 
             switch (this.function.ToLower())

@@ -46,19 +46,17 @@ namespace Integra.Space.Language.ASTNodes.Constants
         {
             base.Init(context, treeNode);
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ValueWithAlias, this.NodeText);
             int childNodesCount = ChildrenNodes.Count;
             if (childNodesCount == 3)
             {
                 this.valueNode = AddChild(NodeUseType.Parameter, "ValueNode", ChildrenNodes[0]) as AstNodeBase;
                 this.tAs = (string)ChildrenNodes[1].Token.Value;
                 this.aliasNode = AddChild(NodeUseType.Parameter, "AliasNode", ChildrenNodes[2]) as AstNodeBase;
-                this.result.NodeType = PlanNodeTypeEnum.ValueWithAlias;
             }
             else if (childNodesCount == 1)
             {
                 this.valueNode = AddChild(NodeUseType.Parameter, "ValueNode", ChildrenNodes[0]) as AstNodeBase;
-                this.result.NodeType = PlanNodeTypeEnum.ValueWithAlias;
             }
         }
 
@@ -78,9 +76,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             {
                 PlanNode v = (PlanNode)this.valueNode.Evaluate(thread);
                 PlanNode a = (PlanNode)this.aliasNode.Evaluate(thread);
-
-                this.result.Column = v.Column;
-                this.result.Line = v.Line;
+                
                 this.result.NodeText = v.NodeText + " " + this.tAs + " " + a.NodeText;
                 this.result.Children.Add(v);
                 this.result.Children.Add(a);
@@ -88,18 +84,12 @@ namespace Integra.Space.Language.ASTNodes.Constants
             else if (childNodesCount == 1)
             {
                 PlanNode alias = (PlanNode)this.valueNode.Evaluate(thread);
-
-                PlanNode value = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                value.NodeText = alias.NodeText;
-                value.NodeType = PlanNodeTypeEnum.Identifier;
-
+                PlanNode value = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Identifier, alias.NodeText);
                 foreach (KeyValuePair<string, object> property in alias.Properties)
                 {
                     value.Properties.Add(property.Key, property.Value);
                 }
-
-                this.result.Column = value.Column;
-                this.result.Line = value.Line;
+                
                 this.result.NodeText = value.NodeText;
                 this.result.Children.Add(value);
                 this.result.Children.Add(alias);

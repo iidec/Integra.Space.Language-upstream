@@ -40,7 +40,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <param name="sourcePosition">Position of the source in the query.</param>
         public SourceASTNode(int sourcePosition)
         {
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFrom, this.NodeText);
             this.result.Properties.Add("SourcePosition", sourcePosition);
         }
 
@@ -62,10 +62,6 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 this.idFromNode = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[2]) as AstNodeBase;
             }
-
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
-            this.result.NodeType = PlanNodeTypeEnum.ObservableFrom;
         }
 
         /// <summary>

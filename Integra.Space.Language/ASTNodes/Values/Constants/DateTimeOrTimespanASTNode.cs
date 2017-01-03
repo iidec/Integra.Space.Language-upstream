@@ -30,11 +30,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
         {
             base.Init(context, treeNode);
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = treeNode.Token.Location.Column;
-            this.result.Line = treeNode.Token.Location.Line;
-            this.result.NodeText = treeNode.Token.Text;
-            this.result.NodeType = PlanNodeTypeEnum.Constant;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant, treeNode.Token.Text);
             this.result.Properties.Add("IsConstant", true);
 
             DateTime d;

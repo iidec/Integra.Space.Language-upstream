@@ -385,8 +385,8 @@ namespace Integra.Space.Language.Grammars
         /// <returns>A plan node representing a metadata source.</returns>
         private PlanNode GetPlanNodeForMetadataSource(Common.SystemObjectEnum systemObjectType, string name)
         {
-            PlanNode planNode = new PlanNode(0, 6, name);
-            planNode.NodeType = PlanNodeTypeEnum.Identifier;
+            PlanNode planNode = new PlanNode(0, 6, PlanNodeTypeEnum.Identifier);
+            planNode.NodeText = name;
             planNode.Properties.Add("SourceType", systemObjectType);
             planNode.Properties.Add("Value", name);
             planNode.Properties.Add("SchemaIdentifier", null);

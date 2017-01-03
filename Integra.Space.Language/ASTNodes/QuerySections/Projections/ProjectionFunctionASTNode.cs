@@ -41,25 +41,16 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         {
             base.Init(context, treeNode);
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
             int childrenCount = ChildrenNodes.Count;
             if (childrenCount == 1)
             {
-                this.functionName = (string)ChildrenNodes[0].Token.Value;
-
-                this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Line = ChildrenNodes[0].Token.Location.Line;
+                this.functionName = (string)ChildrenNodes[0].Token.Value;                
             }
             else if (childrenCount == 2)
             {
                 this.functionName = (string)ChildrenNodes[0].Token.Value;
-                this.value = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[1]) as AstNodeBase;
-
-                this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Line = ChildrenNodes[0].Token.Location.Line;
+                this.value = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[1]) as AstNodeBase;                
             }
-
-            this.SelectResultNodeType();
         }
 
         /// <summary>
@@ -73,6 +64,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.BeginEvaluate(thread);
 
             int childrenCount = ChildrenNodes.Count;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.SelectResultNodeType(this.functionName.ToString().ToLower()));
             if (childrenCount == 1)
             {
                 this.result.Properties.Add("FunctionName", char.ToUpper(this.functionName[0]) + this.functionName.Substring(1));
@@ -87,8 +79,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.result.NodeText = string.Format("{0}({1})", this.functionName, valueAux.NodeText);
                 this.result.Children = new List<PlanNode>();
 
-                PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                newScope.NodeType = PlanNodeTypeEnum.NewScope;
+                PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
                 newScope.Children = new List<PlanNode>();
 
                 this.result.Children.Add(newScope);
@@ -103,23 +94,34 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <summary>
         /// Select the result node type based on the function name
         /// </summary>
-        private void SelectResultNodeType()
+        /// <param name="functionName">Projection function name.</param>
+        /// <returns>The result node type.</returns>
+        private PlanNodeTypeEnum SelectResultNodeType(string functionName)
         {
-            switch (this.functionName.ToString().ToLower())
+            PlanNodeTypeEnum resultType = PlanNodeTypeEnum.None;
+
+            if (string.IsNullOrEmpty(functionName))
+            {
+                return resultType;
+            }
+
+            switch (functionName)
             {
                 case "sum":
-                    this.result.NodeType = PlanNodeTypeEnum.EnumerableSum;
+                    resultType = PlanNodeTypeEnum.EnumerableSum;
                     break;
                 case "count":
-                    this.result.NodeType = PlanNodeTypeEnum.EnumerableCount;
+                    resultType = PlanNodeTypeEnum.EnumerableCount;
                     break;
                 case "max":
-                    this.result.NodeType = PlanNodeTypeEnum.EnumerableMax;
+                    resultType = PlanNodeTypeEnum.EnumerableMax;
                     break;
                 case "min":
-                    this.result.NodeType = PlanNodeTypeEnum.EnumerableMin;
+                    resultType = PlanNodeTypeEnum.EnumerableMin;
                     break;
             }
+
+            return resultType;
         }
     }
 }

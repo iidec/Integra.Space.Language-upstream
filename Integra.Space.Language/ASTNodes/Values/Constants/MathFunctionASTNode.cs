@@ -43,9 +43,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.function = (string)ChildrenNodes[0].Token.Value;
             this.numericExpression = AddChild(NodeUseType.Parameter, "MathFunctionNode", ChildrenNodes[1]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.MathFunctionWithOneParameter, this.NodeText);
         }
 
         /// <summary>
@@ -64,7 +62,6 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.result.Children.Add(auxValue);
             this.result.NodeText = string.Format("{0}({1})", this.function, auxValue.NodeText);
             this.result.Properties.Add("DataType", auxValue.Properties["DataType"]);
-            this.result.NodeType = PlanNodeTypeEnum.MathFunctionWithOneParameter;
             this.result.Properties.Add("IsConstant", bool.Parse(auxValue.Properties["IsConstant"].ToString()));
 
             switch (this.function.ToLower())

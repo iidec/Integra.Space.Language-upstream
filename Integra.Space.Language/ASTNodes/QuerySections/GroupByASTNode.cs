@@ -50,10 +50,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.reservedWordBy = (string)ChildrenNodes[1].Token.Value;
             this.listOfValues = AddChild(NodeUseType.Parameter, "listOfValues", ChildrenNodes[2]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
-            this.result.NodeType = PlanNodeTypeEnum.EnumerableGroupBy;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableGroupBy, this.NodeText);
         }
 
         /// <summary>
@@ -66,10 +63,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         {
             this.BeginEvaluate(thread);
 
-            PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            planProjection.Column = ChildrenNodes[0].Token.Location.Column;
-            planProjection.Line = ChildrenNodes[0].Token.Location.Line;
-            planProjection.NodeType = PlanNodeTypeEnum.Projection;
+            PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Projection);
             planProjection.Properties.Add("ProjectionType", PlanNodeTypeEnum.EnumerableGroupBy);
             planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
             planProjection.Children = new List<PlanNode>();
@@ -90,32 +84,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             bool isFirst = true;
             foreach (var tupla in projection)
             {
-                PlanNode plan = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                plan.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode plan = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 plan.Children = new List<PlanNode>();
                 plan.Children.Add(tupla.Key);
                 plan.Children.Add(tupla.Value);
-
-                /*PlanNode fromForLambda = new PlanNode();
-                fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
-
-                List<PlanNode> last = tupla.Value.Children;
-                List<PlanNode> tuplaActual = new List<PlanNode>();
-
-                while (last != null)
-                {
-                    tuplaActual = last;
-                    last = tuplaActual.First().Children;
-
-                    if (tuplaActual.First().Children == null)
-                    {
-                        tuplaActual.First().Children = new List<PlanNode>();
-                        tuplaActual.First().Children.Add(fromLambda);
-                    }
-                }
-
-                // se agrega el nodo from for lambda al nodo valor del nodo tupla
-                this.SetFromForLambda(tupla.Value, fromForLambda);*/
 
                 if (isFirst)
                 {
@@ -130,8 +102,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 planProjection.Children.Add(plan);
             }
 
-            PlanNode newScope1 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            newScope1.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode newScope1 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             newScope1.Children = new List<PlanNode>();
 
             this.result.Children.Add(newScope1);

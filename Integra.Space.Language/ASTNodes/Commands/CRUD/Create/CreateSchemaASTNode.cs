@@ -51,7 +51,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            return new CreateSchemaNode(commandObject, new Dictionary<SchemaOptionEnum, object>(), this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateSchemaNode(commandObject, new Dictionary<SchemaOptionEnum, object>(), this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

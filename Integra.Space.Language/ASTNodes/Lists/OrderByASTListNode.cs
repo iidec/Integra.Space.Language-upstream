@@ -73,11 +73,9 @@ namespace Integra.Space.Language.ASTNodes.Lists
                 this.parentNode.Evaluate(thread);
                 PlanNode aux = (PlanNode)this.valueNode.Evaluate(thread);
 
-                PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+                PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-                PlanNode property = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                property.NodeType = PlanNodeTypeEnum.Property;
+                PlanNode property = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Property);
                 property.NodeText = aux.Properties["Value"].ToString();
                 property.Properties.Add("Property", aux.Properties["Value"]);
                 property.Children = new List<PlanNode>();
@@ -92,11 +90,9 @@ namespace Integra.Space.Language.ASTNodes.Lists
 
                 PlanNode aux = (PlanNode)this.parentNode.Evaluate(thread);
 
-                PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+                PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-                PlanNode property = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                property.NodeType = PlanNodeTypeEnum.Property;
+                PlanNode property = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Property);
                 property.NodeText = aux.Properties["Value"].ToString();
                 property.Properties.Add("Property", aux.Properties["Value"]);
                 property.Children = new List<PlanNode>();

@@ -42,7 +42,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
         {
             base.Init(context, treeNode);
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
             int childrenCount = ChildrenNodes.Count;
             if (childrenCount == 1)
             {
@@ -52,9 +51,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 this.operationNode = (string)ChildrenNodes[0].Token.Value;
                 this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
-
-                this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Line = ChildrenNodes[0].Token.Location.Line;
             }
         }
 
@@ -71,15 +67,12 @@ namespace Integra.Space.Language.ASTNodes.Operations
             this.EndEvaluate(thread);
 
             int childrenCount = ChildrenNodes.Count;
-            if (childrenCount == 1)
-            {
-                this.result.Column = r.Column;
-                this.result.Line = r.Line;
-            }
 
             // se especifican los hijos y el tipo de nodo result si la operacion es de negacion aritmetica
             if (this.operationNode == "-")
             {
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Negate);
+
                 // se iguala result al nodo hijo para mantener sus propiedades
                 foreach (var property in r.Properties)
                 {
@@ -87,7 +80,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 }
 
                 // se especifica la nueva informacion para result
-                this.result.NodeType = PlanNodeTypeEnum.Negate;
                 this.result.Children = new List<PlanNode>();
                 this.result.Children.Add(r);
             }

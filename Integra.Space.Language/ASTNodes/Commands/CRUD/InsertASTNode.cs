@@ -87,7 +87,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.EndEvaluate(thread);
 
-            return new InsertNode(sourceObject, columnsWithValues, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new InsertNode(sourceObject, columnsWithValues, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

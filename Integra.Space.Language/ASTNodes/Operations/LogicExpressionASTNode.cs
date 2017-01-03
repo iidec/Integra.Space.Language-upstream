@@ -56,19 +56,11 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.leftNode = AddChild(NodeUseType.Parameter, "leftNode", ChildrenNodes[0]) as AstNodeBase;
                 this.operationNode = (string)ChildrenNodes[1].Token.Value;
                 this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[2]) as AstNodeBase;
-                this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                this.result.Column = ChildrenNodes[1].Token.Location.Column;
-                this.result.Properties.Add("DataType", typeof(bool));
-                this.result.Line = ChildrenNodes[1].Token.Location.Line;
             }
             else if (childrenCount == 2)
             {
                 this.rightNode = AddChild(NodeUseType.Parameter, "rightNode", ChildrenNodes[1]) as AstNodeBase;
                 this.operationNode = (string)ChildrenNodes[0].Token.Value;
-                this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Properties.Add("DataType", typeof(bool));
-                this.result.Line = ChildrenNodes[0].Token.Location.Line;
             }
             else
             {
@@ -81,20 +73,28 @@ namespace Integra.Space.Language.ASTNodes.Operations
         /// </summary>
         /// <param name="operacion">operator symbol</param>
         /// <param name="thread">actual thread</param>
-        public void SelectOperation(string operacion, ScriptThread thread)
+        /// <returns>The result node type.</returns>
+        public PlanNodeTypeEnum SelectOperation(string operacion, ScriptThread thread)
         {
+            PlanNodeTypeEnum resultType = PlanNodeTypeEnum.None;
+
+            if (string.IsNullOrEmpty(operacion))
+            {
+                return resultType;
+            }
+
             try
             {
                 switch (operacion)
                 {
                     case "and":
-                        this.result.NodeType = PlanNodeTypeEnum.And;
+                        resultType = PlanNodeTypeEnum.And;
                         break;
                     case "or":
-                        this.result.NodeType = PlanNodeTypeEnum.Or;
+                        resultType = PlanNodeTypeEnum.Or;
                         break;
                     case "not":
-                        this.result.NodeType = PlanNodeTypeEnum.Not;
+                        resultType = PlanNodeTypeEnum.Not;
                         break;
                     default:
                         ErrorNode error = new ErrorNode();
@@ -119,6 +119,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 Errors errores = new Errors(thread);
                 errores.AlmacenarError(error);
             }
+
+            return resultType;
         }
 
         /// <summary>
@@ -152,11 +154,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 if (validate.ConvertLeftNode)
                 {
-                    PlanNode casteo = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                    casteo.Column = leftNode.Column;
-                    casteo.Line = leftNode.Line;
+                    PlanNode casteo = new PlanNode(leftNode.Line, leftNode.Column, PlanNodeTypeEnum.Cast);
                     casteo.NodeText = leftNode.NodeText;
-                    casteo.NodeType = PlanNodeTypeEnum.Cast;
                     casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(leftNode);
@@ -165,11 +164,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 }
                 else if (validate.ConvertRightNode)
                 {
-                    PlanNode casteo = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                    casteo.Column = rightNode.Column;
-                    casteo.Line = rightNode.Line;
+                    PlanNode casteo = new PlanNode(rightNode.Line, rightNode.Column, PlanNodeTypeEnum.Cast);
                     casteo.NodeText = rightNode.NodeText;
-                    casteo.NodeType = PlanNodeTypeEnum.Cast;
                     casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
@@ -209,11 +205,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 if (rightType.Equals(typeof(object)))
                 {
-                    PlanNode casteo = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                    casteo.Column = rightNode.Column;
-                    casteo.Line = rightNode.Line;
+                    PlanNode casteo = new PlanNode(rightNode.Line, rightNode.Column, PlanNodeTypeEnum.Cast);
                     casteo.NodeText = rightNode.NodeText;
-                    casteo.NodeType = PlanNodeTypeEnum.Cast;
                     casteo.Properties.Add("DataType", typeof(bool));
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
@@ -349,6 +342,9 @@ namespace Integra.Space.Language.ASTNodes.Operations
         {
             int childrenCount = ChildrenNodes.Count;
 
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.SelectOperation(this.operationNode, thread));
+            this.result.Properties.Add("DataType", typeof(bool));
+
             if (childrenCount == 3)
             {
                 this.BeginEvaluate(thread);
@@ -357,7 +353,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.EndEvaluate(thread);
 
                 this.result.NodeText = l.NodeText + " " + this.operationNode + " " + r.NodeText;
-                this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrensForResult(l, r, thread);
                 this.ValidateTypesForOperation(l, r, this.operationNode, thread);
                 if (bool.Parse(r.Properties["IsConstant"].ToString()) == true || bool.Parse(l.Properties["IsConstant"].ToString()) == true)
@@ -376,7 +371,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.EndEvaluate(thread);
 
                 this.result.NodeText = this.operationNode + "(" + r.NodeText + ")";
-                this.SelectOperation(this.operationNode, thread);
                 this.CreateChildrensForResult(r, thread);
                 this.ValidateTypesForOperation(r, this.operationNode, thread);
                 this.result.Properties.Add("IsConstant", bool.Parse(r.Properties["IsConstant"].ToString()));

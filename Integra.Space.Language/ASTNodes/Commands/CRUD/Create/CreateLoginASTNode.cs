@@ -80,7 +80,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.AddCommandOption(optionsAux, passwordOptionAux);
             this.CheckAllowedOptions(optionsAux);
 
-            return new CreateLoginNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateLoginNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

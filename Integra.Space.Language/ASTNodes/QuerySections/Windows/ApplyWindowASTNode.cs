@@ -75,9 +75,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 this.windowSize2 = AddChild(NodeUseType.Parameter, "windowSize2", ChildrenNodes[6]) as AstNodeBase;
             }
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBufferTimeAndSize, this.NodeText);
         }
 
         /// <summary>
@@ -90,8 +88,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         {
             this.BeginEvaluate(thread);
 
-            PlanNode fromLambdaForBuffer = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            fromLambdaForBuffer.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromLambdaForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
             this.result.Children = new List<PlanNode>();
 
@@ -99,39 +96,32 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             if (childrenCount == 4)
             {
                 PlanNode windowSizeAux = (PlanNode)this.windowSize1.Evaluate(thread);
-
-                this.result.NodeType = PlanNodeTypeEnum.ObservableBufferTimeAndSize;
+                
                 this.result.NodeText = this.applyWord + " " + this.windowWord + " " + this.reservedWordOf + " " + windowSizeAux.NodeText;
                 this.result.Children.Add(fromLambdaForBuffer);
 
-                PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planProjection.NodeType = PlanNodeTypeEnum.ProjectionOfConstants;
+                PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ProjectionOfConstants);
                 planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
                 planProjection.Children = new List<PlanNode>();
 
-                PlanNode planTuple1 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planTuple1.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode planTuple1 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 planTuple1.Children = new List<PlanNode>();
 
-                PlanNode alias1 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                alias1.NodeType = PlanNodeTypeEnum.Constant;
+                PlanNode alias1 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
                 alias1.Properties.Add("Value", "TimeSpanValue");
                 alias1.Properties.Add("DataType", typeof(object));
 
                 planTuple1.Children.Add(alias1);
                 planTuple1.Children.Add(windowSizeAux);
 
-                PlanNode planTuple2 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planTuple2.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode planTuple2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 planTuple2.Children = new List<PlanNode>();
 
-                PlanNode alias2 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                alias2.NodeType = PlanNodeTypeEnum.Constant;
+                PlanNode alias2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
                 alias2.Properties.Add("Value", "IntegerValue");
                 alias2.Properties.Add("DataType", typeof(object));
                 
-                PlanNode maxWindowSize = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                maxWindowSize.NodeType = PlanNodeTypeEnum.Constant;
+                PlanNode maxWindowSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
                 maxWindowSize.Properties.Add("Value", int.Parse(ConfigurationManager.AppSettings["MaxWindowSize"]));
                 maxWindowSize.Properties.Add("DataType", typeof(int));
 
@@ -147,34 +137,28 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 PlanNode windowSizeAux1 = (PlanNode)this.windowSize1.Evaluate(thread);
                 PlanNode windowSizeAux2 = (PlanNode)this.windowSize2.Evaluate(thread);
-
-                this.result.NodeType = PlanNodeTypeEnum.ObservableBufferTimeAndSize;
+                
                 this.result.NodeText = this.applyWord + " " + this.windowWord + " " + this.reservedWordOf + " (" + windowSizeAux1.NodeText + "," + windowSizeAux2.NodeText + ")";
                 this.result.Children.Add(fromLambdaForBuffer);
 
-                PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planProjection.NodeType = PlanNodeTypeEnum.ProjectionOfConstants;
+                PlanNode planProjection = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ProjectionOfConstants);
                 planProjection.Properties.Add("OverrideGetHashCodeMethod", false);
                 planProjection.Children = new List<PlanNode>();
 
-                PlanNode planTuple1 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planTuple1.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode planTuple1 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 planTuple1.Children = new List<PlanNode>();
 
-                PlanNode alias1 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                alias1.NodeType = PlanNodeTypeEnum.Constant;
+                PlanNode alias1 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
                 alias1.Properties.Add("Value", "TimeSpanValue");
                 alias1.Properties.Add("DataType", typeof(object));
 
                 planTuple1.Children.Add(alias1);
                 planTuple1.Children.Add(windowSizeAux1);
 
-                PlanNode planTuple2 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planTuple2.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode planTuple2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 planTuple2.Children = new List<PlanNode>();
 
-                PlanNode alias2 = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                alias2.NodeType = PlanNodeTypeEnum.Constant;
+                PlanNode alias2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
                 alias2.Properties.Add("Value", "IntegerValue");
                 alias2.Properties.Add("DataType", typeof(object));
 

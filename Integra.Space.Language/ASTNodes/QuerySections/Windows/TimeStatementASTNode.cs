@@ -38,8 +38,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <param name="nodeType">Node type</param>
         public TimeStatementASTNode(PlanNodeTypeEnum nodeType)
         {
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.NodeType = nodeType;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, nodeType, this.NodeText);
         }
 
         /// <summary>
@@ -54,9 +53,6 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 this.timeoutWord = (string)ChildrenNodes[0].Token.Value;
                 this.timespan = AddChild(NodeUseType.Parameter, "timespan", ChildrenNodes[1]) as AstNodeBase;
-
-                this.result.Column = ChildrenNodes[0].Token.Location.Column;
-                this.result.Line = ChildrenNodes[0].Token.Location.Line;
             }
         }
 

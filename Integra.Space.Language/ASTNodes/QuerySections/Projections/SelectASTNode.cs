@@ -47,7 +47,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         {
             base.Init(context, treeNode);
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Projection, this.NodeText);
             int childrenCount = ChildrenNodes.Count;
 
             if (childrenCount == 2)
@@ -65,10 +65,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
 
                 this.result.NodeText = this.select;
             }
-
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
-            this.result.NodeType = PlanNodeTypeEnum.Projection;
+            
             this.result.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableSelect);
             this.result.Properties.Add("ParentType", typeof(EventResult));
             this.result.Properties.Add("OverrideGetHashCodeMethod", false);
@@ -90,12 +87,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 PlanNode topAux = (PlanNode)this.top.Evaluate(thread);
 
-                PlanNode planTop = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                planTop.NodeType = PlanNodeTypeEnum.EnumerableTake;
+                PlanNode planTop = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableTake);
                 planTop.Children = new List<PlanNode>();
 
-                PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                newScope.NodeType = PlanNodeTypeEnum.NewScope;
+                PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
 
                 planTop.Children.Add(newScope);
                 planTop.Children.Add(topAux);
@@ -119,14 +114,12 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             bool isFirst = true;
             foreach (var tupla in projection)
             {
-                PlanNode plan = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                plan.NodeType = PlanNodeTypeEnum.TupleProjection;
+                PlanNode plan = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.TupleProjection);
                 plan.Children = new List<PlanNode>();
                 plan.Children.Add(tupla.Key);
                 plan.Children.Add(tupla.Value);
 
-                PlanNode fromLambda = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                fromLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+                PlanNode fromLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
                 if (tupla.Value.NodeType.Equals(PlanNodeTypeEnum.EnumerableSum) || tupla.Value.NodeType.Equals(PlanNodeTypeEnum.EnumerableMax) || tupla.Value.NodeType.Equals(PlanNodeTypeEnum.EnumerableMin))
                 {

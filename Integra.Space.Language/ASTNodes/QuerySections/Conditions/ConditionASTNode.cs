@@ -38,8 +38,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <param name="nodeType">Condition node type</param>
         public ConditionASTNode(PlanNodeTypeEnum nodeType)
         {
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.NodeType = nodeType;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, nodeType, this.NodeText);
         }
 
         /// <summary>
@@ -56,10 +55,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             }
 
             this.where = (string)ChildrenNodes[0].Token.Value;
-            this.condition = AddChild(NodeUseType.Parameter, "whereConditions", ChildrenNodes[1]) as AstNodeBase;
-
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            this.condition = AddChild(NodeUseType.Parameter, "whereConditions", ChildrenNodes[1]) as AstNodeBase;            
         }
 
         /// <summary>
@@ -79,8 +75,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             PlanNode conditionAux = (PlanNode)this.condition.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            newScope.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             newScope.Children = new List<PlanNode>();
 
             this.result.NodeText = this.where + " " + conditionAux.NodeText;

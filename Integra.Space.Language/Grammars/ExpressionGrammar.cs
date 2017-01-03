@@ -164,8 +164,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalName = ToTerm("Name", "Name");
             */
 
-            /* OPERADORES */
-            KeyTerm terminalLike = ToTerm("like", "like");
+            /* OPERADORES LÓGICOS */
             KeyTerm terminalNot = ToTerm("not", "not");
             KeyTerm terminalAnd = ToTerm("and", "and");
             KeyTerm terminalOr = ToTerm("or", "or");
@@ -178,13 +177,15 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalMas = ToTerm("+", "plus");
 
             /* OPERADORES COMPARATIVOS */
-            KeyTerm terminalIgualIgual = ToTerm("==", "equalEqual");
+            KeyTerm terminalIgualIgual = ToTerm("==", "equalEqual");            
             KeyTerm terminalNoIgual = ToTerm("!=", "notEqual");
             KeyTerm terminalMayorIgual = ToTerm(">=", "greaterThanOrEqual");
             KeyTerm terminalMenorIgual = ToTerm("<=", "lessThanOrEqual");
             KeyTerm terminalMayorQue = ToTerm(">", "greaterThan");
             KeyTerm terminalMenorQue = ToTerm("<", "lessThan");
-
+            KeyTerm terminalLike = ToTerm("like", "like");
+            this.MarkReservedWords("like");
+            
             /* TIPOS PARA CASTEO */
             ConstantTerminal terminalType = new ConstantTerminal("dataTypes");
             terminalType.Add("byte", typeof(byte));
@@ -221,7 +222,7 @@ namespace Integra.Space.Language.Grammars
             terminalType.Add("TimeSpan?", typeof(TimeSpan?));
             terminalType.AstConfig.NodeType = null;
             terminalType.AstConfig.DefaultNodeCreator = () => new TypeASTNode();
-
+            
             /* SIMBOLOS */
             KeyTerm terminalParentesisIz = ToTerm("(", "parenthesisIzquierdo");
             KeyTerm terminalParentesisDer = this.ToTerm(")", "parenthesisDerecho");

@@ -81,7 +81,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 databaseName = identifierWithPath.Item1;
             }
 
-            return new TakeOwnershipCommandNode(actionAux, new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new TakeOwnershipCommandNode(actionAux, new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

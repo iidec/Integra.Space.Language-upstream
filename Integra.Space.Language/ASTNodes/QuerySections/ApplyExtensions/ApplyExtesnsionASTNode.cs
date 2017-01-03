@@ -58,10 +58,6 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.reservedWordOf = (string)ChildrenNodes[2].Token.Value;
 
             this.extensionValue = AddChild(NodeUseType.Parameter, "ExtensionValue", ChildrenNodes[3]) as AstNodeBase;
-            
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
         }
 
         /// <summary>
@@ -82,7 +78,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
                 throw new Exceptions.ParseException(string.Format("Invalid apply extension '{0}'", this.extensionReservedWord));
             }
 
-            this.result.NodeType = nodeType;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, nodeType);
             this.result.NodeText = this.applyWord + " " + this.extensionReservedWord + " " + this.reservedWordOf + " " + extensionValueAux.NodeText;
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(extensionValueAux);

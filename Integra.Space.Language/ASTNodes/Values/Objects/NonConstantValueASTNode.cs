@@ -47,8 +47,7 @@ namespace Integra.Space.Language.ASTNodes.Objects
             List<PlanNode> planNodeList = (List<PlanNode>)this.idList.Evaluate(thread);
             this.EndEvaluate(thread);
 
-            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
             PlanNode child = fromForLambda;
 

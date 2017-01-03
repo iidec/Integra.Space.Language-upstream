@@ -72,12 +72,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 string databaseName = (string)databaseBinding.GetValueRef(thread);
                 QueryParser parser = new QueryParser(optionsAux[StreamOptionEnum.Query].ToString());
                 Tuple<PlanNode, CommandObject> query = parser.Evaluate(new BindingParameter("Database", databaseName));
-                return new AlterStreamNode(commandObject, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.GetNodeText());
+                return new AlterStreamNode(commandObject, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.NodeText);
             }
 
             this.EndEvaluate(thread);
 
-            return new AlterStreamNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterStreamNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

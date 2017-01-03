@@ -62,12 +62,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
             if (statement is Tuple<string, Dictionary<string, Type>>)
             {
                 Tuple<string, Dictionary<string, Type>> columns = (Tuple<string, Dictionary<string, Type>>)statement;
-                sourceNode = new AlterSourceNode(commandObject, columns, this.Location.Line, this.Location.Column, this.GetNodeText());
+                sourceNode = new AlterSourceNode(commandObject, columns, this.Location.Line, this.Location.Column, this.NodeText);
             }
             else if (statement is Dictionary<SourceOptionEnum, object>)
             {
                 Dictionary<SourceOptionEnum, object> options = (Dictionary<SourceOptionEnum, object>)statement;
-                sourceNode = new AlterSourceNode(commandObject, options, this.Location.Line, this.Location.Column, this.GetNodeText());
+                sourceNode = new AlterSourceNode(commandObject, options, this.Location.Line, this.Location.Column, this.NodeText);
             }
 
             this.EndEvaluate(thread);

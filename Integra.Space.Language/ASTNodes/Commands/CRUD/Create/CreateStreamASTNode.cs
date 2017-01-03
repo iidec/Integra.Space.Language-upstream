@@ -75,7 +75,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             
             this.CheckAllowedOptions(optionsAux);
 
-            return new CreateStreamNode(commandObject, this.queryString, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateStreamNode(commandObject, this.queryString, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

@@ -59,10 +59,6 @@ namespace Integra.Space.Language.ASTNodes.Constants
                 this.value = AddChild(NodeUseType.Parameter, "ValueNode", ChildrenNodes[1]) as AstNodeBase;
                 this.number = AddChild(NodeUseType.Parameter, "DateTimeNode", ChildrenNodes[2]) as AstNodeBase;
             }
-
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
         }
 
         /// <summary>
@@ -77,6 +73,22 @@ namespace Integra.Space.Language.ASTNodes.Constants
             int childrenCount = ChildrenNodes.Count;
             PlanNode valueAux = null;
             PlanNode numberAux = null;
+            
+            switch (this.function.ToLower())
+            {
+                case "left":
+                    this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.StringLeftFunction, this.NodeText);
+                    break;
+                case "right":
+                    this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.StringRightFunction, this.NodeText);
+                    break;
+                case "upper":
+                    this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.StringUpperFunction, this.NodeText);
+                    break;
+                case "lower":
+                    this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.StringLowerFunction, this.NodeText);
+                    break;
+            }
 
             if (childrenCount == 2)
             {
@@ -97,23 +109,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
 
             this.result.Children = new List<PlanNode>();
             this.result.Children.Add(valueAux);
-
-            switch (this.function.ToLower())
-            {
-                case "left":
-                    this.result.NodeType = PlanNodeTypeEnum.StringLeftFunction;
-                    break;
-                case "right":
-                    this.result.NodeType = PlanNodeTypeEnum.StringRightFunction;
-                    break;
-                case "upper":
-                    this.result.NodeType = PlanNodeTypeEnum.StringUpperFunction;
-                    break;
-                case "lower":
-                    this.result.NodeType = PlanNodeTypeEnum.StringLowerFunction;
-                    break;
-            }
-
+            
             this.result.Properties.Add("IsConstant", bool.Parse(valueAux.Properties["IsConstant"].ToString()));
 
             return this.result;

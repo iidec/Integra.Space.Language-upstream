@@ -155,19 +155,16 @@ namespace Integra.Space.Compiler
 
             foreach (IGrouping<string, PlanNode> @object in objects)
             {
-                PlanNode newScopeForSelect = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
-                newScopeForSelect.NodeType = PlanNodeTypeEnum.NewScope;
+                PlanNode newScopeForSelect = new PlanNode(@object.First().Line, @object.First().Column, PlanNodeTypeEnum.NewScope, @object.First().NodeText);
 
-                PlanNode projection = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
-                projection.NodeType = PlanNodeTypeEnum.Projection;
+                PlanNode projection = new PlanNode(@object.First().Line, @object.First().Column, PlanNodeTypeEnum.Projection, @object.First().NodeText);
                 projection.Properties.Add("ProjectionType", PlanNodeTypeEnum.ObservableExtractedEventData);
                 projection.Properties.Add("ParentType", typeof(ExtractedEventData));
                 projection.Properties.Add("DisposeEvents", true);
                 projection.Properties.Add("OverrideGetHashCodeMethod", false);
                 projection.Children = new List<PlanNode>();
 
-                PlanNode selectNode = new PlanNode(@object.First().Line, @object.First().Column, @object.First().NodeText);
-                selectNode.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+                PlanNode selectNode = new PlanNode(@object.First().Line, @object.First().Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource, @object.First().NodeText);
                 selectNode.Properties.Add("SourceName", @object.Key);
                 selectNode.Children = new List<PlanNode>();
                 selectNode.Children.Add(newScopeForSelect);
@@ -213,26 +210,20 @@ namespace Integra.Space.Compiler
 
                 foreach (PlanNode column in replicas)
                 {
-                    PlanNode tupleProjection = new PlanNode(column.Line, column.Column, column.NodeText);
-                    tupleProjection.NodeType = PlanNodeTypeEnum.TupleProjection;
+                    PlanNode tupleProjection = new PlanNode(column.Line, column.Column, PlanNodeTypeEnum.TupleProjection, column.NodeText);
                     tupleProjection.Children = new List<PlanNode>();
                     projection.Children.Add(tupleProjection);
 
-                    PlanNode alias = new PlanNode(column.Line, column.Column, column.NodeText);
-                    alias.NodeType = PlanNodeTypeEnum.Identifier;
+                    PlanNode alias = new PlanNode(column.Line, column.Column, PlanNodeTypeEnum.Identifier, column.NodeText);
                     alias.NodeText = column.Properties["Property"].ToString();
-                    alias.NodeType = PlanNodeTypeEnum.Identifier;
                     alias.Properties.Add("Value", column.Properties["Property"].ToString());
                     alias.Properties.Add("DataType", typeof(object));
 
                     tupleProjection.Children.Add(alias);
 
-                    PlanNode copy = new PlanNode(column.Line, column.Column, column.NodeText);
+                    PlanNode copy = new PlanNode(column.Line, column.Column, column.NodeType);
                     copy.Children = column.Children;
-                    copy.Column = column.Column;
-                    copy.Line = column.Line;
                     copy.NodeText = column.NodeText;
-                    copy.NodeType = column.NodeType;
                     column.Properties.ToList().ForEach(x => copy.Properties.Add(x.Key, x.Value));
 
                     tupleProjection.Children.Add(copy);
@@ -263,11 +254,7 @@ namespace Integra.Space.Compiler
             List<PlanNode> result = new List<PlanNode>();
             foreach (PlanNode column in objectAccessors)
             {
-                PlanNode replica = new PlanNode(column.Line, column.Column, column.NodeText);
-                replica.Column = column.Column;
-                replica.Line = column.Line;
-                replica.NodeText = column.NodeText;
-                replica.NodeType = column.NodeType;
+                PlanNode replica = new PlanNode(column.Line, column.Column, column.NodeType, column.NodeText);
                 column.Properties.ToList().ForEach(x => replica.Properties.Add(x.Key, x.Value));
 
                 if (column.Children != null)

@@ -51,8 +51,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             this.tAs = (string)ChildrenNodes[1].Token.Value;
             this.aliasNode = AddChild(NodeUseType.Parameter, "AliasNode", ChildrenNodes[2]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.NodeType = PlanNodeTypeEnum.ValueWithAlias;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ValueWithAlias, this.NodeText);
             this.result.Children = new List<PlanNode>();
         }
 
@@ -68,9 +67,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
             PlanNode v = (PlanNode)this.valueNode.Evaluate(thread);
             PlanNode a = (PlanNode)this.aliasNode.Evaluate(thread);
             this.EndEvaluate(thread);
-
-            this.result.Column = v.Column;
-            this.result.Line = v.Line;
+            
             this.result.NodeText = v.NodeText + " " + this.tAs + " " + a.NodeText;
 
             this.result.Children.Add(v);

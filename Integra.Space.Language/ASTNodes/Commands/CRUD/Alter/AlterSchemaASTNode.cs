@@ -79,7 +79,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
 
-            return new AlterSchemaNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterSchemaNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

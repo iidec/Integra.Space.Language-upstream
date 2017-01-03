@@ -29,11 +29,7 @@ namespace Integra.Space.Language.ASTNodes.Constants
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = treeNode.Token.Location.Column;
-            this.result.Line = treeNode.Token.Location.Line;
-            this.result.NodeText = "null";
-            this.result.NodeType = PlanNodeTypeEnum.Constant;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant, "null");
             this.result.Properties.Add("Value", null);
             this.result.Properties.Add("IsConstant", true);
             this.result.Properties.Add("DataType", typeof(object));

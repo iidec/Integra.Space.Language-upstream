@@ -111,7 +111,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 optionsAux[RoleOptionEnum.Remove] = usersToRemove;
             }
             
-            return new AlterRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

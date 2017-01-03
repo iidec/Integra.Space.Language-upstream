@@ -51,10 +51,7 @@ namespace Integra.Space.Language.ASTNodes.Values.Functions
             this.checkExpression = AddChild(NodeUseType.Parameter, "CheckExpression", ChildrenNodes[1]) as AstNodeBase;
             this.replacementValue = AddChild(NodeUseType.Parameter, "ReplacementValue", ChildrenNodes[2]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.NodeType = PlanNodeTypeEnum.IsNullFunction;
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.IsNullFunction, this.NodeText);
             this.result.Children = new List<PlanNode>();
         }
 

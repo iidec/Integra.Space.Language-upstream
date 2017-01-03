@@ -116,7 +116,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             CommandObject commandObject = new CommandObject(systemObjectType, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, this.granularPermission, false);
 
-            return new TruncateNode(this.Action, commandObject, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new TruncateNode(this.Action, commandObject, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

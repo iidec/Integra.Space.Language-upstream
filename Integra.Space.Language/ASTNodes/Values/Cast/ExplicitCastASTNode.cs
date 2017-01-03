@@ -44,10 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Cast
             this.targetType = AddChild(NodeUseType.Parameter, "TargetType", ChildrenNodes[0]) as AstNodeBase;
             this.value = AddChild(NodeUseType.Parameter, "Value", ChildrenNodes[1]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            this.result.Column = ChildrenNodes[0].Token.Location.Column;
-            this.result.Line = ChildrenNodes[0].Token.Location.Line;
-            this.result.NodeType = PlanNodeTypeEnum.Cast;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Cast, this.NodeText);
         }
 
         /// <summary>

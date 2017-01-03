@@ -73,7 +73,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.CheckAllowedOptions(optionsAux);
 
-            return new CreateSourceNode(commandObject, columnsAux, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateSourceNode(commandObject, columnsAux, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

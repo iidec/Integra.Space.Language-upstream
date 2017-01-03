@@ -105,7 +105,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             // agrego la lista de usuarios al hashset de objetos del comando.
             usersAux.ToList().ForEach(x => commandObjects.Add(x));
 
-            return new AddOrRemoveCommandNode(actionAux, commandObjects, databaseName, rolesAux, usersAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AddOrRemoveCommandNode(actionAux, commandObjects, databaseName, rolesAux, usersAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

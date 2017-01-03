@@ -54,7 +54,6 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 this.leftNode = AddChild(NodeUseType.Parameter, "this.leftNode", ChildrenNodes[0]) as AstNodeBase;
                 this.operationNode = (string)ChildrenNodes[1].Token.Value;
                 this.rightNode = AddChild(NodeUseType.Parameter, "this.rightNode", ChildrenNodes[2]) as AstNodeBase;
-                this.result = new PlanNode(ChildrenNodes[1].Token.Location.Line, ChildrenNodes[1].Token.Location.Column, this.NodeText);
             }
             else
             {
@@ -74,7 +73,7 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 switch (operacion)
                 {
                     case "-":
-                        this.result.NodeType = PlanNodeTypeEnum.Subtract;
+                        this.result = new PlanNode(ChildrenNodes[1].Token.Location.Line, ChildrenNodes[1].Token.Location.Column, PlanNodeTypeEnum.Subtract, this.NodeText);
                         break;
                     default:
                         ErrorNode error = new ErrorNode();
@@ -132,11 +131,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
             {
                 if (validate.ConvertLeftNode)
                 {
-                    PlanNode casteo = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                    casteo.Column = leftNode.Column;
-                    casteo.Line = leftNode.Line;
+                    PlanNode casteo = new PlanNode(leftNode.Line, leftNode.Column, PlanNodeTypeEnum.Cast);
                     casteo.NodeText = leftNode.NodeText;
-                    casteo.NodeType = PlanNodeTypeEnum.Cast;
                     casteo.Properties.Add("DataType", selectedType);
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(leftNode);
@@ -146,11 +142,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 }
                 else if (validate.ConvertRightNode)
                 {
-                    PlanNode casteo = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-                    casteo.Column = rightNode.Column;
-                    casteo.Line = rightNode.Line;
+                    PlanNode casteo = new PlanNode(rightNode.Line, rightNode.Column, PlanNodeTypeEnum.Cast);
                     casteo.NodeText = rightNode.NodeText;
-                    casteo.NodeType = PlanNodeTypeEnum.Cast;
                     casteo.Properties.Add("DataType", selectedType);
                     casteo.Children = new List<PlanNode>();
                     casteo.Children.Add(rightNode);
@@ -296,8 +289,8 @@ namespace Integra.Space.Language.ASTNodes.Operations
                 PlanNode r = (PlanNode)this.rightNode.Evaluate(thread);
                 this.EndEvaluate(thread);
 
-                this.result.NodeText = l.NodeText + " " + this.operationNode + " " + r.NodeText;
                 this.SelectOperation(this.operationNode, thread);
+                this.result.NodeText = l.NodeText + " " + this.operationNode + " " + r.NodeText;
                 this.CreateChildrenForResult(l, r, thread);
                 this.ValidateTypesForOperation(l, r, this.operationNode, thread);
 

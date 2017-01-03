@@ -74,7 +74,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             this.on = AddChild(NodeUseType.Parameter, "on", ChildrenNodes[5]) as AstNodeBase;
             this.timeout = AddChild(NodeUseType.Parameter, "timeout", ChildrenNodes[6]) as AstNodeBase;
 
-            this.result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.CrossJoin, this.NodeText);
         }
 
         /// <summary>
@@ -98,14 +98,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             if (joinTypeAux != null)
             {
                 this.SetResultJoinType(joinTypeAux);
-                this.result.Column = joinTypeAux.Column;
-                this.result.Line = joinTypeAux.Line;
                 this.result.NodeText = string.Format("{0} ", joinTypeAux.NodeText);
             }
             else
             {
-                this.result.Column = joinAux.Column;
-                this.result.Line = joinAux.Line;
                 this.result.NodeText = string.Empty;
             }
 
@@ -140,8 +136,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             
             this.result.NodeText = string.Format("{0} {1} ", this.result.NodeText, timeoutAux.NodeText);
 
-            PlanNode sourcesNewScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            sourcesNewScope.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode sourcesNewScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             sourcesNewScope.Properties.Add("ScopeParameters", new ScopeParameter[] { new ScopeParameter(0, null), new ScopeParameter(1, null) });
             sourcesNewScope.Children = new List<PlanNode>();
             sourcesNewScope.Children.Add(refCountLeft);
@@ -163,23 +158,23 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         {
             if (PlanNodeTypeEnum.LeftJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
-                this.result.NodeType = PlanNodeTypeEnum.LeftJoin;
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.LeftJoin, this.NodeText);
             }
             else if (PlanNodeTypeEnum.RightJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
-                this.result.NodeType = PlanNodeTypeEnum.RightJoin;
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.RightJoin, this.NodeText);
             }
             else if (PlanNodeTypeEnum.CrossJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
-                this.result.NodeType = PlanNodeTypeEnum.CrossJoin;
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.CrossJoin, this.NodeText);
             }
             else if (PlanNodeTypeEnum.InnerJoin.ToString().Equals(joinTypeNode.NodeText + "join", System.StringComparison.InvariantCultureIgnoreCase))
             {
-                this.result.NodeType = PlanNodeTypeEnum.InnerJoin;
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.InnerJoin, this.NodeText);
             }
             else
             {
-                this.result.NodeType = PlanNodeTypeEnum.CrossJoin;
+                this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.CrossJoin, this.NodeText);
             }
         }
 
@@ -190,22 +185,18 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <returns>Where branch statement that optimize the buffers send to the observable join.</returns>
         private PlanNode GetWhereForOptimization(PlanNode child)
         {
-            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            newScope.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             newScope.Children = new List<PlanNode>();
             newScope.Children.Add(child);
 
-            PlanNode where = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            where.NodeType = PlanNodeTypeEnum.ObservableWhere;
+            PlanNode where = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableWhere);
             where.Children = new List<PlanNode>();
 
-            PlanNode getParam = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            getParam.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode getParam = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
             getParam.Properties.Add("SourceName", child.FindNode(PlanNodeTypeEnum.Identifier).Single().Properties["Value"]);
             getParam.Properties.Add("ParameterPosition", 0);
 
-            PlanNode getProperty = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            getProperty.NodeType = PlanNodeTypeEnum.Property;
+            PlanNode getProperty = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Property);
             getProperty.Properties.Add("Property", "Count");
             getProperty.Properties.Add("InternalUse", true);
             getProperty.Properties.Add("FromInterface", "ICollection`1");
@@ -213,12 +204,10 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             getProperty.Children = new List<PlanNode>();
             getProperty.Children.Add(getParam);
 
-            PlanNode greaterThan = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            greaterThan.NodeType = PlanNodeTypeEnum.GreaterThan;
+            PlanNode greaterThan = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.GreaterThan);
             greaterThan.Children = new List<PlanNode>();
 
-            PlanNode constant = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            constant.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode constant = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
             constant.Properties.Add("Value", 0);
             constant.Properties.Add("DataType", typeof(int));
             constant.Properties.Add("IsConstant", true);
@@ -239,13 +228,11 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         /// <returns>Publish and ref-count execution plan.</returns>
         private PlanNode GetPublishAndRefCount(PlanNode child)
         {
-            PlanNode publish = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            publish.NodeType = PlanNodeTypeEnum.ObservablePublish;
+            PlanNode publish = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservablePublish);
             publish.Children = new List<PlanNode>();
             publish.Children.Add(this.GetWhereForOptimization(this.GetApplyWindow(child)));
 
-            PlanNode refCount = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            refCount.NodeType = PlanNodeTypeEnum.ObservableRefCount;
+            PlanNode refCount = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableRefCount);
             refCount.Children = new List<PlanNode>();
             refCount.Children.Add(publish);
 
@@ -260,25 +247,21 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
         private PlanNode GetApplyWindow(PlanNode child)
         {
             // este solo se coloca porque se hace llama a PopScope en la compilación.
-            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            newScope.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode newScope = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             newScope.Children = new List<PlanNode>();
             newScope.Children.Add(child);
 
-            PlanNode result = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            result.NodeType = PlanNodeTypeEnum.ObservableBuffer;
+            PlanNode result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBuffer);
             result.Properties.Add("internallyGenerated", true);
             result.Children = new List<PlanNode>();
             result.Children.Add(newScope);
 
-            PlanNode bufferSizeForJoin = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            bufferSizeForJoin.NodeType = PlanNodeTypeEnum.BufferSizeForJoin;
+            PlanNode bufferSizeForJoin = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.BufferSizeForJoin);
             bufferSizeForJoin.Children = new List<PlanNode>();
 
             result.Children.Add(bufferSizeForJoin);
 
-            PlanNode windowSize = new PlanNode(this.Location.Line, this.Location.Column, this.NodeText);
-            windowSize.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode windowSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
             windowSize.Properties.Add("Value", int.Parse(System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]));
             windowSize.Properties.Add("DataType", typeof(int));
 

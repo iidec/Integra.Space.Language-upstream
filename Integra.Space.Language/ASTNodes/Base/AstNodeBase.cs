@@ -88,15 +88,6 @@ namespace Integra.Space.Language.ASTNodes.Base
         }
 
         /// <summary>
-        /// Gets the text of the non terminal.
-        /// </summary>
-        /// <returns>Non terminal text value.</returns>
-        protected string GetNodeText()
-        {
-            return this.GetNodeText(this.childrenNodes);
-        }
-
-        /// <summary>
         /// Gets the test of the non terminal children.
         /// </summary>
         /// <param name="childrenNodes">Non terminal children nodes.</param>
