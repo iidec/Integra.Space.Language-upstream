@@ -424,7 +424,6 @@ namespace Integra.Space.Compiler
                 case PlanNodeTypeEnum.EnumerableOrderByDesc:
                     expResult = this.CreateEnumerableOrderBy(actualNode, leftNode, rightNode);
                     break;
-                    break;
                 case PlanNodeTypeEnum.ObservableSelectForGroupBy:
                     expResult = this.CreateSelectForObservableGroupBy(actualNode, leftNode, rightNode);
                     break;
@@ -2140,7 +2139,14 @@ namespace Integra.Space.Compiler
         {
             /*
              * public static IObservable<IList<TSource>> Buffer<TSource>(this IObservable<TSource> source, int count);
-             * public static IObservable<IList<TSource>> Buffer<TSource>(this IObservable<TSource> source, TimeSpan timeSpan, IScheduler scheduler);             
+             * public static IObservable<IList<TSource>> Buffer<TSource>(this IObservable<TSource> source, TimeSpan timeSpan, IScheduler scheduler);     
+             * 
+             * Crea:
+             * incomingObservable.Buffer(bufferTimeOrSize)
+             * 
+             * Ej.        
+             * incomingObservable.Buffer(<numero>)
+             * incomingObservable.Buffer(<timeSpan>, <scheduler>)
              */
 
             ParameterExpression result = Expression.Variable(typeof(IObservable<IList<I>>), "ResultObservableBuffer");

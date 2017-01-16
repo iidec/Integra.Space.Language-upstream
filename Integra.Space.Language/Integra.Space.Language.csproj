@@ -245,10 +245,15 @@
     <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
     <Compile Include="Grammars\TemporalStreamGrammar.cs" />
     <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
+    <Compile Include="Helpers\BnfTermExtensions.cs" />
+    <Compile Include="Helpers\DefaultRuleValidator.cs" />
+    <Compile Include="Helpers\EQLFunctionalityEnum.cs" />
+    <Compile Include="Helpers\IGrammarRuleValidator.cs" />
     <Compile Include="Helpers\InternalPlanNodes.cs" />
     <Compile Include="Helpers\NodesFinder.cs" />
     <Compile Include="Helpers\ProjectionColumn.cs" />
     <Compile Include="Helpers\ScopeParameter.cs" />
+    <Compile Include="Helpers\SourceColumnType.cs" />
     <Compile Include="Parsers\BindingParameter.cs" />
     <Compile Include="Parsers\CommandParser.cs" />
     <Compile Include="Parsers\SpaceParser.cs" />

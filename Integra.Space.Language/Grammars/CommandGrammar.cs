@@ -6,6 +6,7 @@
 namespace Integra.Space.Language.Grammars
 {
     using System;
+    using System.Collections.Generic;
     using ASTNodes;
     using ASTNodes.Commands;
     using ASTNodes.Identifier;
@@ -32,13 +33,14 @@ namespace Integra.Space.Language.Grammars
         public CommandGrammar() : base(false)
         {
             this.expressionGrammar = new ExpressionGrammar();
-            this.CreateGrammar();
+            this.CreateGrammar(new DefaultRuleValidator());
         }
 
         /// <summary>
         /// Specify the command grammar.
         /// </summary>
-        public void CreateGrammar()
+        /// <param name="validator">Grammar rule validator.</param>
+        public void CreateGrammar(IGrammarRuleValidator validator)
         {
             /* ACTIONS */
             KeyTerm terminalCreate = ToTerm("create", "create");
@@ -303,6 +305,9 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_SECOND_LEVEL_ID_LIST = new NonTerminal("SECOND_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
             nt_SECOND_LEVEL_ID_LIST.AstConfig.NodeType = null;
             nt_SECOND_LEVEL_ID_LIST.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
+            NonTerminal nt_SECOND_LEVEL_ID_LIST_2 = new NonTerminal("SECOND_LEVEL_ID_LIST", typeof(Irony.Interpreter.Ast.StatementListNode));
+            nt_SECOND_LEVEL_ID_LIST_2.AstConfig.NodeType = null;
+            nt_SECOND_LEVEL_ID_LIST_2.AstConfig.DefaultNodeCreator = () => new Irony.Interpreter.Ast.StatementListNode();
             /************************************************/
 
             /* INSERT COMMAND VALUE LIST */
@@ -493,6 +498,7 @@ namespace Integra.Space.Language.Grammars
             /* RULES */
 
             nt_SECOND_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST, terminalComa, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
+            nt_SECOND_LEVEL_ID_LIST_2.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST_2, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
             nt_THIRD_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST, terminalComa, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
             nt_THIRD_LEVEL_ID_LIST_2.Rule = this.MakePlusRule(nt_THIRD_LEVEL_ID_LIST_2, nt_THIRD_LEVEL_OBJECT_IDENTIFIER);
             nt_FOURTH_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_FOURTH_LEVEL_ID_LIST, terminalComa, nt_FOURTH_LEVEL_OBJECT_IDENTIFIER);
@@ -510,7 +516,7 @@ namespace Integra.Space.Language.Grammars
                                     | terminalSchema
                                     | terminalSource
                                     | terminalStream
-                                    | terminalView;
+                                    /*| terminalView*/;
 
             nt_SECOND_LEVEL_OBJECTS_TO_ALTER.Rule = terminalDatabase
                                                     | terminalLogin
@@ -522,7 +528,7 @@ namespace Integra.Space.Language.Grammars
 
             nt_FOURTH_LEVEL_OBJECTS_TO_ALTER.Rule = terminalSource
                                                     | terminalStream
-                                                    | terminalView;
+                                                    /*| terminalView*/;
 
             nt_SECOND_LEVEL_OBJECTS_TO_TAKE_OWNERSHIP.Rule = terminalDatabase
                                                             | terminalEndpoint;
@@ -570,7 +576,7 @@ namespace Integra.Space.Language.Grammars
                                 | nt_GRANULAR_PERMISSION_ANY;
 
             nt_GRANULAR_PERMISSION.Rule = terminalControl + terminalServer
-                                            | terminalCreate + terminalView
+                                            /*| terminalCreate + terminalView*/
                                             | terminalCreate + terminalSource
                                             | terminalCreate + terminalStream
                                             | terminalCreate + terminalSchema
@@ -653,8 +659,8 @@ namespace Integra.Space.Language.Grammars
             nt_DB_ROLE_OPTION_LIST.Rule = this.MakePlusRule(nt_DB_ROLE_OPTION_LIST, terminalComa, nt_DB_ROLE_OPTION);
             nt_DB_ROLE_OPTION.Rule = terminalStatus + terminalEqual + terminalStatusValue
                                     | terminalName + terminalEqual + terminalId
-                                    | terminalAdd + terminalEqual + nt_THIRD_LEVEL_ID_LIST_2
-                                    | terminalRemove + terminalEqual + nt_THIRD_LEVEL_ID_LIST_2;
+                                    | terminalAdd + terminalEqual + nt_SECOND_LEVEL_ID_LIST_2
+                                    | terminalRemove + terminalEqual + nt_SECOND_LEVEL_ID_LIST_2;
             nt_CREATE_SCHEMA.Rule = terminalCreate + terminalSchema + nt_THIRD_LEVEL_OBJECT_IDENTIFIER;
             nt_CREATE_STREAM.Rule = terminalCreate + terminalStream + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + terminalQueryScript + nt_STREAM_OPTION_LIST_AUX;
             nt_STREAM_OPTION_LIST_AUX.Rule = terminalWith + nt_STREAM_OPTION_LIST
@@ -682,8 +688,8 @@ namespace Integra.Space.Language.Grammars
             nt_ALTER_SCHEMA.Rule = terminalAlter + terminalSchema + nt_THIRD_LEVEL_OBJECT_IDENTIFIER + terminalWith + terminalName + terminalEqual + terminalId;
 
             nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + nt_ALTER_SOURCE_STATEMENTS;
-            nt_ALTER_SOURCE_COLUMNS_STRUCTURE.Rule = terminalAdd + nt_SOURCE_COLUMN_LIST
-                                                    | terminalRemove + nt_SOURCE_COLUMN_LIST;
+            nt_ALTER_SOURCE_COLUMNS_STRUCTURE.Rule = terminalAdd + terminalParentesisIz + nt_SOURCE_COLUMN_LIST + terminalParentesisDer
+                                                    | terminalRemove + terminalParentesisIz + nt_SOURCE_COLUMN_LIST + terminalParentesisDer;
             nt_ALTER_SOURCE_STATEMENTS.Rule = terminalWith + nt_SOURCE_OPTION_LIST
                                                 | nt_ALTER_SOURCE_COLUMNS_STRUCTURE;
 
@@ -712,8 +718,8 @@ namespace Integra.Space.Language.Grammars
 
             /* Add USERS TO ROLES */
 
-            nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND.Rule = terminalAdd + nt_THIRD_LEVEL_ID_LIST + terminalTo + nt_THIRD_LEVEL_ID_LIST
-                                                            | terminalRemove + nt_THIRD_LEVEL_ID_LIST + terminalTo + nt_THIRD_LEVEL_ID_LIST;
+            nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND.Rule = terminalAdd + nt_SECOND_LEVEL_ID_LIST + terminalTo + nt_SECOND_LEVEL_ID_LIST
+                                                            | terminalRemove + nt_SECOND_LEVEL_ID_LIST + terminalTo + nt_SECOND_LEVEL_ID_LIST;
 
             /* TAKE OWNERSHIP */
 
@@ -751,6 +757,8 @@ namespace Integra.Space.Language.Grammars
                                     | nt_CREATE_USER
                                     | nt_CREATE_ROLE
                                     | nt_CREATE_SCHEMA
+                                        /*.AddOr(nt_CREATE_SOURCE, EQLFunctionalityEnum.CreateSource, validator)*/
+                                        /*.AddOr(nt_CREATE_STREAM, EQLFunctionalityEnum.CreateStream, validator)*/
                                     | nt_CREATE_SOURCE
                                     | nt_CREATE_STREAM
                                     | nt_ALTER_LOGIN
@@ -770,7 +778,7 @@ namespace Integra.Space.Language.Grammars
 
             this.Root = nt_COMMAND_NODE_LIST;
 
-            this.LanguageFlags = Irony.Parsing.LanguageFlags.CreateAst;
+            this.LanguageFlags = LanguageFlags.CreateAst;
         }
     }
 }

@@ -821,14 +821,14 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void AlterSourceAddColumns()
         {
-            string command = "alter source source1 add column1 string, column2 int, column3 decimal";
+            string command = "alter source source1 add (column1 string, column2 int, column3 decimal)";
             this.Process(command);
         }
 
         [TestMethod]
         public void AlterSourceRemoveColumns()
         {
-            string command = "alter source source1 remove column1 string, column2 int, column3 decimal";
+            string command = "alter source source1 remove (column1 string, column2 int, column3 decimal)";
             this.Process(command);
         }
 
