@@ -167,6 +167,7 @@
     <Compile Include="Database\Test.cs">
       <DependentUpon>SpaceTests.tt</DependentUpon>
     </Compile>
+    <Compile Include="TestRuleValidator.cs" />
     <Compile Include="FakeEvents\FakeEv.cs" />
     <Compile Include="FakeEvents\FakeEventData.cs" />
     <Compile Include="FakeEvents\FakeEventDataSpecificLeft.cs" />

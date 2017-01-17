@@ -296,7 +296,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "max((decimal)TransactionAmount)");
+                                                                                            "max((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -334,7 +334,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "min((decimal)TransactionAmount)");
+                                                                                            "min((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -374,7 +374,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -413,7 +413,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -459,7 +459,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -497,7 +497,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -535,7 +535,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -573,7 +573,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -611,7 +611,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -649,7 +649,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -687,7 +687,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -725,7 +725,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -763,7 +763,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -803,7 +803,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -844,7 +844,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -885,7 +885,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -926,7 +926,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -967,7 +967,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1008,7 +1008,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1049,7 +1049,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1090,7 +1090,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1131,7 +1131,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1170,7 +1170,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1209,7 +1209,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1248,7 +1248,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1287,7 +1287,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1326,7 +1326,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1367,7 +1367,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1408,7 +1408,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1449,7 +1449,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1490,7 +1490,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1531,7 +1531,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1572,7 +1572,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1613,7 +1613,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1654,7 +1654,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1815,7 +1815,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1900,7 +1900,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "grupo1",
                                                                                             "grupo2",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -1981,7 +1981,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -2021,7 +2021,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:10'",
                                                                                             "MessageType as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -2103,7 +2103,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "MessageType as grupo1, PrimaryAccountNumber as grupo2",
                                                                                             "grupo1",
                                                                                             "grupo2",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -2176,7 +2176,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 QueryParser parser = new QueryParser(
                     string.Format("from {0} select {1} as Llave into SourceXYZ",
                                                                 "SourceParaPruebas",
-                                                                "sum((decimal)TransactionAmount)")
+                                                                "sum((double)TransactionAmount)")
                                                                 );
                 PlanNode plan = parser.Evaluate().Item1;
 
@@ -2210,7 +2210,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "'00:00:00:01'",
                                                                                             "MessageType as grupo1",
                                                                                             "key.grupo1",
-                                                                                            "sum((decimal)CardAcceptorNameLocation)")
+                                                                                            "sum((double)CardAcceptorNameLocation)")
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
@@ -2260,7 +2260,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 
@@ -2277,7 +2277,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "grupo1",
                                                                                             "grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)TransactionAmount)");
+                                                                                            "sum((double)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
             PlanNode plan = parser.Evaluate().Item1;
 

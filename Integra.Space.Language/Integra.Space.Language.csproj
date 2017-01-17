@@ -227,6 +227,8 @@
     <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\DropObjectNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\InsertNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\SourceColumnNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\SourceColumnTypeNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
     <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
@@ -246,7 +248,6 @@
     <Compile Include="Grammars\TemporalStreamGrammar.cs" />
     <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
     <Compile Include="Helpers\BnfTermExtensions.cs" />
-    <Compile Include="Helpers\DefaultRuleValidator.cs" />
     <Compile Include="Helpers\EQLFunctionalityEnum.cs" />
     <Compile Include="Helpers\IGrammarRuleValidator.cs" />
     <Compile Include="Helpers\InternalPlanNodes.cs" />

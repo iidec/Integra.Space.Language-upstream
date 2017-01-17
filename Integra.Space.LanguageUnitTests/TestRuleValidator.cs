@@ -1,20 +1,20 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="DefaultRuleValidator.cs" company="Integra.Space.Language">
+// <copyright file="TestRuleValidator.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace Integra.Space.Language
+namespace Integra.Space.LanguageUnitTests
 {
-    using System;
     using System.Collections.Generic;
+    using Language;
 
     /// <summary>
-    /// Default rule validator class.
+    /// Test rule validator class.
     /// </summary>
-    internal class DefaultRuleValidator : IGrammarRuleValidator
+    public class TestRuleValidator : IGrammarRuleValidator
     {
         /// <summary>
-        /// Default functionalities.
+        /// Test functionalities.
         /// </summary>
         private static Dictionary<EQLFunctionalityEnum, bool> functionalities = new Dictionary<EQLFunctionalityEnum, bool>
         {
@@ -24,12 +24,15 @@ namespace Integra.Space.Language
             { EQLFunctionalityEnum.DropStream, true },
             { EQLFunctionalityEnum.Insert, true },
             { EQLFunctionalityEnum.Join, true },
-            { EQLFunctionalityEnum.TemporalStream, true }
+            { EQLFunctionalityEnum.TemporalStream, true },
+            { EQLFunctionalityEnum.CreateDatabaseRole, false },
         };
 
         /// <inheritdoc />
         public bool IsAnAllowedFunctionality(EQLFunctionalityEnum functionality)
         {
+            return true;
+
             if (functionalities.ContainsKey(functionality))
             {
                 return functionalities[functionality];

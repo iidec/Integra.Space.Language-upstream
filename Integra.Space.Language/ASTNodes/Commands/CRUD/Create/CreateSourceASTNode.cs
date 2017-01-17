@@ -26,7 +26,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Source column list.
         /// </summary>
-        private DictionaryASTNode<SourceColumnsASTNode, string, Type> columns;
+        private ListASTNode<SourceColumnsASTNode, SourceColumnNode> columns;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateSourceASTNode"/> class.
@@ -44,7 +44,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            this.columns = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "SOURCE_COLUMNS", ChildrenNodes[3]) as DictionaryASTNode<SourceColumnsASTNode, string, Type>;
+            this.columns = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "SOURCE_COLUMNS", ChildrenNodes[3]) as ListASTNode<SourceColumnsASTNode, SourceColumnNode>;
             this.options = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "COMMAND_OPTIONS", ChildrenNodes[4]) as CommandOptionListASTNode<SourceOptionEnum>;
         }
 
@@ -59,7 +59,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             CommandObject commandObject = (CommandObject)base.DoEvaluate(thread);
 
             this.BeginEvaluate(thread);
-            Dictionary<string, Type> columnsAux = (Dictionary<string, Type>)this.columns.Evaluate(thread);
+            List<SourceColumnNode> columnsAux = (List<SourceColumnNode>)this.columns.Evaluate(thread);
 
             Dictionary<SourceOptionEnum, object> optionsAux = new Dictionary<SourceOptionEnum, object>();
             if (this.options != null)

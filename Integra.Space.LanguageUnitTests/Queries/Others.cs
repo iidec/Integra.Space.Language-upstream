@@ -59,7 +59,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosProyeccionMixta()
         {
-            string eql = "from SourceParaPruebas1 apply window of '00:00:01' select sum((decimal)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo into SourceXYZ";
+            string eql = "from SourceParaPruebas1 apply window of '00:00:01' select sum((double)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -98,7 +98,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosProyeccionMixta()
         {
-            string eql = "from SourceParaPruebas1 where 1 == 1 apply window of '00:00:01' select sum((decimal)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where 1 == 1 apply window of '00:00:01' select sum((double)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -137,7 +137,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            string eql = "from SourceParaPruebas1 apply window of '00:00:01' select sum((decimal)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo order by suma into SourceXYZ";
+            string eql = "from SourceParaPruebas1 apply window of '00:00:01' select sum((double)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo order by suma into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -176,7 +176,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDescProyeccionMixta()
         {
-            string eql = "from SourceParaPruebas1 where 1 == 1 apply window of '00:00:01' select sum((decimal)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo order by suma into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where 1 == 1 apply window of '00:00:01' select sum((double)TransactionAmount) as suma, TransactionAmount as monto, \"campoXX\" as campo order by suma into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -219,7 +219,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "SourceParaPruebas1",
                                                                                             "MessageType == \"0100\"",
                                                                                             "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
-                                                                                            "(decimal)TransactionAmount");
+                                                                                            "(double)TransactionAmount");
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(

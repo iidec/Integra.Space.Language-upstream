@@ -10,7 +10,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
     {
         public void Process(string command)
         {
-            CommandParser cp = new CommandParser(command);
+            CommandParser cp = new CommandParser(command, new TestRuleValidator());
             var spaceCommands = cp.Evaluate();
 
             Console.WriteLine();
@@ -119,13 +119,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
         public void TakeOwnershipOnStream()
         {
             string command = "take ownership on stream Stream1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void TakeOwnershipOnView()
-        {
-            string command = "take ownership on view View1";
             this.Process(command);
         }
 
@@ -255,21 +248,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = "drop stream stream1, stream2, stream3";
             this.Process(command);
         }
-
-        [TestMethod]
-        public void DropView()
-        {
-            string command = "drop view view1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void DropViews()
-        {
-            string command = "drop view view1, view2, view3";
-            this.Process(command);
-        }
-
+        
         #endregion drop
 
         #region create
@@ -497,56 +476,56 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void CreateSource()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal)";
+            string command = "create source source123 (column1 string(30), column2 int, column3 double)";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithStatusOn()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with status = on";
+            string command = "create source source123 (column1 string(40), column2 int, column3 double) with status = on";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithStatusOff()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with status = off";
+            string command = "create source source123 (column1 string(60), column2 int, column3 double) with status = off";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithCacheDurability()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_durability = 1";
+            string command = "create source source123 (column1 string(10), column2 int, column3 double) with cache_durability = 1";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithCacheSize()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_size = 1";
+            string command = "create source source123 (column1 string(2), column2 int, column3 double) with cache_size = 1";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithCacheSizeCacheDurability()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with cache_size = 1, cache_durability = 1";
+            string command = "create source source123 (column1 string(100), column2 int, column3 double) with cache_size = 1, cache_durability = 1";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithPersistentOn()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with persistent = on";
+            string command = "create source source123 (column1 string(250), column2 int, column3 double) with persistent = on";
             this.Process(command);
         }
 
         [TestMethod]
         public void CreateSourceWithPersistentOff()
         {
-            string command = "create source source123 (column1 string, column2 int, column3 decimal) with persistent = off";
+            string command = "create source source123 (column1 string(4000), column2 int, column3 double) with persistent = off";
             this.Process(command);
         }
 
@@ -821,14 +800,14 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void AlterSourceAddColumns()
         {
-            string command = "alter source source1 add (column1 string, column2 int, column3 decimal)";
+            string command = "alter source source1 add (column1 string(10), column2 int, column3 double)";
             this.Process(command);
         }
 
         [TestMethod]
         public void AlterSourceRemoveColumns()
         {
-            string command = "alter source source1 remove (column1 string, column2 int, column3 decimal)";
+            string command = "alter source source1 remove (column1 string(20), column2 int, column3 double)";
             this.Process(command);
         }
 

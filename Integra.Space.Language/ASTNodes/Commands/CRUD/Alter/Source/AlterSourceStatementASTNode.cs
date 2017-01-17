@@ -62,7 +62,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             if (childrenCount == 1)
             {
-                Tuple<string, Dictionary<string, Type>> columnsAux = (Tuple<string, Dictionary<string, Type>>)this.columns.Evaluate(thread);
+                Tuple<string, List<SourceColumnNode>> columnsAux = (Tuple<string, List<SourceColumnNode>>)this.columns.Evaluate(thread);
                 this.EndEvaluate(thread);
                 return columnsAux;
             }

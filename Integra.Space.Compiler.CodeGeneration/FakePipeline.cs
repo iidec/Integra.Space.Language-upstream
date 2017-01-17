@@ -67,12 +67,12 @@ namespace Integra.Space.Compiler
         /// <param name="context">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParser<T>(CodeGeneratorConfiguration context, string script)
+        public Delegate ProcessWithCommandParser<T>(CodeGeneratorConfiguration context, string script, IGrammarRuleValidator ruleValidator)
         {
             /*MetadataQueryParser parser = new MetadataQueryParser(script);
             PlanNode executionPlan = parser.Evaluate();*/
 
-            CommandParser parser = new CommandParser(script);
+            CommandParser parser = new CommandParser(script, ruleValidator);
             SystemCommand metadataCommand = parser.Evaluate().First();
             
             SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);

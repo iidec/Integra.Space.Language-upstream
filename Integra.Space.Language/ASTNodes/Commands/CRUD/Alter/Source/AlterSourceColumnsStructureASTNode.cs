@@ -20,7 +20,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <summary>
         /// Source columns.
         /// </summary>
-        private DictionaryASTNode<SourceColumnsASTNode, string, Type> columns;
+        private ListASTNode<SourceColumnsASTNode, SourceColumnNode> columns;
         
         /// <summary>
         /// Add or remove action.
@@ -36,7 +36,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.action = (string)ChildrenNodes[0].Token.Value;
-            this.columns = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "SOURCE_COLUMNS", ChildrenNodes[1]) as DictionaryASTNode<SourceColumnsASTNode, string, Type>;
+            this.columns = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "SOURCE_COLUMNS", ChildrenNodes[1]) as ListASTNode<SourceColumnsASTNode, SourceColumnNode>;
         }
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            Dictionary<string, Type> columnsAux = (Dictionary<string, Type>)this.columns.Evaluate(thread);
+            List<SourceColumnNode> columnsAux = (List<SourceColumnNode>)this.columns.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return Tuple.Create(this.action, columnsAux);

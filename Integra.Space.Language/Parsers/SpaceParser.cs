@@ -58,7 +58,7 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="parameters">Binding parameters.</param>
         /// <returns>Execution plan.</returns>
-        protected object EvaluateParseTree(params BindingParameter[] parameters)
+        protected virtual object EvaluateParseTree(params BindingParameter[] parameters)
         {
             try
             {

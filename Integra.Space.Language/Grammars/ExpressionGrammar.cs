@@ -188,38 +188,40 @@ namespace Integra.Space.Language.Grammars
             
             /* TIPOS PARA CASTEO */
             ConstantTerminal terminalType = new ConstantTerminal("dataTypes");
+            terminalType.Add("short", typeof(short));
+            terminalType.Add("int", typeof(int));
+            terminalType.Add("long", typeof(long));
+            terminalType.Add("double", typeof(double));
+            terminalType.Add("string", typeof(string));
+            terminalType.Add("bool", typeof(bool));
+            terminalType.Add("TimeSpan", typeof(TimeSpan));
+            terminalType.Add("DateTime", typeof(DateTime));
+            /*
             terminalType.Add("byte", typeof(byte));
             terminalType.Add("byte?", typeof(byte?));
             terminalType.Add("sbyte", typeof(sbyte));
             terminalType.Add("sbyte?", typeof(sbyte?));
-            terminalType.Add("short", typeof(short));
             terminalType.Add("short?", typeof(short?));
             terminalType.Add("ushort", typeof(ushort));
             terminalType.Add("ushort?", typeof(ushort?));
-            terminalType.Add("int", typeof(int));
             terminalType.Add("int?", typeof(int?));
             terminalType.Add("uint", typeof(uint));
             terminalType.Add("uint?", typeof(uint?));
-            terminalType.Add("long", typeof(long));
             terminalType.Add("long?", typeof(long?));
             terminalType.Add("ulong", typeof(ulong));
             terminalType.Add("ulong?", typeof(ulong?));
             terminalType.Add("float", typeof(float));
             terminalType.Add("float?", typeof(float?));
-            terminalType.Add("double", typeof(double));
             terminalType.Add("double?", typeof(double?));
             terminalType.Add("decimal", typeof(decimal));
             terminalType.Add("decimal?", typeof(decimal?));
             terminalType.Add("char", typeof(char));
             terminalType.Add("char?", typeof(char?));
-            terminalType.Add("string", typeof(string));
-            terminalType.Add("bool", typeof(bool));
             terminalType.Add("bool?", typeof(bool?));
             terminalType.Add("object", typeof(object));
-            terminalType.Add("DateTime", typeof(DateTime));
             terminalType.Add("DateTime?", typeof(DateTime?));
-            terminalType.Add("TimeSpan", typeof(TimeSpan));
             terminalType.Add("TimeSpan?", typeof(TimeSpan?));
+            */
             terminalType.AstConfig.NodeType = null;
             terminalType.AstConfig.DefaultNodeCreator = () => new TypeASTNode();
             
