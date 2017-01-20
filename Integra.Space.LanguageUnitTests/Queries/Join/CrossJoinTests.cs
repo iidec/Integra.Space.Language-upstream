@@ -15,7 +15,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading.Tasks;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
@@ -58,7 +57,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             Type queryType = queryInfoObject.GetQueryType();
             object queryObject = Activator.CreateInstance(queryType);
             MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
-            
+
             return ((IObservable<object>)result.Invoke(queryObject, new object[] { input1.AsObservable(), input2.AsObservable(), dsf.TestScheduler }));
         }
 
@@ -74,9 +73,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT (string)t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2, 1 as numeroXXX into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
@@ -121,9 +120,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -168,9 +167,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                  "TIMEOUT '00:00:02' " +
                                  "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -215,9 +214,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:20' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -262,9 +261,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(3).Ticks, new TestObject3())
                 );
@@ -306,14 +305,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             string eql = "cross " +
                                 "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
                                 "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
-                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                                                   //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3())
@@ -376,14 +375,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             string eql = "cross " +
                                 "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
                                 "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
-                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                                                   //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 , OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
@@ -460,9 +459,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
@@ -512,9 +511,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
@@ -560,9 +559,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -608,9 +607,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                  "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                  "TIMEOUT '00:00:02' " +
                                  "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -656,9 +655,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:01' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(2).Ticks, new TestObject3())
                 );
@@ -704,9 +703,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(3).Ticks, new TestObject3())
                 );
@@ -749,14 +748,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
             string eql = "cross " +
                                 "JOIN SourceParaPruebas3 as t1 " + //WHERE t1.PrimaryAccountNumber == \"9999941616073663_1\" " +
                                 "WITH SourceParaPruebas3 as t2 " + //WHERE t2.PrimaryAccountNumber == \"9999941616073663_2\" " +
-                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                                                   //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.Track2Data " +
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 , OnNext(TimeSpan.FromSeconds(6).Ticks, new TestObject3())
@@ -827,9 +826,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-                        
+
             ITestableObservable<TestObject3> input1 = dsf.TestScheduler.CreateHotObservable(
                 OnNext<TestObject3>(TimeSpan.FromSeconds(4).Ticks, new TestObject3())
                 );
@@ -882,9 +881,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -912,7 +911,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             try
@@ -947,9 +946,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -979,7 +978,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1008,7 +1007,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             try
@@ -1039,9 +1038,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1070,9 +1069,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1101,9 +1100,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1132,9 +1131,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "TIMEOUT '00:00:02' " +
                                 //"WHERE  t1.@event.Message.#1.#43 == \"Shell El RodeoGUATEMALA    GT\" " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1165,7 +1164,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1193,9 +1192,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1223,9 +1222,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "ON t1.AcquiringInstitutionIdentificationCode == t2.AcquiringInstitutionIdentificationCode " +
                                 "TIMEOUT '00:00:02' " +
                                 "SELECT t1.PrimaryAccountNumber as c1 into SourceXYZ"; // , t2.PrimaryAccountNumber as c2 
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             try
             {
                 QueryParser parser = new QueryParser(eql);
@@ -1265,11 +1264,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                         "isnull(t2.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.PrimaryAccountNumber as c1, t1.RetrievalReferenceNumber as c2, isnull(t1.SourceTimestamp, '01/01/2016') as ts1, " +
                                         "t2.PrimaryAccountNumber as c3, t2.RetrievalReferenceNumber as c4, isnull(t2.SourceTimestamp, '01/01/2017') as ts2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             #endregion Compiler
-            
+
             #region parameters
 
             // contexto
@@ -1303,17 +1302,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             int countLeft = 0;
             int countRight = 0;
-            rqCreated.ForEach(x =>
+            Array.ForEach(rqCreated, (x =>
             {
                 Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
-            });
+            }));
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
-            rsCreated.ForEach(x =>
+            Array.ForEach(rsCreated, (x =>
             {
                 Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
-            });
+            }));
 
             #endregion Print created events
 
@@ -1408,7 +1407,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
-            actualResults.ForEach(x =>
+            Array.ForEach(actualResults, (x =>
             {
                 Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
 
@@ -1420,11 +1419,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 {
                     diferenciasActualResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item4, x.Item5, false));
                 }
-            });
+            }));
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
-            expectedResults.ForEach(x =>
+            Array.ForEach(expectedResults, (x =>
             {
                 Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
 
@@ -1436,7 +1435,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 {
                     diferenciaExpectedResults.Add(Tuple.Create(x.Item1, x.Item2, x.Item3, x.Item4, false));
                 }
-            });
+            }));
 
             decimal exactitudAlcanzada = ((decimal)(expectedResultsUpdated.Count() * 100)) / expectedResults.Count();
 
@@ -1486,7 +1485,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         public void CustomLoadTest2()
         {
             #region Compiler
-            
+
             string eql = "cross " +
                                 "JOIN SourceParaPruebas1 as t1 WHERE t1.MessageType == \"0100\" " +
                                 "WITH SourceParaPruebas1 as t2 WHERE t2.MessageType == \"0110\" " +
@@ -1498,7 +1497,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                         "isnull(t2.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.PrimaryAccountNumber as c1, t1.RetrievalReferenceNumber as c2, isnull(t1.SourceTimestamp, '01/01/2016') as ts1, " +
                                         "t2.PrimaryAccountNumber as c3, t2.RetrievalReferenceNumber as c4, isnull(t2.SourceTimestamp, '01/01/2017') as ts2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             #endregion Compiler
@@ -1520,12 +1519,12 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool evaluateMatchedEvents = true;
 
             #endregion parameters
-                        
+
             #region Creation of events
 
             LoadTestsHelper helper = new LoadTestsHelper(eventNumber, timeout, whereDifference, limiteSuperiorOcurrenciaEventos, timeoutPercentage, evaluateMatchedEvents);
             Tuple<Tuple<TestObject1, long>[], Tuple<TestObject1, long>[], Tuple<string, string, string, string, bool>[]> ltEvents = helper.CreateEvents(JoinTypeEnum.Cross);
-            
+
             Tuple<TestObject1, long>[] rqCreated = ltEvents.Item1;
             Tuple<TestObject1, long>[] rsCreated = ltEvents.Item2;
             Tuple<string, string, string, string, bool>[] expectedResults = ltEvents.Item3;
@@ -1536,14 +1535,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             int countLeft = 0;
             int countRight = 0;
-            rqCreated.ForEach(x =>
+            Array.ForEach(rqCreated, (x =>
             {
                 System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
-            });
+            }));
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
-            rsCreated.ForEach(x =>
+            Array.ForEach(rsCreated, x =>
             {
                 System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
             });
@@ -1641,7 +1640,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
-            actualResults.ForEach(x =>
+            Array.ForEach(actualResults, x =>
             {
                 Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
 
@@ -1657,7 +1656,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
-            expectedResults.ForEach(x =>
+            Array.ForEach(expectedResults, x =>
             {
                 Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
 
@@ -1686,7 +1685,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             {
                 Assert.Fail("Falsos positivos entre los eventos resultantes obtenidos.");
             }
-            
+
             string premisas = $"PrintLog: {printLog} \nDebugMode: {debugMode} \nMeasureElapsedTime: {measureElapsedTime} \nTolerancia: {tolerance} \nNumero de eventos: {eventNumber} eventos \nLimite superior ocurrencia de eventos: {limiteSuperiorOcurrenciaEventos} ms " +
                                 $"\nPorcentaje de timeouts: {timeoutPercentage} % \nTimeout: {timeout} ms \nTimestamp condición en where: {whereDifference} ms \nEvaluar eventos coincidentes: {evaluateMatchedEvents} " +
                                 $"\nBuffer actual: {System.Configuration.ConfigurationManager.AppSettings["bufferSizeOfJoinSources"]} " +
@@ -1718,7 +1717,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     Assert.Inconclusive("Number of expected results is differ from number of actual results.\n" + report);
                 }
             }
-            
+
             #endregion  Report generation from result information
         }
 
@@ -1738,11 +1737,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                         "isnull(t2.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.PrimaryAccountNumber as c1, t1.RetrievalReferenceNumber as c2, isnull(t1.SourceTimestamp, '01/01/2016') as ts1, " +
                                         "t2.PrimaryAccountNumber as c3, t2.RetrievalReferenceNumber as c4, isnull(t2.SourceTimestamp, '01/01/2017') as ts2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             #endregion Compiler
-            
+
             #region parameters
 
             // contexto
@@ -1763,7 +1762,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
              * '>' evaluateMatchedEvents = false; porque se evaluan los eventos que no harán match
              * '<=' evaluateMatchedEvents = true; porque se evaluan los eventos que haran match
              */
-            bool evaluateMatchedEvents = false; 
+            bool evaluateMatchedEvents = false;
 
             #endregion parameters
 
@@ -1782,17 +1781,17 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             int countLeft = 0;
             int countRight = 0;
-            rqCreated.ForEach(x =>
-            {
-                System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
-            });
+            Array.ForEach(rqCreated, x =>
+             {
+                 System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
+             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
-            rsCreated.ForEach(x =>
-            {
-                System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
-            });
+            Array.ForEach(rsCreated, x =>
+             {
+                 System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
+             });
 
             #endregion Print created events
 
@@ -1887,7 +1886,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
-            actualResults.ForEach(x =>
+            Array.ForEach(actualResults, x =>
             {
                 Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
 
@@ -1903,7 +1902,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
-            expectedResults.ForEach(x =>
+            Array.ForEach(expectedResults, x =>
             {
                 Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
 
@@ -1977,11 +1976,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                         "isnull(t2.SourceTimestamp, '01/01/2017') - isnull(null, '01/01/2016') as o3, " +
                                         "t1.PrimaryAccountNumber as c1, t1.RetrievalReferenceNumber as c2, isnull(t1.SourceTimestamp, '01/01/2016') as ts1, " +
                                         "t2.PrimaryAccountNumber as c3, t2.RetrievalReferenceNumber as c4, isnull(t2.SourceTimestamp, '01/01/2017') as ts2 into SourceXYZ ";
-            
+
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            
+
             #endregion Compiler
-                        
+
             #region parameters
 
             // contexto
@@ -2015,14 +2014,14 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             int countLeft = 0;
             int countRight = 0;
-            rqCreated.ForEach(x =>
+            Array.ForEach(rqCreated, x =>
             {
                 System.Diagnostics.Debug.WriteLine($"{countLeft++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
             });
 
             System.Diagnostics.Debug.WriteLine("----------------------------------");
 
-            rsCreated.ForEach(x =>
+            Array.ForEach(rsCreated, x =>
             {
                 System.Diagnostics.Debug.WriteLine($"{countRight++} - {x.Item1.SourceTimestamp.ToString("hh:mm:ss.ffff")} [{x.Item1.MessageType} - {x.Item1.RetrievalReferenceNumber}] {TimeSpan.FromTicks(x.Item2)}");
             });
@@ -2120,7 +2119,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciasActualResults = new List<Tuple<string, string, string, string, bool>>();
-            actualResults.ForEach(x =>
+            Array.ForEach(actualResults, x =>
             {
                 Tuple<string, string, string, string, bool> aux = expectedResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item3 == x.Item4 && y.Item4 == x.Item5);
 
@@ -2136,7 +2135,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             List<Tuple<string, string, string, string, bool>> expectedResultsUpdated2 = new List<Tuple<string, string, string, string, bool>>();
             List<Tuple<string, string, string, string, bool>> diferenciaExpectedResults = new List<Tuple<string, string, string, string, bool>>();
-            expectedResults.ForEach(x =>
+            Array.ForEach(expectedResults, x =>
             {
                 Tuple<string, string, string, string, string, string, TimeSpan> aux = actualResults.FirstOrDefault(y => y.Item1 == x.Item1 && y.Item2 == x.Item2 && y.Item4 == x.Item3 && y.Item5 == x.Item4);
 

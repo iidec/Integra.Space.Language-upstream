@@ -52,9 +52,6 @@
   <ItemGroup>
     <Compile Include="Comparers\GroupByKeyComparer.cs" />
     <Compile Include="Comparers\OrderByKeyComparer.cs" />
-    <Compile Include="Event\EventAdapter.cs" />
-    <Compile Include="Event\EventAgent.cs" />
-    <Compile Include="Event\EventObject.cs" />
     <Compile Include="Event\Enums\EventPropertiesEnum.cs" />
     <Compile Include="Event\EventResult.cs" />
     <Compile Include="Event\ExtractedEventData.cs" />
