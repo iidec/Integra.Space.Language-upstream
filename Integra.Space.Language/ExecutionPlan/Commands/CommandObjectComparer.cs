@@ -11,10 +11,10 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command object comparer class.
     /// </summary>
-    internal sealed class CommandObjectComparer : EqualityComparer<CommandObject>
+    internal sealed class CommandObjectComparer : EqualityComparer<Common.CommandObject>
     {
         /// <inheritdoc />
-        public override bool Equals(CommandObject x, CommandObject y)
+        public override bool Equals(Common.CommandObject x, Common.CommandObject y)
         {
             if (x.Name == y.Name && x.SecurableClass == y.SecurableClass && x.DatabaseName == y.DatabaseName && x.SchemaName == y.SchemaName && x.GranularPermission == y.GranularPermission)
             {
@@ -25,7 +25,7 @@ namespace Integra.Space.Language
         }
 
         /// <inheritdoc />
-        public override int GetHashCode(CommandObject obj)
+        public override int GetHashCode(Common.CommandObject obj)
         {
             int result = obj.SecurableClass.GetHashCode() + obj.GranularPermission.GetHashCode();
 

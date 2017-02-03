@@ -34,3 +34,7 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: InternalsVisibleTo("Integra.Space.Compiler.CodeGeneration")]
+[assembly: InternalsVisibleTo("Integra.Space.Language")]
+[assembly: InternalsVisibleTo("Integra.Space.Language.Analysis")]
+[assembly: InternalsVisibleTo("Integra.Space.LanguageUnitTests")]

@@ -193,10 +193,10 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             // creo el objeto de comando para la fuente si fué definida.
             Tuple<string, string, string> intoAux = (Tuple<string, string, string>)this.into.Evaluate(thread);
-            CommandObject source = null;
+            Common.CommandObject source = null;
             if (intoAux != null)
             {
-                source = new CommandObject(Common.SystemObjectEnum.Source, intoAux.Item1, intoAux.Item2, intoAux.Item3, Common.PermissionsEnum.Write, false);
+                source = new Common.CommandObject(Common.SystemObjectEnum.Source, intoAux.Item1, intoAux.Item2, intoAux.Item3, Common.PermissionsEnum.Write, false);
             }
 
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);

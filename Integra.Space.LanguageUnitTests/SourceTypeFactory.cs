@@ -1,7 +1,6 @@
 ﻿using System;
 using Integra.Space.Common;
 using Integra.Space.LanguageUnitTests.TestObject;
-using Integra.Space.Database;
 using System.Collections.Generic;
 using Integra.Space.Compiler;
 using System.Linq;
@@ -40,7 +39,7 @@ namespace Integra.Space.LanguageUnitTests
             }
             else if(source.Name.Equals("servers", StringComparison.InvariantCultureIgnoreCase))
             {
-                return typeof(Integra.Space.Database.Server);
+                return typeof(TestServerObject);
             }
             else
             {

@@ -8,7 +8,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
 using Integra.Space.Compiler;
-using Integra.Space.Database;
 using System.Reflection.Emit;
 using Ninject;
 using Integra.Space.LanguageUnitTests.TestObject;
@@ -24,13 +23,11 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool debugMode = false;
             bool measureElapsedTime = false;
             bool isTestMode = true;
-            Login login = new SpaceDbContext().Logins.First();
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("Test");
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
-                login,
                 dsf,
                 asmBuilder,
                 kernel,

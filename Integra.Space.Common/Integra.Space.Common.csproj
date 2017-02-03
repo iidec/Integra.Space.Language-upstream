@@ -53,6 +53,9 @@
     <Compile Include="Enums\CommandOptions\DatabaseOptionEnum.cs" />
     <Compile Include="Enums\CommandOptions\LoginOptionEnum.cs" />
     <Compile Include="Enums\CommandOptions\RoleOptionEnum.cs" />
+    <Compile Include="Enums\CommandOptions\SchemaOptionEnum.cs" />
+    <Compile Include="Enums\CommandOptions\SourceOptionEnum.cs" />
+    <Compile Include="Enums\CommandOptions\StreamOptionEnum.cs" />
     <Compile Include="Enums\CommandOptions\UserOptionEnum.cs" />
     <Compile Include="Enums\PermissionsEnum.cs" />
     <Compile Include="Enums\SystemObjectEnum.cs" />
