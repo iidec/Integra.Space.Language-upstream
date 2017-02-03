@@ -21,10 +21,9 @@ namespace Integra.Space.Compiler
         /// Initializes a new instance of the <see cref="CodeGeneratorConfiguration"/> class.
         /// </summary>
         /// <param name="schedulerFactory">The scheduler that will be used in the observable .</param>
-        public CodeGeneratorConfiguration(Database.Login login, IQuerySchedulerFactory schedulerFactory, AssemblyBuilder assemblyBuilder, IKernel kernel
+        public CodeGeneratorConfiguration(IQuerySchedulerFactory schedulerFactory, AssemblyBuilder assemblyBuilder, IKernel kernel
             , string queryName = "", bool debugMode = false, bool isTestMode = false, bool printLog = false, bool measureElapsedTime = false)
         {
-            this.Login = login;
             this.SchedulerFactory = schedulerFactory;
             this.AsmBuilder = assemblyBuilder;
             this.QueryName = queryName;
@@ -65,11 +64,6 @@ namespace Integra.Space.Compiler
         /// </summary>
         public bool IsTestMode { get; private set; }
         
-        /// <summary>
-        /// Gets the login of the client.
-        /// </summary>
-        public Database.Login Login { get; private set; }
-
         /// <summary>
         /// Gets the assembly builder for this code generation.
         /// </summary>

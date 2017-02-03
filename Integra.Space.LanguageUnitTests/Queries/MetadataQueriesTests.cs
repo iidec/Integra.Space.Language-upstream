@@ -8,9 +8,9 @@ using System.Data.Entity;
 using System.Reactive;
 using System.Collections.Generic;
 using Integra.Space.Compiler;
-using Integra.Space.Database;
 using System.Reflection.Emit;
 using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
@@ -23,11 +23,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
             bool debugMode = false;
             bool measureElapsedTime = false;
             bool isTestMode = true;
-            Login login = new SpaceDbContext().Logins.First();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
-                login,
                 dsf,
                 AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
                 kernel,
@@ -64,36 +62,38 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void TestQueryForMetadata()
         {
-            string command = "from sys.Servers as x where (string)x.ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select 1 as servId order by servId into FuenteX";            
+            string command = "from sys.Servers as x where (string)x.ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select 1 as servId order by servId into FuenteX";
             command = "from sys.Servers as x where (string)x.ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" apply window of '00:00:01' select ServerId as servId, max(1) as maxTest order by desc servId, maxTest into FuenteX";
             //command = "from sys.Servers select ServerId as servId";
             //command = "from sys.servers as x select x.ServerId as servId into FuenteX";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            using (SpaceDbContext context = new SpaceDbContext())
+            List<TestServerObject> servers = new List<TestServerObject>
             {
-                ITestableObservable<Server> input = dsf.TestScheduler.CreateColdObservable(
-                    this.GetRecoredList<Space.Database.Server>(context.Servers)
-                );
+                new TestServerObject("59e858fc-c84d-48a7-8a98-c0e7adede20a", "Server1")
+            };
 
-                ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => this.Process<Space.Database.Server>(command, dsf, input)
-                .Select(x =>
-                    (object)(new
-                    {
-                        servId = (Guid)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("servId").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)),
-                        maxTest = (int)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("maxTest").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
-                    })
-                ),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
+            ITestableObservable<TestServerObject> input = dsf.TestScheduler.CreateColdObservable(
+                this.GetRecoredList<TestServerObject>(servers)
+            );
 
-                ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(250, Notification.CreateOnNext((object)(new { servId = Guid.Parse("59e858fc-c84d-48a7-8a98-c0e7adede20a"), maxTest = 1 }))),
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+            () => this.Process<TestServerObject>(command, dsf, input)
+            .Select(x =>
+                (object)(new
+                {
+                    servId = (string)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("servId").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)),
+                    maxTest = (int)((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("maxTest").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
+                })
+            ),
+            created: 10,
+            subscribed: 50,
+            disposed: 400);
+
+            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
+                    new Recorded<Notification<object>>(250, Notification.CreateOnNext((object)(new { servId = "59e858fc-c84d-48a7-8a98-c0e7adede20a", maxTest = 1 }))),
                     new Recorded<Notification<object>>(250, Notification.CreateOnCompleted<object>())
                 });
-            }
         }
 
         private Recorded<Notification<TItem>>[] GetRecoredList<TItem>(IEnumerable<TItem> objects)

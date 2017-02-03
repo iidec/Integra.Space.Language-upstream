@@ -12,7 +12,6 @@ using System.Reflection;
 using Integra.Space.LanguageUnitTests.TestObject;
 using System.Reflection.Emit;
 using Integra.Space.Compiler;
-using Integra.Space.Database;
 using Ninject;
 
 namespace Integra.Space.LanguageUnitTests.Operations
@@ -26,13 +25,11 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool debugMode = false;
             bool measureElapsedTime = false;
             bool isTestMode = true;
-            Login login = new SpaceDbContext().Logins.Single(x => x.LoginName == "sa");
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("Test");
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
-                login,
                 dsf,
                 asmBuilder,
                 kernel,

@@ -4,7 +4,6 @@ using Integra.Space.Language;
 using System.Reflection;
 using System.Linq;
 using Integra.Space.Compiler;
-using Integra.Space.Database;
 using System.Reflection.Emit;
 using Ninject;
 
@@ -19,11 +18,9 @@ namespace Integra.Space.LanguageUnitTests.Constants
             bool debugMode = false;
             bool measureElapsedTime = false;
             bool isTestMode = true;
-            Login login = new SpaceDbContext().Logins.First();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
-                login,
                 dsf,
                 AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
                 kernel,
