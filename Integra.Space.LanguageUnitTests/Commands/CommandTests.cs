@@ -248,32 +248,11 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = "drop stream stream1, stream2, stream3";
             this.Process(command);
         }
-        
+
         #endregion drop
 
         #region create
-
-        [TestMethod]
-        public void CreateEndpoint()
-        {
-            string command = "create endpoint endpoint1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateEndpointWithStatusOn()
-        {
-            string command = "create endpoint endpoint1 with status = on";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void CreateEndpointWithStatusOff()
-        {
-            string command = "create endpoint endpoint1 with status = off";
-            this.Process(command);
-        }
-
+        
         [TestMethod]
         public void CreateLogin()
         {
@@ -420,7 +399,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = $"Create role role1 with add = User1 User2 user3";
             this.Process(command);
         }
-        
+
         [TestMethod]
         public void CreateSchema()
         {
@@ -535,27 +514,6 @@ namespace Integra.Space.LanguageUnitTests.Commands
 
 
         #region alter
-
-        [TestMethod]
-        public void AlterEndpoint()
-        {
-            string command = "alter endpoint endpoint1";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void AlterEndpointWithStatusOn()
-        {
-            string command = "alter endpoint endpoint1 with status = on";
-            this.Process(command);
-        }
-
-        [TestMethod]
-        public void AlterEndpointWithStatusOff()
-        {
-            string command = "alter endpoint endpoint1 with status = off";
-            this.Process(command);
-        }
 
         [TestMethod]
         public void AlterLogin()
@@ -703,7 +661,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = $"Alter role role1 with add = User1 User2 user3";
             this.Process(command);
         }
-        
+
         [TestMethod]
         public void AlterSchemaName()
         {
@@ -819,14 +777,14 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = "alter user oscar with name = roberto, default_schema = Schema1";
             this.Process(command);
         }
-        
+
         [TestMethod]
         public void AlterUserDefaultSchema()
         {
             string command = "alter user oscar with default_schema = Schema1";
             this.Process(command);
         }
-                
+
         [TestMethod]
         public void AlterRoleRemoveUser()
         {
@@ -854,7 +812,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
             string command = $"alter role role1 with status = off";
             this.Process(command);
         }
-        
+
         [TestMethod]
         public void AlterStreamQueryAndName()
         {
@@ -935,8 +893,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant read on source Source1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -948,8 +906,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant read on source Source1 to role oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
@@ -986,8 +944,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant create role to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to user
@@ -999,8 +957,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant create source to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
@@ -1022,14 +980,14 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant create role to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
 
         #endregion create
-        
+
         #region alter
 
         #region to user
@@ -1039,8 +997,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant alter on stream Stream1 to user oscar";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
@@ -1065,8 +1023,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant alter on stream Stream1 to role RoleX, role RoleY";
             this.Process(command);
-            
-            
+
+
         }
 
         [TestMethod]
@@ -1074,8 +1032,8 @@ namespace Integra.Space.LanguageUnitTests.Commands
         {
             string command = "grant alter on user User1 to role RoleX";
             this.Process(command);
-            
-            
+
+
         }
 
         #endregion to role
@@ -1200,7 +1158,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to role
 
         #endregion create
-        
+
         #region alter
 
         #region to user
@@ -1280,7 +1238,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to user
 
         #region to role
-        
+
         [TestMethod]
         public void denyReadPermissionToRole2()
         {
@@ -1367,7 +1325,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         #endregion to role
 
         #endregion create
-             
+
         #region alter
 
         #region to user

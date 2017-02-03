@@ -358,11 +358,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 });
 
             ReactiveAssert.AreElementsEqual(new Recorded<Notification<object>>[] {
-                    OnNext(new TimeSpan(40000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
-                    OnNext(new TimeSpan(60000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
-                    OnNext(new TimeSpan(80000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
-                    OnNext(new TimeSpan(100000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
-                    OnNext(new TimeSpan(130000001).Ticks,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
+                    OnNext(results.Messages.ElementAt(0).Time,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(results.Messages.ElementAt(1).Time,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(results.Messages.ElementAt(2).Time,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(results.Messages.ElementAt(3).Time,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)"9999941616073663_2" })),
+                    OnNext(results.Messages.ElementAt(4).Time,(object)(new { c1 = (object)"9999941616073663_1", c2 = (object)null }))
                 }, results.Messages);
         }
 
@@ -1202,7 +1202,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 89, instruction, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t2")), e.InnerException.InnerException.Message);
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 69, string.Empty, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t2")), e.InnerException.InnerException.Message);
                 return;
             }
 
@@ -1232,7 +1232,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             }
             catch (Exception e)
             {
-                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 171, instruction, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t1")), e.InnerException.InnerException.Message);
+                Assert.AreEqual<string>(string.Format("CompilationException: Line: {0}, Column: {1}, Instruction: {2}, Error: {3}", 0, 153, string.Empty, Integra.Space.Language.Resources.COMPILATION_ERRORS.CE77("t1")), e.InnerException.InnerException.Message);
                 return;
             }
 
