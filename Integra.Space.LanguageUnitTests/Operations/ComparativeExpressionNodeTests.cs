@@ -27,8 +27,6 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool isTestMode = true;
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("Test");
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
-            SpaceModuleBuilder smodBuilder = new SpaceModuleBuilder(asmBuilder);
-            smodBuilder.CreateModuleBuilder();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
@@ -714,6 +712,11 @@ namespace Integra.Space.LanguageUnitTests.Operations
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
             QueryParser parser = new QueryParser(eql);
             PlanNode executionPlan = parser.Evaluate().Item1;
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
+            modBuilder.CreateModuleBuilder();
+
+            TreeTransformations tt = new TreeTransformations(context.AsmBuilder, executionPlan, context.Kernel.Get<ISourceTypeFactory>());
+            tt.Transform();
             CodeGenerator te = new CodeGenerator(context);
             Assembly assembly = te.Compile(executionPlan);
 
