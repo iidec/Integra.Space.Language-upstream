@@ -1,37 +1,71 @@
-﻿using Integra.Space.Event;
-using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
+﻿using Integra.Space.Compiler;
+using Integra.Space.LanguageUnitTests.TestObject;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Ninject;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
 
 namespace Integra.Space.LanguageUnitTests.Operations
 {
     [TestClass]
     public class ArithmeticExpressionNodeTests
     {
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            bool isTestMode = true;
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<TestObject1> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsObservable(), dsf.TestScheduler }));
+        }
+
         [TestMethod]
         public void RestaPositivosIgualdad()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 - 1 == 0 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where 1 - 1 == 0 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -49,21 +83,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaNegativosIgualdad()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where -1 - -1 == 0 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where -1 - -1 == 0 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -81,21 +110,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaPositivoNegativoIgualdad()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where 1 - -1 == 2 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where 1 - -1 == 2 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -113,21 +137,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaNegativoPositivoIgualdad()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where -1 - 1 == -2 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where -1 - 1 == -2 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -145,21 +164,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaHourFunctionIgualdadWithoutHour()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where hour('02/01/2014') - hour('01/01/2014') == 0 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where hour('02/01/2014') - hour('01/01/2014') == 0 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -177,21 +191,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaHourFunctionIgualdadWithHour()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where hour('02/01/2014 12:11:10') - hour('01/01/2014 11:11:10') == 1 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where hour('02/01/2014 12:11:10') - hour('01/01/2014 11:11:10') == 1 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);
@@ -209,21 +218,16 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void RestaYearFunctionIgualdad()
         {
-            EQLPublicParser parser = new EQLPublicParser("from SpaceObservable1 where year('02/03/2015') - year('01/01/2014') == 1 select true as resultado");
-            List<PlanNode> plan = parser.Parse();
+            string eql = "from SourceParaPruebas where year('02/03/2015') - year('01/01/2014') == 1 select true as resultado into SourceXYZ";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<bool> results = scheduler.Start(
-                () => result(input.AsQbservable()).Select(x => bool.Parse(x.First().GetType().GetProperty("resultado").GetValue(x.First()).ToString())),
+            ITestableObserver<bool> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
                 created: 10,
                 subscribed: 50,
                 disposed: 400);

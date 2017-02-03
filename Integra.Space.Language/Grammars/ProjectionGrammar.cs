@@ -6,10 +6,10 @@
 namespace Integra.Space.Language.Grammars
 {
     using System.Linq;
-    using ASTNodes.Objects.Object;
-    using Integra.Space.Language.ASTNodes.Constants;
-    using Integra.Space.Language.ASTNodes.Lists;
-    using Integra.Space.Language.ASTNodes.QuerySections;
+    using ASTNodes.Constants;
+    using ASTNodes.Identifier;
+    using ASTNodes.Lists;
+    using ASTNodes.QuerySections;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -22,7 +22,7 @@ namespace Integra.Space.Language.Grammars
         /// <summary>
         /// Expression grammar
         /// </summary>
-        private ExpressionGrammar valueGrammar;
+        private ExpressionGrammar expressionGrammar;
 
         /// <summary>
         /// Expression grammar
@@ -35,7 +35,7 @@ namespace Integra.Space.Language.Grammars
         public ProjectionGrammar()
             : base(false)
         {
-            this.valueGrammar = new ExpressionGrammar();
+            this.expressionGrammar = new ExpressionGrammar();
             this.CreateGrammar();
         }
 
@@ -65,35 +65,42 @@ namespace Integra.Space.Language.Grammars
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
 
             /* CONSTANTES E IDENTIFICADORES */
-            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("numero");
+            Terminal terminalNumero = TerminalFactory.CreateCSharpNumber("number");
             terminalNumero.AstConfig.NodeType = null;
             terminalNumero.AstConfig.DefaultNodeCreator = () => new NumberNode();
 
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
+            terminalId.Name = "identifier";
             terminalId.AstConfig.NodeType = null;
             terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
-            
+
             // nonterminals            
-            NonTerminal nt_VALUES_WITH_ALIAS = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
-            nt_VALUES_WITH_ALIAS.AstConfig.NodeType = null;
-            nt_VALUES_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
-            NonTerminal nt_LIST_OF_VALUES = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
-            nt_LIST_OF_VALUES.AstConfig.NodeType = null;
-            nt_LIST_OF_VALUES.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
+            NonTerminal nt_VALUES_WITH_ALIAS_FOR_PROJECTION = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_PROJECTION = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_PROJECTION.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
             this.projectionList = new NonTerminal("SELECT", typeof(SelectNode));
             this.projectionList.AstConfig.NodeType = null;
             this.projectionList.AstConfig.DefaultNodeCreator = () => new SelectNode();
+            NonTerminal nt_TOP = new NonTerminal("TOP", typeof(TopNode));
+            nt_TOP.AstConfig.NodeType = null;
+            nt_TOP.AstConfig.DefaultNodeCreator = () => new TopNode();
 
             /* SELECT */
-            this.projectionList.Rule = terminalSelect + nt_LIST_OF_VALUES
-                                        | terminalSelect + terminalTop + terminalNumero + nt_LIST_OF_VALUES;
+            this.projectionList.Rule = terminalSelect + nt_TOP + nt_LIST_OF_VALUES_FOR_PROJECTION
+                                        | terminalSelect + nt_LIST_OF_VALUES_FOR_PROJECTION;
+            /* **************************** */
+            /* TOP */
+            nt_TOP.Rule = terminalTop + terminalNumero;
             /* **************************** */
             /* LISTA DE VALORES */
-            nt_LIST_OF_VALUES.Rule = nt_LIST_OF_VALUES + terminalComa + nt_VALUES_WITH_ALIAS
-                                    | nt_VALUES_WITH_ALIAS;
+            nt_LIST_OF_VALUES_FOR_PROJECTION.Rule = nt_LIST_OF_VALUES_FOR_PROJECTION + terminalComa + nt_VALUES_WITH_ALIAS_FOR_PROJECTION
+                                    | nt_VALUES_WITH_ALIAS_FOR_PROJECTION;
             /* **************************** */
             /* VALORES CON ALIAS */
-            nt_VALUES_WITH_ALIAS.Rule = this.valueGrammar.ProjectionValue + terminalAs + terminalId;
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = this.expressionGrammar.ProjectionValue + terminalAs + terminalId;
 
             this.Root = this.projectionList;
 

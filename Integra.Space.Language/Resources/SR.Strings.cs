@@ -64,6 +64,12 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	ApplyExtensions
+		/// </summary>
+		public static string ApplyExtensionsRole { get { return global::Integra.Space.Language.SR.ApplyExtensionsRole; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	ApplyWindow
 		/// </summary>
 		public static string ApplyWindowRole { get { return global::Integra.Space.Language.SR.ApplyWindowRole; } }
@@ -172,6 +178,12 @@ namespace Integra.Space.Language.Resources
 		///	An exception has ocurred on command interpretation. The inner exception may contain more information.
 		/// </summary>
 		public static string InterpretationException { get { return global::Integra.Space.Language.SR.InterpretationException; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	Into
+		/// </summary>
+		public static string IntoRole { get { return global::Integra.Space.Language.SR.IntoRole; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
@@ -417,6 +429,12 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	sourcetimestamp
+		/// </summary>
+		public static string SourceTimestamp { get { return global::Integra.Space.Language.SR.SourceTimestamp; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	{0} {1} {2}
 		/// </summary>
 		public static string StartStopNodeText(object arg0, object arg1, object arg2)
@@ -496,9 +514,9 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	timestamp
+		///	systemtimestamp
 		/// </summary>
-		public static string TimestampProperty { get { return global::Integra.Space.Language.SR.TimestampProperty; } }
+		public static string SystemTimestamp { get { return global::Integra.Space.Language.SR.SystemTimestamp; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

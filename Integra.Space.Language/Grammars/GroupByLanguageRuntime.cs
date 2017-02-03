@@ -9,7 +9,7 @@ namespace Integra.Space.Language.Grammars
     using Irony.Parsing;
 
     /// <summary>
-    /// ProjectionLanguageRuntime class
+    /// GroupByLanguageRuntime class
     /// </summary>
     internal class GroupByLanguageRuntime : LanguageRuntime
     {

@@ -118,166 +118,253 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CE1" xml:space="preserve">
-    <value>Invalid execution tree, the node type does not exist.</value>
+    <value>CE1: Invalid execution tree, the node type does not exist. Actual node type {0}</value>
     <comment>Método CreateStringLowerFunction</comment>
   </data>
   <data name="CE10" xml:space="preserve">
-    <value>"Error in 'lower' function."</value>
+    <value>CE10: Error in 'lower' function.</value>
   </data>
   <data name="CE11" xml:space="preserve">
-    <value>"Aggregation function without 'apply window of'."</value>
+    <value>CE11: Aggregation function without 'apply window of'.</value>
   </data>
   <data name="CE12" xml:space="preserve">
-    <value>"Error in 'count' function."</value>
+    <value>CE12: Error in 'count' function.</value>
   </data>
   <data name="CE13" xml:space="preserve">
-    <value>"Aggregation function without 'apply window of'."</value>
+    <value>CE13: Aggregation function without 'apply window of'.</value>
   </data>
   <data name="CE14" xml:space="preserve">
-    <value>"Error in 'sum' function."</value>
+    <value>CE14: Error in agregation function {0}.</value>
   </data>
   <data name="CE15" xml:space="preserve">
-    <value>"Error in 'apply window of' function."</value>
+    <value>CE15: Error in 'apply window of' function.</value>
   </data>
   <data name="CE16" xml:space="preserve">
-    <value>"Error in 'top' function."</value>
+    <value>CE16: Error in 'top' function.</value>
   </data>
   <data name="CE17" xml:space="preserve">
-    <value>"Error in 'top' function."</value>
+    <value>CE17: Error in 'top' function."</value>
   </data>
   <data name="CE18" xml:space="preserve">
-    <value>"Error in 'buffer with time and size' function."</value>
+    <value>CE10: Error in 'buffer with time and size' function.</value>
   </data>
   <data name="CE19" xml:space="preserve">
-    <value>"Error in 'where' function."</value>
+    <value>CE19: Error in 'where' function.</value>
   </data>
   <data name="CE2" xml:space="preserve">
-    <value>The stack of variables is empty.</value>
+    <value>CE2: Invalid parameter.</value>
   </data>
   <data name="CE20" xml:space="preserve">
-    <value>"Error in 'select' function."</value>
+    <value>CE20: Error in 'select for result' function.</value>
   </data>
   <data name="CE21" xml:space="preserve">
-    <value>"Error in 'select' function."</value>
+    <value>CE21: Error in 'select' function.</value>
   </data>
   <data name="CE22" xml:space="preserve">
-    <value>"Error in 'select' function."</value>
+    <value>CE22: Error in 'select' function.</value>
   </data>
   <data name="CE23" xml:space="preserve">
-    <value>"Error in 'select' function."</value>
+    <value>CE23: Error in 'select' function.</value>
   </data>
   <data name="CE24" xml:space="preserve">
-    <value>"More than one alias with the same name, check the projection."</value>
+    <value>CE24: More than one alias with the same name, check the projection.</value>
   </data>
   <data name="CE25" xml:space="preserve">
-    <value>"More than one alias with the same name, the group by sentence."</value>
+    <value>CE25: More than one alias with the same name, the group by sentence.</value>
   </data>
   <data name="CE26" xml:space="preserve">
-    <value>"Error in 'group by' function."</value>
+    <value>CE26: Error in 'group by' function.</value>
   </data>
   <data name="CE27" xml:space="preserve">
-    <value>"Error in 'group by' function."</value>
+    <value>CE27: Error in 'group by' function.</value>
   </data>
   <data name="CE28" xml:space="preserve">
-    <value>"Error in 'merge' function."</value>
+    <value>CE28: Error in 'merge' function.</value>
   </data>
   <data name="CE29" xml:space="preserve">
-    <value>Cannot get the value of the object property {0}.</value>
+    <value>CE29: Cannot get the value of the object property {0}.</value>
   </data>
   <data name="CE3" xml:space="preserve">
-    <value>Value type of function 'left' must be string.</value>
+    <value>CE3: Value type of function 'left' must be string.</value>
   </data>
   <data name="CE30" xml:space="preserve">
-    <value>"Error with the Message of the event."</value>
+    <value>CE30: Error with the Message of the event.</value>
   </data>
   <data name="CE31" xml:space="preserve">
-    <value>Cannot get the event sub-field {0}.</value>
+    <value>CE31: Cannot get the event sub-field {0}.</value>
   </data>
   <data name="CE32" xml:space="preserve">
-    <value>Cannot get the event field {0}.</value>
+    <value>CE32: Cannot get the event field {0}.</value>
   </data>
   <data name="CE33" xml:space="preserve">
-    <value>Cannot get the event part {0}.</value>
+    <value>CE33: Cannot get the event part {0}.</value>
   </data>
   <data name="CE34" xml:space="preserve">
-    <value>"Invalid cast."</value>
+    <value>CE34: Invalid cast.</value>
   </data>
   <data name="CE35" xml:space="preserve">
-    <value>"Error with 'like' operation."</value>
+    <value>CE35: Error with 'like' operation.</value>
   </data>
   <data name="CE36" xml:space="preserve">
-    <value>"Error with 'not' operation."</value>
+    <value>CE36: Error with 'not' operation.</value>
   </data>
   <data name="CE37" xml:space="preserve">
-    <value>"Error with greater than or equal '&gt;=' operation."</value>
+    <value>CE37: Error with greater than or equal '&gt;=' operation.</value>
   </data>
   <data name="CE38" xml:space="preserve">
-    <value>"Error with greater than '&gt;' operation."</value>
+    <value>CE38: Error with greater than '&gt;' operation.</value>
   </data>
   <data name="CE39" xml:space="preserve">
-    <value>"Error with less than or equal '&lt;=' operation."</value>
+    <value>CE39: Error with less than or equal '&lt;=' operation.</value>
   </data>
   <data name="CE4" xml:space="preserve">
-    <value>"Error in 'left' function."</value>
+    <value>CE4: Error in 'left' function.</value>
   </data>
   <data name="CE40" xml:space="preserve">
-    <value>"Error with less than '&lt;' operation."</value>
+    <value>CE40: Error with less than '&lt;' operation.</value>
   </data>
   <data name="CE41" xml:space="preserve">
-    <value>Error with not equal '!=' operation.</value>
+    <value>CE41: Error with not equal '!=' operation.</value>
   </data>
   <data name="CE42" xml:space="preserve">
-    <value>Error with equal '==' operation.</value>
+    <value>CE42: Error with equal '==' operation.</value>
   </data>
   <data name="CE43" xml:space="preserve">
-    <value>Error with substract '-' operation for timespan.</value>
+    <value>CE43: Error with substract '-' operation for timespan.</value>
   </data>
   <data name="CE44" xml:space="preserve">
-    <value>Error with substract '-' operation.</value>
+    <value>CE44: Error with substract '-' operation.</value>
   </data>
   <data name="CE45" xml:space="preserve">
-    <value>Error with negate '-' operation.</value>
+    <value>CE45: Error with negate '-' operation.</value>
   </data>
   <data name="CE46" xml:space="preserve">
-    <value>Error with 'and' operation.</value>
+    <value>CE46: Error with 'and' operation.</value>
   </data>
   <data name="CE47" xml:space="preserve">
-    <value>Error with 'or' operation.</value>
+    <value>CE47: Error with 'or' operation.</value>
   </data>
   <data name="CE48" xml:space="preserve">
-    <value>Error with datetime or timespan '{0}' function.</value>
+    <value>CE48: Error with datetime or timespan '{0}' function.</value>
   </data>
   <data name="CE49" xml:space="preserve">
-    <value>Cannot get the property '{0}'.</value>
+    <value>CE49: Cannot get the property '{0}'.</value>
   </data>
   <data name="CE5" xml:space="preserve">
-    <value>"Value type of function 'right' must be string."</value>
+    <value>CE5: Value type of function 'right' must be string.</value>
   </data>
   <data name="CE50" xml:space="preserve">
-    <value>"Cannot call 'key' variable without a group by expression."</value>
+    <value>CE50: Cannot call 'key' variable without a group by expression.</value>
   </data>
   <data name="CE51" xml:space="preserve">
-    <value>Cannot get the '{0}' of 'group by'.</value>
+    <value>CE51: Cannot get the '{0}' of 'group by'.</value>
   </data>
   <data name="CE52" xml:space="preserve">
-    <value>Cannot get '{0}' of 'group by'.</value>
+    <value>CE52: Cannot get '{0}' of 'group by'.</value>
   </data>
   <data name="CE53" xml:space="preserve">
-    <value>Cannot get the value of one of the groups specified in 'group by' sentence.</value>
+    <value>CE53: Cannot get the value of one of the groups specified in 'group by' sentence.</value>
   </data>
   <data name="CE54" xml:space="preserve">
-    <value>Error in 'order by' function.</value>
+    <value>CE54: Error in 'order by' function.</value>
+  </data>
+  <data name="CE55" xml:space="preserve">
+    <value>CE55: Error in enumerable ToList function</value>
+  </data>
+  <data name="CE56" xml:space="preserve">
+    <value>CE56: Error in dispose expression for list of events</value>
+  </data>
+  <data name="CE57" xml:space="preserve">
+    <value>CE57: Error in dispose expression for a event</value>
+  </data>
+  <data name="CE58" xml:space="preserve">
+    <value>CE58: Error with where for event lock method.</value>
+  </data>
+  <data name="CE59" xml:space="preserve">
+    <value>CE59: Error with 'where' function.</value>
   </data>
   <data name="CE6" xml:space="preserve">
-    <value>"Error in 'right' function."</value>
+    <value>CE6: Error in 'right' function.</value>
+  </data>
+  <data name="CE61" xml:space="preserve">
+    <value>CE61: Error with the join projection.</value>
+  </data>
+  <data name="CE62" xml:space="preserve">
+    <value>CE62: Error in enumerable ToArray function</value>
+  </data>
+  <data name="CE63" xml:space="preserve">
+    <value>CE63: Error with the enumerable join.</value>
+  </data>
+  <data name="CE64" xml:space="preserve">
+    <value>CE64: Error in observable switch.</value>
+  </data>
+  <data name="CE65" xml:space="preserve">
+    <value>CE65: Compilation context scheduler factory is null.</value>
+  </data>
+  <data name="CE66" xml:space="preserve">
+    <value>CE66: Observer type is not defined.</value>
+  </data>
+  <data name="CE67" xml:space="preserve">
+    <value>CE67: Error with ObserveOn expression.</value>
+  </data>
+  <data name="CE68" xml:space="preserve">
+    <value>CE68: Error with ObserveOn expression.</value>
+  </data>
+  <data name="CE69" xml:space="preserve">
+    <value>CE69: Error in observable concat.</value>
   </data>
   <data name="CE7" xml:space="preserve">
-    <value>"Value type of function 'upper' must be string."</value>
+    <value>CE7: Value type of function 'upper' must be string.</value>
+  </data>
+  <data name="CE71" xml:space="preserve">
+    <value>CE71: Value type of function 'abs' must be numeric.</value>
+  </data>
+  <data name="CE72" xml:space="preserve">
+    <value>CE72: Error in publish</value>
+  </data>
+  <data name="CE73" xml:space="preserve">
+    <value>CE73: Error in observable join</value>
+  </data>
+  <data name="CE74" xml:space="preserve">
+    <value>CE74: Can't use constants at the conditions of the ON statement.</value>
+  </data>
+  <data name="CE75" xml:space="preserve">
+    <value>CE75: You can only use the equality comparer at the conditions of the ON statement. Found {0}.</value>
+  </data>
+  <data name="CE76" xml:space="preserve">
+    <value>CE76: You can only use logical conjunction at the conditions of the ON statement. Found {0}.</value>
+  </data>
+  <data name="CE77" xml:space="preserve">
+    <value>CE77: Invalid parameter {0}.</value>
+  </data>
+  <data name="CE78" xml:space="preserve">
+    <value>CE78: Invalid types the 'isnull' function. Left type {0}, right type {1}</value>
+  </data>
+  <data name="CE79" xml:space="preserve">
+    <value>CE79: Error at the 'isnull' function.</value>
   </data>
   <data name="CE8" xml:space="preserve">
-    <value>"Error in 'upper' function."</value>
+    <value>CE8: Error in 'upper' function.</value>
+  </data>
+  <data name="CE81" xml:space="preserve">
+    <value>CE81: Error in observable create.</value>
+  </data>
+  <data name="CE82" xml:space="preserve">
+    <value>CE82: Error in subscription.</value>
+  </data>
+  <data name="CE83" xml:space="preserve">
+    <value>CE83: Error in observable timeout.</value>
+  </data>
+  <data name="CE84" xml:space="preserve">
+    <value>CE84: Error in observable catch.</value>
+  </data>
+  <data name="CE85" xml:space="preserve">
+    <value>CE85: Error in select for observable group by.</value>
+  </data>
+  <data name="CE86" xml:space="preserve">
+    <value>CE86: Error creating a constant expression.</value>
   </data>
   <data name="CE9" xml:space="preserve">
-    <value>"Value type of function 'lower' must be string."</value>
+    <value>CE9: Value type of function 'lower' must be string.</value>
   </data>
 </root>

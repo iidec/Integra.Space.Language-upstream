@@ -6,17 +6,17 @@
 namespace Integra.Space.Language.Grammars
 {
     using System.Linq;
-    using ASTNodes.Objects.Object;
-    using Integra.Space.Language.ASTNodes.Constants;
-    using Integra.Space.Language.ASTNodes.Lists;
-    using Integra.Space.Language.ASTNodes.QuerySections;
+    using ASTNodes.Constants;
+    using ASTNodes.Identifier;
+    using ASTNodes.Lists;
+    using ASTNodes.QuerySections;
     using Irony.Interpreter;
     using Irony.Parsing;
 
     /// <summary>
     /// Projection grammar for the commands
     /// </summary>
-    [Language("ProjectionGrammar", "0.1", "")]
+    [Language("GroupByGrammar", "0.1", "")]
     internal sealed class GroupByGrammar : InterpretedLanguageGrammar
     {
         /// <summary>
@@ -58,37 +58,38 @@ namespace Integra.Space.Language.Grammars
             // reserved words
             KeyTerm terminalgroup = ToTerm("group", "group");
             KeyTerm terminalBy = ToTerm("by", "by");
-            KeyTerm terminalComa = ToTerm(",", "coma");
             KeyTerm terminalAs = ToTerm("as", "as");
+            KeyTerm terminalComa = ToTerm(",", "coma");
 
             // Marcamos los terminales, definidos hasta el momento, como palabras reservadas
             this.MarkReservedWords(this.KeyTerms.Keys.ToArray());
 
             // terminals
             RegexBasedTerminal terminalId = new RegexBasedTerminal("[a-zA-Z]+([a-zA-Z]|[0-9]|[_])*");
+            terminalId.Name = "identifier";
             terminalId.AstConfig.NodeType = null;
             terminalId.AstConfig.DefaultNodeCreator = () => new IdentifierNode();
             
             // nonterminals            
-            NonTerminal nt_VALUES_WITH_ALIAS = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
-            nt_VALUES_WITH_ALIAS.AstConfig.NodeType = null;
-            nt_VALUES_WITH_ALIAS.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
-            NonTerminal nt_LIST_OF_VALUES = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
-            nt_LIST_OF_VALUES.AstConfig.NodeType = null;
-            nt_LIST_OF_VALUES.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
-            this.groupList = new NonTerminal("SELECT", typeof(GroupByNode));
+            NonTerminal nt_VALUES_WITH_ALIAS_FOR_GROUP_BY = new NonTerminal("VALUES_WITH_ALIAS", typeof(ConstantValueWithAliasNode));
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.NodeType = null;
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new ConstantValueWithAliasNode();
+            NonTerminal nt_LIST_OF_VALUES_FOR_GROUP_BY = new NonTerminal("LIST_OF_VALUES", typeof(PlanNodeListNode));
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.NodeType = null;
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.AstConfig.DefaultNodeCreator = () => new PlanNodeListNode();
+            this.groupList = new NonTerminal("GROUP_BY", typeof(GroupByNode));
             this.groupList.AstConfig.NodeType = null;
             this.groupList.AstConfig.DefaultNodeCreator = () => new GroupByNode();
 
             /* SELECT */
-            this.groupList.Rule = terminalgroup + terminalBy + nt_LIST_OF_VALUES;
+            this.groupList.Rule = terminalgroup + terminalBy + nt_LIST_OF_VALUES_FOR_GROUP_BY;
             /* **************************** */
             /* LISTA DE VALORES */
-            nt_LIST_OF_VALUES.Rule = nt_LIST_OF_VALUES + terminalComa + nt_VALUES_WITH_ALIAS
-                                    | nt_VALUES_WITH_ALIAS;
+            nt_LIST_OF_VALUES_FOR_GROUP_BY.Rule = nt_LIST_OF_VALUES_FOR_GROUP_BY + terminalComa + nt_VALUES_WITH_ALIAS_FOR_GROUP_BY
+                                    | nt_VALUES_WITH_ALIAS_FOR_GROUP_BY;
             /* **************************** */
             /* VALORES CON ALIAS */
-            nt_VALUES_WITH_ALIAS.Rule = this.valueGrammar.ProjectionValue + terminalAs + terminalId;
+            nt_VALUES_WITH_ALIAS_FOR_GROUP_BY.Rule = this.valueGrammar.Values + terminalAs + terminalId;
 
             this.Root = this.groupList;
 

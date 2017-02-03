@@ -20,133 +20,145 @@ namespace Integra.Space.Language.Resources
 	{
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Invalid execution tree, the node type does not exist.
+		///	CE1: Invalid execution tree, the node type does not exist. Actual node type {0}
 		/// </summary>
-		public static string CE1 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE1; } }
+		public static string CE1(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE1, new object[]
+			{
+				arg0,
+			});
+		}
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'lower' function."
+		///	CE10: Error in 'lower' function.
 		/// </summary>
 		public static string CE10 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE10; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Aggregation function without 'apply window of'."
+		///	CE11: Aggregation function without 'apply window of'.
 		/// </summary>
 		public static string CE11 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE11; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'count' function."
+		///	CE12: Error in 'count' function.
 		/// </summary>
 		public static string CE12 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE12; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Aggregation function without 'apply window of'."
+		///	CE13: Aggregation function without 'apply window of'.
 		/// </summary>
 		public static string CE13 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE13; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'sum' function."
+		///	CE14: Error in agregation function {0}.
 		/// </summary>
-		public static string CE14 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE14; } }
+		public static string CE14(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE14, new object[]
+			{
+				arg0,
+			});
+		}
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'apply window of' function."
+		///	CE15: Error in 'apply window of' function.
 		/// </summary>
 		public static string CE15 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE15; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'top' function."
+		///	CE16: Error in 'top' function.
 		/// </summary>
 		public static string CE16 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE16; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'top' function."
+		///	CE17: Error in 'top' function."
 		/// </summary>
 		public static string CE17 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE17; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'buffer with time and size' function."
+		///	CE10: Error in 'buffer with time and size' function.
 		/// </summary>
 		public static string CE18 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE18; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'where' function."
+		///	CE19: Error in 'where' function.
 		/// </summary>
 		public static string CE19 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE19; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	The stack of variables is empty.
+		///	CE2: Invalid parameter.
 		/// </summary>
 		public static string CE2 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE2; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'select' function."
+		///	CE20: Error in 'select for result' function.
 		/// </summary>
 		public static string CE20 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE20; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'select' function."
+		///	CE21: Error in 'select' function.
 		/// </summary>
 		public static string CE21 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE21; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'select' function."
+		///	CE22: Error in 'select' function.
 		/// </summary>
 		public static string CE22 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE22; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'select' function."
+		///	CE23: Error in 'select' function.
 		/// </summary>
 		public static string CE23 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE23; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"More than one alias with the same name, check the projection."
+		///	CE24: More than one alias with the same name, check the projection.
 		/// </summary>
 		public static string CE24 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE24; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"More than one alias with the same name, the group by sentence."
+		///	CE25: More than one alias with the same name, the group by sentence.
 		/// </summary>
 		public static string CE25 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE25; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'group by' function."
+		///	CE26: Error in 'group by' function.
 		/// </summary>
 		public static string CE26 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE26; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'group by' function."
+		///	CE27: Error in 'group by' function.
 		/// </summary>
 		public static string CE27 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE27; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'merge' function."
+		///	CE28: Error in 'merge' function.
 		/// </summary>
 		public static string CE28 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE28; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the value of the object property {0}.
+		///	CE29: Cannot get the value of the object property {0}.
 		/// </summary>
 		public static string CE29(object arg0)
 		{
@@ -158,19 +170,19 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Value type of function 'left' must be string.
+		///	CE3: Value type of function 'left' must be string.
 		/// </summary>
 		public static string CE3 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE3; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the Message of the event."
+		///	CE30: Error with the Message of the event.
 		/// </summary>
 		public static string CE30 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE30; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the event sub-field {0}.
+		///	CE31: Cannot get the event sub-field {0}.
 		/// </summary>
 		public static string CE31(object arg0)
 		{
@@ -182,7 +194,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the event field {0}.
+		///	CE32: Cannot get the event field {0}.
 		/// </summary>
 		public static string CE32(object arg0)
 		{
@@ -194,7 +206,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the event part {0}.
+		///	CE33: Cannot get the event part {0}.
 		/// </summary>
 		public static string CE33(object arg0)
 		{
@@ -206,97 +218,97 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Invalid cast."
+		///	CE34: Invalid cast.
 		/// </summary>
 		public static string CE34 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE34; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'like' operation."
+		///	CE35: Error with 'like' operation.
 		/// </summary>
 		public static string CE35 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE35; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'not' operation."
+		///	CE36: Error with 'not' operation.
 		/// </summary>
 		public static string CE36 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE36; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with greater than or equal '>=' operation."
+		///	CE37: Error with greater than or equal '>=' operation.
 		/// </summary>
 		public static string CE37 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE37; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with greater than '>' operation."
+		///	CE38: Error with greater than '>' operation.
 		/// </summary>
 		public static string CE38 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE38; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with less than or equal '<=' operation."
+		///	CE39: Error with less than or equal '<=' operation.
 		/// </summary>
 		public static string CE39 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE39; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'left' function."
+		///	CE4: Error in 'left' function.
 		/// </summary>
 		public static string CE4 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE4; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with less than '<' operation."
+		///	CE40: Error with less than '<' operation.
 		/// </summary>
 		public static string CE40 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE40; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with not equal '!=' operation.
+		///	CE41: Error with not equal '!=' operation.
 		/// </summary>
 		public static string CE41 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE41; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with equal '==' operation.
+		///	CE42: Error with equal '==' operation.
 		/// </summary>
 		public static string CE42 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE42; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with substract '-' operation for timespan.
+		///	CE43: Error with substract '-' operation for timespan.
 		/// </summary>
 		public static string CE43 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE43; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with substract '-' operation.
+		///	CE44: Error with substract '-' operation.
 		/// </summary>
 		public static string CE44 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE44; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with negate '-' operation.
+		///	CE45: Error with negate '-' operation.
 		/// </summary>
 		public static string CE45 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE45; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with 'and' operation.
+		///	CE46: Error with 'and' operation.
 		/// </summary>
 		public static string CE46 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE46; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with 'or' operation.
+		///	CE47: Error with 'or' operation.
 		/// </summary>
 		public static string CE47 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE47; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Error with datetime or timespan '{0}' function.
+		///	CE48: Error with datetime or timespan '{0}' function.
 		/// </summary>
 		public static string CE48(object arg0)
 		{
@@ -308,7 +320,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the property '{0}'.
+		///	CE49: Cannot get the property '{0}'.
 		/// </summary>
 		public static string CE49(object arg0)
 		{
@@ -320,19 +332,19 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Value type of function 'right' must be string."
+		///	CE5: Value type of function 'right' must be string.
 		/// </summary>
 		public static string CE5 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE5; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Cannot call 'key' variable without a group by expression."
+		///	CE50: Cannot call 'key' variable without a group by expression.
 		/// </summary>
 		public static string CE50 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE50; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the '{0}' of 'group by'.
+		///	CE51: Cannot get the '{0}' of 'group by'.
 		/// </summary>
 		public static string CE51(object arg0)
 		{
@@ -344,7 +356,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get '{0}' of 'group by'.
+		///	CE52: Cannot get '{0}' of 'group by'.
 		/// </summary>
 		public static string CE52(object arg0)
 		{
@@ -356,37 +368,236 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	Cannot get the value of one of the groups specified in 'group by' sentence.
+		///	CE53: Cannot get the value of one of the groups specified in 'group by' sentence.
 		/// </summary>
 		public static string CE53 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE53; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	
+		///	CE54: Error in 'order by' function.
 		/// </summary>
 		public static string CE54 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE54; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'right' function."
+		///	CE55: Error in enumerable ToList function
+		/// </summary>
+		public static string CE55 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE55; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE56: Error in dispose expression for list of events
+		/// </summary>
+		public static string CE56 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE56; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE57: Error in dispose expression for a event
+		/// </summary>
+		public static string CE57 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE57; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE58: Error with where for event lock method.
+		/// </summary>
+		public static string CE58 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE58; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE59: Error with 'where' function.
+		/// </summary>
+		public static string CE59 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE59; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE6: Error in 'right' function.
 		/// </summary>
 		public static string CE6 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE6; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Value type of function 'upper' must be string."
+		///	CE61: Error with the join projection.
+		/// </summary>
+		public static string CE61 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE61; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE62: Error in enumerable ToArray function
+		/// </summary>
+		public static string CE62 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE62; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE63: Error with the enumerable join.
+		/// </summary>
+		public static string CE63 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE63; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE64: Error in observable switch.
+		/// </summary>
+		public static string CE64 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE64; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE65: Compilation context scheduler factory is null.
+		/// </summary>
+		public static string CE65 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE65; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE66: Observer type is not defined.
+		/// </summary>
+		public static string CE66 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE66; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE67: Error with ObserveOn expression.
+		/// </summary>
+		public static string CE67 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE67; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE68: Error with ObserveOn expression.
+		/// </summary>
+		public static string CE68 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE68; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE69: Error in observable concat.
+		/// </summary>
+		public static string CE69 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE69; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE7: Value type of function 'upper' must be string.
 		/// </summary>
 		public static string CE7 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE7; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'upper' function."
+		///	CE71: Value type of function 'abs' must be numeric.
+		/// </summary>
+		public static string CE71 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE71; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE72: Error in publish
+		/// </summary>
+		public static string CE72 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE72; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE73: Error in observable join
+		/// </summary>
+		public static string CE73 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE73; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE74: Can't use constants at the conditions of the ON statement.
+		/// </summary>
+		public static string CE74 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE74; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE75: You can only use the equality comparer at the conditions of the ON statement. Found {0}.
+		/// </summary>
+		public static string CE75(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE75, new object[]
+			{
+				arg0,
+			});
+		}
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE76: You can only use logical conjunction at the conditions of the ON statement. Found {0}.
+		/// </summary>
+		public static string CE76(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE76, new object[]
+			{
+				arg0,
+			});
+		}
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE77: Invalid parameter {0}.
+		/// </summary>
+		public static string CE77(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE77, new object[]
+			{
+				arg0,
+			});
+		}
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE78: Invalid types the 'isnull' function. Left type {0}, right type {1}
+		/// </summary>
+		public static string CE78(object arg0, object arg1)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE78, new object[]
+			{
+				arg0,
+				arg1,
+			});
+		}
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE79: Error at the 'isnull' function.
+		/// </summary>
+		public static string CE79 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE79; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE8: Error in 'upper' function.
 		/// </summary>
 		public static string CE8 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE8; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Value type of function 'lower' must be string."
+		///	CE81: Error in observable create.
+		/// </summary>
+		public static string CE81 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE81; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE82: Error in subscription.
+		/// </summary>
+		public static string CE82 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE82; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE83: Error in observable timeout.
+		/// </summary>
+		public static string CE83 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE83; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE84: Error in observable catch.
+		/// </summary>
+		public static string CE84 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE84; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE85: Error in select for observable group by.
+		/// </summary>
+		public static string CE85 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE85; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE86: Error creating a constant expression.
+		/// </summary>
+		public static string CE86 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE86; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	CE9: Value type of function 'lower' must be string.
 		/// </summary>
 		public static string CE9 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE9; } }
 	}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="d93046793b89419582421fe93c363399" Name="Diagram1">
+        <EntityTypeShape EntityType="SpaceTestsModel.Test" Width="1.5" PointX="0.75" PointY="4.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="SpaceTestsModel.ActualResult" Width="1.5" PointX="3" PointY="1.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="SpaceTestsModel.Event" Width="1.5" PointX="3" PointY="4.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="SpaceTestsModel.ExpectedResult" Width="1.5" PointX="3" PointY="7.125" IsExpanded="true" />
+        <AssociationConnector Association="SpaceTestsModel.FK_ActualResults_Tests" ManuallyRouted="false" />
+        <AssociationConnector Association="SpaceTestsModel.FK_Events_Tests" ManuallyRouted="false" />
+        <AssociationConnector Association="SpaceTestsModel.FK_ExpectedResults_Tests" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

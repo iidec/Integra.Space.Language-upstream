@@ -4,6 +4,9 @@
       <Value>preprocessor,pre-processor</Value>
       <Value>shortlived,short-lived</Value>
     </CollectionProperty>
+	<CollectionProperty Name="RecognizedWords">
+      <Value>arity</Value>
+    </CollectionProperty>
   </GlobalSettings>
   <Parsers>
     <Parser ParserId="StyleCop.CSharp.CsParser">

@@ -37,7 +37,12 @@
       <HintPath>..\packages\GraphViz.NET.1.0.0\lib\net40\GraphVizWrapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
+      <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -47,7 +52,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Analysis\TreeGraphGenerator.cs" />
+    <Compile Include="SourceTypeFactory.cs" />
+    <Compile Include="TestObject1.cs" />
+    <Compile Include="TreeAnalysis\TreeGraphGenerator.cs" />
+    <Compile Include="CodeDomExpressionVisitor.cs" />
+    <Compile Include="Metadata\MetadataEnums\AgregationFunctionsEnum.cs" />
+    <Compile Include="Metadata\MetadataGenerator.cs" />
+    <Compile Include="Metadata\MetadataNodes\SpaceMetadataTreeNode.cs" />
+    <Compile Include="Metadata\MetadataNodes\SpaceMetadataTreeNodeTypeEnum.cs" />
+    <Compile Include="Metadata\Syntax\EQLSyntaxTree.cs" />
+    <Compile Include="Metadata\Syntax\SyntaxNode.cs" />
+    <Compile Include="Metadata\Syntax\SyntaxNodeExtension.cs" />
+    <Compile Include="NodesFinder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -56,9 +72,17 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Analysis\Graphs\" />
+    <Folder Include="TreeAnalysis\Graphs\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Integra.Space.Common\Integra.Space.Common.csproj">
+      <Project>{d53e2176-9944-4134-b0e1-1258a7c0eb87}</Project>
+      <Name>Integra.Space.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Integra.Space.Compiler.CodeGeneration\Integra.Space.Compiler.CodeGeneration.csproj">
+      <Project>{1d6451da-513d-4e88-bcb2-91ec86a52725}</Project>
+      <Name>Integra.Space.Compiler.CodeGeneration</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Integra.Space.Language\Integra.Space.Language.csproj">
       <Project>{6d4d259b-281f-454f-9b47-4ce2d108ba6a}</Project>
       <Name>Integra.Space.Language</Name>

@@ -3,46 +3,78 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using System.Reactive.Linq;
-using Integra.Space.Event;
 using Microsoft.Reactive.Testing;
 using System.Reactive;
-using Integra.Space.Language.Runtime;
 using System.Collections.Generic;
-using System.Dynamic;
 using Integra.Space.Language.Exceptions;
+using System.Reflection;
+using Integra.Space.Compiler;
+using System.Reflection.Emit;
+using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Queries
 {
     [TestClass]
     public class UserQueryNodeTests
     {
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            bool isTestMode = true;
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process<T>(string eql, DefaultSchedulerFactory dsf, ITestableObservable<T> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.Process(context, eql, dsf);
+
+            Type[] types = assembly.GetTypes();
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            return ((IObservable<object>)result.Invoke(queryObject, new object[] { input.AsObservable(), dsf.TestScheduler }));
+        }
+
         [TestMethod]
         public void ConsultaProyeccionCampoNuloConWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} where {1} select {2} as CampoNulo",
-                                                                "SpaceObservable1",
-                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                "@event.Message.#0.[\"Campo que no existe\"]")
-                                                                );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} select {2} as CampoNulo into SourceXYZ",
+                                                                "SourceParaPruebas1",
+                                                                "MessageType == \"0100\"",
+                                                                "Campo_que_no_existe");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        CampoNulo = x.First().GetType().GetProperty("CampoNulo").GetValue(x.First())
+                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
                     })
                 ),
                 created: 10,
@@ -62,29 +94,22 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaProyeccionCampoNuloSinWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} select {1} as CampoNulo",
-                                                                "SpaceObservable1",
-                                                                "@event.Message.#0.[\"Campo que no existe\"]")
-                                                                );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} select {1} as CampoNulo into SourceXYZ",
+                                                                "SourceParaPruebas1",
+                                                                "@event.Message.#0.[\"Campo que no existe\"]");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        CampoNulo = x.First().GetType().GetProperty("CampoNulo").GetValue(x.First())
+                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
                     })
                 ),
                 created: 10,
@@ -104,35 +129,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYCount()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Contador",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Contador into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
-                                                                                            "key.grupo1",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1",
+                                                                                            "grupo1",
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -152,32 +170,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_0()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -197,33 +208,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_1()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString(),
-                        Resultado2 = x.ElementAt(1).GetType().GetProperty("Resultado").GetValue(x.ElementAt(1)).ToString()
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()
                     })
                 ),
                 created: 10,
@@ -243,36 +247,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_2()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as Resultado1, {4} as Resultado2",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType",
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.ElementAt(0).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(0)).ToString(),
-                        Resultado2 = int.Parse(x.ElementAt(0).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(0)).ToString()),
-                        Resultado3 = x.ElementAt(1).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(1)).ToString(),
-                        Resultado4 = int.Parse(x.ElementAt(1).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado3 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        Resultado4 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -292,32 +289,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_4()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "max((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "max((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -337,32 +327,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos1_5()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "min((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "min((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -382,35 +365,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         /**************************************************************************************************************************************************************/
 
         [TestMethod]
-        public void ConsultaSoloApplyWindowDosEventosOrderBy()
+        public void ConsultaSoloApplyWindowDosEventosOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as monto order by desc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -430,40 +406,33 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSelectDiezEventosTop()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} select top 1 {3} as monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} select top 1 {3} as monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -483,32 +452,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereSelectDosEventosTop()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} select top 1 {3} as monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} select top 1 {3} as monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -528,32 +490,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTop()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select top 1 {3} as monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -573,32 +528,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select top 1 {3} as monto order by desc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -618,32 +566,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select top 1 {3} as monto order by asc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -663,32 +604,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosTopOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select top 1 {3} as monto order by monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -708,32 +642,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by desc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by desc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -753,32 +680,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by asc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by asc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -798,32 +718,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTopOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto order by monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -843,32 +756,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosTop()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select top 1 {3} as monto into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -888,35 +794,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -936,35 +835,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and TransactionAmount between 0m and 4m /*TransactionAmount > 0m and TransactionAmount < 4m*/",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -984,35 +876,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1032,35 +917,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumTop()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1080,35 +958,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria, Llave",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by desc Sumatoria, Llave into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1128,35 +999,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1170,41 +1034,34 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
                     new Subscription(50, 200)
-                });
+                });                
         }
 
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumTopOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1224,35 +1081,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectTopUnaLlaveYSum()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1274,33 +1124,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as monto order by desc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1320,33 +1163,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as monto order by asc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1366,33 +1202,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowSelectDosEventosOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} select {3} as monto order by monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} apply window of {2} select {3} as monto order by monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1412,33 +1241,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as monto order by desc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by desc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1458,33 +1280,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as monto order by asc monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by asc monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1504,33 +1319,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowSelectDosEventosOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as monto order by monto",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "(decimal)@event.Message.#1.#4")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as monto order by monto into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "(double)TransactionAmount");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = decimal.Parse(x.First().GetType().GetProperty("monto").GetValue(x.First()).ToString()),
-                        Resultado2 = decimal.Parse(x.ElementAt(1).GetType().GetProperty("monto").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado2 = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("monto").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -1550,35 +1358,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1598,35 +1399,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1646,35 +1440,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1694,35 +1481,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectUnaLlaveYSum()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1742,35 +1522,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by desc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1790,35 +1563,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1838,35 +1604,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSumOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria order by Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1886,35 +1645,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaApplyWindowGroupBySelectUnaLlaveYSum()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "CardAcceptorNameLocation as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1922,7 +1674,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 disposed: 400);
 
             ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo1GUATEMALA    GT", Sumatoria = 1m }))),
+                    new Recorded<Notification<object>>(200, Notification.CreateOnNext((object)(new { Llave = "Shell El Rodeo1GUATEMALA    GT", Sumatoria = 2m }))),
                     new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
                 });
 
@@ -1936,32 +1688,25 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_0()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado = int.Parse(x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString())
+                        Resultado = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -1980,33 +1725,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_1()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as Resultado",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.First().GetType().GetProperty("Resultado").GetValue(x.First()).ToString(),
-                        Resultado2 = x.ElementAt(1).GetType().GetProperty("Resultado").GetValue(x.ElementAt(1)).ToString()
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()
                     })
                 ),
                 created: 10,
@@ -2026,36 +1764,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaSoloApplyWindowDosEventos2_2()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} select {3} as Resultado1, {4} as Resultado2",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
-                                                                                            "@event.Message.#0.MessageType",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+            string eql = string.Format("from {0} where {1} apply window of {2} select {3} as Resultado1, {4} as Resultado2 into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1                                                                                        
+                                                                                            "MessageType",
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Resultado1 = x.ElementAt(0).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(0)).ToString(),
-                        Resultado2 = int.Parse(x.ElementAt(0).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(0)).ToString()),
-                        Resultado3 = x.ElementAt(1).GetType().GetProperty("Resultado1").GetValue(x.ElementAt(1)).ToString(),
-                        Resultado4 = int.Parse(x.ElementAt(1).GetType().GetProperty("Resultado2").GetValue(x.ElementAt(1)).ToString())
+                        Resultado1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Resultado2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        Resultado3 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        Resultado4 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("Resultado2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString())
                     })
                 ),
                 created: 10,
@@ -2075,35 +1806,28 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSum()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2123,37 +1847,30 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYCount()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
                                                                                             "grupo2",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2173,37 +1890,30 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYSum()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas1",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
                                                                                             "grupo2",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2223,34 +1933,27 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYCountSinWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Contador",
-                                                                                            "SpaceObservable1",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Contador into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
-                                                                                            "key.grupo1",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1",
+                                                                                            "grupo1",
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.First().GetType().GetProperty("Llave").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2270,34 +1973,27 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSumSinWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Sumatoria",
-                                                                                            "SpaceObservable1",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave, {4} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
-                                                                                            "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.ElementAt(0).GetType().GetProperty("Llave").GetValue(x.ElementAt(0)).ToString(),
-                        Sumatoria = decimal.Parse(x.ElementAt(0).GetType().GetProperty("Sumatoria").GetValue(x.ElementAt(0)).ToString())
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2317,33 +2013,26 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByUnaLlaveYSumSinWhere2()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {1} group by {2} select {3} as Llave",
-                                                                                            "SpaceObservable1",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:10'",
-                                                                                            "@event.Message.#0.#0 as grupo1",
-                                                                                            "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave = x.ElementAt(0).GetType().GetProperty("Llave").GetValue(x.ElementAt(0)).ToString()
+                        Llave = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()
                     })
                 ),
                 created: 10,
@@ -2363,36 +2052,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYCountSinWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador",
-                                                                                            "SpaceObservable1",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Contador = int.Parse(x.First().GetType().GetProperty("Contador").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Contador = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Contador").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2412,36 +2094,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaGroupByDosLlavesYSumSinWhere()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
+            string eql = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
+                                                                                            "sum((double)TransactionAmount)");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        Llave1 = x.First().GetType().GetProperty("Llave1").GetValue(x.First()).ToString(),
-                        Llave2 = x.First().GetType().GetProperty("Llave2").GetValue(x.First()).ToString(),
-                        Sumatoria = decimal.Parse(x.First().GetType().GetProperty("Sumatoria").GetValue(x.First()).ToString())
+                        Llave1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave1").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Llave2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Llave2").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        Sumatoria = decimal.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("Sumatoria").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())
                     })
                 ),
                 created: 10,
@@ -2459,83 +2134,20 @@ namespace Integra.Space.LanguageUnitTests.Queries
         }
 
         [TestMethod]
-        public void ConsultaLlaveSinGroupBySinWhere()
-        {
-            try
-            {
-                // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} select {1} as Llave",
-                                                                "SpaceObservable1",
-                                                                "key")
-                                                                );
-                List<PlanNode> plan = parser.Parse();
-
-                ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
-        [TestMethod]
-        public void ConsultaLlaveSinGroupByConWhere()
-        {
-            try
-            {
-                // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} where {1} select {2} as Llave",
-                                                                "SpaceObservable1",
-                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                "key")
-                                                                );
-                List<PlanNode> plan = parser.Parse();
-
-                ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
-        [TestMethod]
         public void ConsultaCountSinGroupBySinWhere()
         {
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} select {1} as Llave",
-                                                                "SpaceObservable1",
+                QueryParser parser = new QueryParser(
+                    string.Format("from {0} select {1} as Llave into SourceXYZ",
+                                                                "SourceParaPruebas",
                                                                 "count()")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2558,15 +2170,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
             try
             {
                 // no es posible utilizar key sin un group by
-                EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} select {1} as Llave",
-                                                                "SpaceObservable1",
-                                                                "sum((decimal)@event.Message.#1.TransactionAmount)")
+                QueryParser parser = new QueryParser(
+                    string.Format("from {0} select {1} as Llave into SourceXYZ",
+                                                                "SourceParaPruebas",
+                                                                "sum((double)TransactionAmount)")
                                                                 );
-                List<PlanNode> plan = parser.Parse();
+                PlanNode plan = parser.Evaluate().Item1;
 
-                ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+                CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
+                Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
 
                 Assert.Inconclusive();
             }
@@ -2590,30 +2202,30 @@ namespace Integra.Space.LanguageUnitTests.Queries
             // esta es para probar las excepciones 
             EQLPublicParser parser = new EQLPublicParser(
                 string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1",
+                                                                                            "MessageType as grupo1",
                                                                                             "key.grupo1",
-                                                                                            "sum((decimal)@event.Message.#1.CardAcceptorNameLocation)")
+                                                                                            "sum((double)CardAcceptorNameLocation)")
                                                                                             );
             List<PlanNode> plan = parser.Parse();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
+            ObservableConstructor te = new ObservableConstructor(new CompileContext() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+            Func<IObservable<TestObject1>, IObservable<object>> result = te.Compile<IObservable<TestObject1>, IObservable<object>>(plan.First());
 
-            TestScheduler scheduler = new TestScheduler();
+            TestScheduler dsf.TestScheduler = new TestScheduler();
 
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                 {
-                    return x.First();
+                    return ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0);
                 }
                 ),
                 created: 10,
@@ -2633,147 +2245,106 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 });
         }
         */
-
-        [TestMethod]
-        public void ConsultaGroupByUnaLlaveYSumCampoNoNumerico()
-        {
-            try
-            {
-                EQLPublicParser parser = new EQLPublicParser(
-                    string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave, {5} as Sumatoria",
-                                                                                                "SpaceObservable1",
-                                                                                                "@event.Message.#0.MessageType == \"0100\"",
-                                                                                                "'00:00:00:01'",
-                                                                                                "@event.Message.#0.MessageType as grupo1",
-                                                                                                "key.grupo1",
-                                                                                                "sum(@event.Message.#1.CardAcceptorNameLocation)")
-                                                                                                );
-                List<PlanNode> plan = parser.Parse();
-
-                ObservableConstructor te = new ObservableConstructor();
-                Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-                Assert.Inconclusive();
-            }
-            catch (CompilationException e)
-            {
-                // prueba exitosa porque es un error poner key sin group by
-            }
-            catch (Exception e)
-            {
-                if (!(e.InnerException is CompilationException))
-                {
-                    Assert.Fail();
-                }
-            }
-        }
-
+        
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion1()
         {
-            string command = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador, {7} as Sumatoria",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
+            string command = string.Format("from {0} where {1} apply window of {2} group by {3} select {4} as Llave1, {5} as Llave2, {6} as Contador, {7} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and MessageType == \"0100\"",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate().Item1;
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion2()
         {
-            string command = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador, {6} as Sumatoria",
-                                                                                            "SpaceObservable1",
+            string command = string.Format("from {0} apply window of {1} group by {2} select {3} as Llave1, {4} as Llave2, {5} as Contador, {6} as Sumatoria into SourceXYZ",
+                                                                                            "SourceParaPruebas",
                                                                                             "'00:00:00:01'",
-                                                                                            "@event.Message.#0.MessageType as grupo1, @event.Message.#1.PrimaryAccountNumber as grupo2",
-                                                                                            "key.grupo1",
-                                                                                            "key.grupo2",
+                                                                                            "MessageType as grupo1, PrimaryAccountNumber as grupo2",
+                                                                                            "grupo1",
+                                                                                            "grupo2",
                                                                                             "count()",
-                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "sum((double)TransactionAmount)");
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate().Item1;
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion3()
         {
-            string command = string.Format("from {0} where {1} select {2} as PrimaryAccountNumber, {3} as CardAcceptorNameLocation, {4} as TransactionAmount, {5} as TransactionCurrencyCode",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#0.MessageType == \"0100\"",
-                                                                                            "@event.Message.#0.PrimaryAccountNumber",
-                                                                                            "@event.Message.#0.CardAcceptorNameLocation",
-                                                                                            "@event.Message.#0.TransactionAmount",
-                                                                                            "@event.Message.#0.TransactionCurrencyCode");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            string command = string.Format("from {0} where {1} select {2} as PrimaryAccountNumber, {3} as CardAcceptorNameLocation, {4} as TransactionAmount, {5} as TransactionCurrencyCode into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "MessageType == \"0100\" and MessageType == \"0100\"",
+                                                                                            "PrimaryAccountNumber",
+                                                                                            "CardAcceptorNameLocation",
+                                                                                            "TransactionAmount",
+                                                                                            "TransactionCurrencyCode");
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate().Item1;
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
         public void CreacionCadenaDeConsultaDesdePlanDeEjecucion4()
         {
-            string command = string.Format("from {0} select {1} as PrimaryAccountNumber, {2} as CardAcceptorNameLocation, {3} as TransactionAmount, {4} as TransactionCurrencyCode",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.#0.PrimaryAccountNumber",
-                                                                                            "@event.Message.#0.CardAcceptorNameLocation",
-                                                                                            "@event.Message.#0.TransactionAmount",
-                                                                                            "@event.Message.#0.TransactionCurrencyCode");
-            EQLPublicParser parser = new EQLPublicParser(command);
-            List<PlanNode> plan = parser.Parse();
+            string command = string.Format("from {0} select {1} as PrimaryAccountNumber, {2} as CardAcceptorNameLocation, {3} as TransactionAmount, {4} as TransactionCurrencyCode into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "PrimaryAccountNumber",
+                                                                                            "CardAcceptorNameLocation",
+                                                                                            "TransactionAmount",
+                                                                                            "TransactionCurrencyCode");
+            QueryParser parser = new QueryParser(command);
+            PlanNode plan = parser.Evaluate().Item1;
 
-            Assert.AreEqual<string>(command, plan.First().NodeText);
+            Assert.AreEqual<string>(command, plan.NodeText);
         }
 
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByAsc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by asc pais, conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2793,43 +2364,36 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderBy()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by pais, conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2849,43 +2413,36 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDesc()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "right((string)@event.Message.Body.#43, 2)",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as pais select top 3 {4} as pais, {5} as conteo order by desc pais, conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "right((string)CardAcceptorNameLocation, 2)",
                                                                                             "pais",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                     (object)(new
                     {
-                        pais1 = x.First().GetType().GetProperty("pais").GetValue(x.First()).ToString(),
-                        conteo1 = int.Parse(x.First().GetType().GetProperty("conteo").GetValue(x.First()).ToString()),
-                        pais2 = x.ElementAt(1).GetType().GetProperty("pais").GetValue(x.ElementAt(1)).ToString(),
-                        conteo2 = int.Parse(x.ElementAt(1).GetType().GetProperty("conteo").GetValue(x.ElementAt(1)).ToString()),
+                        pais1 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString(),
+                        conteo1 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString()),
+                        pais2 = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("pais").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString(),
+                        conteo2 = int.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1).GetType().GetProperty("conteo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(1)).ToString()),
                     })
                 ),
                 created: 10,
@@ -2905,36 +2462,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLowerWithNullValue()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and lower((string)null) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and lower((string)null) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                 {
                     if (x == null)
@@ -2943,7 +2493,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -2963,36 +2513,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescUpperWithNullValue()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and upper((string)null) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and upper((string)null) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                 {
                     if (x == null)
@@ -3001,7 +2544,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -3021,36 +2564,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescLeftWithNullValue()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and left((string)null, 5) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and left((string)null, 5) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                 {
                     if (x == null)
@@ -3059,7 +2595,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,
@@ -3079,36 +2615,29 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaWhereApplyWindowGroupBySelectDosEventosTopOrderByDescRightWithNullValue()
         {
-            EQLPublicParser parser = new EQLPublicParser(
-                string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo",
-                                                                                            "SpaceObservable1",
-                                                                                            "@event.Message.Body.#43 != null and right((string)null, 3) like \"%shell%\"",
-                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject
-                                                                                            "@event.Message.Body.#43",
+            string eql = string.Format("from {0} where {1} apply window of {2} group by {3} as comercio select top 3 {4} as comercio, {5} as conteo order by desc conteo into SourceXYZ",
+                                                                                            "SourceParaPruebas",
+                                                                                            "CardAcceptorNameLocation != null and right((string)null, 3) like \"%shell%\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos TestObject1
+                                                                                            "CardAcceptorNameLocation",
                                                                                             "comercio",
-                                                                                            "count()")
-                                                                                            );
-            List<PlanNode> plan = parser.Parse();
+                                                                                            "count()");
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<IQbservable<EventObject>, IObservable<IEnumerable<object>>> result = te.Compile<IQbservable<EventObject>, IObservable<IEnumerable<object>>>(plan.First());
-
-            TestScheduler scheduler = new TestScheduler();
-
-            ITestableObservable<EventObject> input = scheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest2)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1(transactionAmount: 2m, cardAcceptorNameLocation: "Shell El Rodeo2HONDURAS     HN"))),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = scheduler.Start(
-                () => result(input.AsQbservable())
+            ITestableObserver<object> results = dsf.TestScheduler.Start(
+                () => this.Process(eql, dsf, input)
                 .Select(x =>
                 {
                     if (x == null)
@@ -3117,7 +2646,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
                     }
                     return (object)(new
                     {
-                        Resultado = x.Count()
+                        Resultado = ((Array)x.GetType().GetProperty("Result").GetValue(x)).Length
                     });
                 }),
                 created: 10,

@@ -1,35 +1,75 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
+using System.Reflection;
+using System.Linq;
+using Integra.Space.Compiler;
+using System.Reflection.Emit;
+using Ninject;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
     [TestClass]
     public class BooleanNodeTests
     {
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            bool isTestMode = true;
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
         [TestMethod]
         public void ConstantBooleanTrue()
         {
-            ExpressionParser parser = new ExpressionParser("true");
-            PlanNode plan = parser.Parse();
+            string eql = "true";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<bool> result = te.Compile<bool>(plan);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
 
-            Assert.AreEqual<object>(true, result(), "El plan obtenido difiere del plan esperado.");
+            Type[] types = assembly.GetTypes();
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            Assert.AreEqual<object>(true, (bool)result.Invoke(queryObject, new object[] { dsf.TestScheduler }), "El plan obtenido difiere del plan esperado.");
         }
 
         [TestMethod]
         public void ConstantBooleanFalse()
         {
-            ExpressionParser parser = new ExpressionParser("false");
-            PlanNode plan = parser.Parse();
+            string eql = "false";
+            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
-            ObservableConstructor te = new ObservableConstructor();
-            Func<bool> result = te.Compile<bool>(plan);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);
 
-            Assert.AreEqual<object>(false, result(), "El plan obtenido difiere del plan esperado.");
+            Type[] types = assembly.GetTypes();
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
+
+            Assert.AreEqual<object>(false, (bool)result.Invoke(queryObject, new object[] { dsf.TestScheduler }), "El plan obtenido difiere del plan esperado.");
         }
     }
 }

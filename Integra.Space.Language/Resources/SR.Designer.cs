@@ -106,6 +106,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ApplyExtensions.
+        /// </summary>
+        internal static string ApplyExtensionsRole {
+            get {
+                return ResourceManager.GetString("ApplyExtensionsRole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ApplyWindow.
         /// </summary>
         internal static string ApplyWindowRole {
@@ -228,6 +237,15 @@ namespace Integra.Space.Language {
         internal static string InterpretationException {
             get {
                 return ResourceManager.GetString("InterpretationException", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Into.
+        /// </summary>
+        internal static string IntoRole {
+            get {
+                return ResourceManager.GetString("IntoRole", resourceCulture);
             }
         }
         
@@ -529,6 +547,15 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to sourcetimestamp.
+        /// </summary>
+        internal static string SourceTimestamp {
+            get {
+                return ResourceManager.GetString("SourceTimestamp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} {1} {2}.
         /// </summary>
         internal static string StartStopNodeText {
@@ -583,11 +610,11 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to timestamp.
+        ///   Looks up a localized string similar to systemtimestamp.
         /// </summary>
-        internal static string TimestampProperty {
+        internal static string SystemTimestamp {
             get {
-                return ResourceManager.GetString("TimestampProperty", resourceCulture);
+                return ResourceManager.GetString("SystemTimestamp", resourceCulture);
             }
         }
         

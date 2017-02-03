@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Integra.Space.Language</RootNamespace>
     <AssemblyName>Integra.Space.Language</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -38,12 +38,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Integra.Common, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Integra.Common.Debug.2.1.0.0\lib\net45\Integra.Common.dll</HintPath>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Integra.Messaging, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Integra.Messaging.Debug.2.1.0.0\lib\net45\Integra.Messaging.dll</HintPath>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Irony">
@@ -55,87 +55,209 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45\Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Reactive.Core, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Core.2.2.5\lib\net45\System.Reactive.Core.dll</HintPath>
+    <Reference Include="System.Reactive.Core, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Core.3.1.1\lib\net45\System.Reactive.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Interfaces, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Interfaces.2.2.5\lib\net45\System.Reactive.Interfaces.dll</HintPath>
+    <Reference Include="System.Reactive.Interfaces, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Interfaces.3.1.1\lib\net45\System.Reactive.Interfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.Linq, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-Linq.2.2.5\lib\net45\System.Reactive.Linq.dll</HintPath>
+    <Reference Include="System.Reactive.Linq, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Linq.3.1.1\lib\net45\System.Reactive.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Reactive.PlatformServices, Version=2.2.5.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Rx-PlatformServices.2.2.5\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+    <Reference Include="System.Reactive.PlatformServices, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.PlatformServices.3.1.1\lib\net45\System.Reactive.PlatformServices.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Providers, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Providers.3.1.1\lib\net45\System.Reactive.Providers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reactive.Windows.Threading, Version=3.0.1000.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Reactive.Windows.Threading.3.1.1\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Windows" />
     <Reference Include="System.XML" />
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ASTNodes\Base\AstNodeBase.cs" />
-    <Compile Include="ASTNodes\Cast\ExplicitCast.cs" />
-    <Compile Include="ASTNodes\Cast\TypeNode.cs" />
-    <Compile Include="ASTNodes\Constants\BooleanNode.cs" />
-    <Compile Include="ASTNodes\Constants\ConstantValueNode.cs" />
-    <Compile Include="ASTNodes\Constants\ConstantValueWithoutAliasNode.cs" />
-    <Compile Include="ASTNodes\Constants\ConstantValueWithAliasNode.cs" />
-    <Compile Include="ASTNodes\Constants\StringFunctionNode.cs" />
-    <Compile Include="ASTNodes\Constants\DateFunctionNode.cs" />
-    <Compile Include="ASTNodes\Constants\DateTimeOrTimespanNode.cs" />
-    <Compile Include="ASTNodes\Constants\IdentifierNode.cs" />
-    <Compile Include="ASTNodes\Constants\NullValueNode.cs" />
-    <Compile Include="ASTNodes\Constants\NumberNode.cs" />
-    <Compile Include="ASTNodes\Constants\StringNode.cs" />
-    <Compile Include="ASTNodes\Lists\PlanNodeListNode.cs" />
-    <Compile Include="ASTNodes\Objects\Event\EventNode.cs" />
-    <Compile Include="ASTNodes\Objects\Event\EventPropertiesNode.cs" />
-    <Compile Include="ASTNodes\Objects\Event\EventWithSource.cs" />
-    <Compile Include="ASTNodes\Objects\Object\ObjectIdOrNumberNode.cs" />
-    <Compile Include="ASTNodes\Objects\Object\ObjectNode.cs" />
-    <Compile Include="ASTNodes\Objects\Object\ObjectValueNode.cs" />
-    <Compile Include="ASTNodes\Operations\ArithmeticExpressionNode.cs" />
-    <Compile Include="ASTNodes\Operations\ComparativeExpressionNode.cs" />
-    <Compile Include="ASTNodes\Operations\LogicExpressionNode.cs" />
-    <Compile Include="ASTNodes\Operations\UnaryArithmeticExpressionNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\ApplyWindowNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\FromNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\OrderByNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\GroupByNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Projections\GroupKeyNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Projections\GroupKeyValueNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Projections\ProjectionFunctionNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Projections\ProjectionValueNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\Projections\SelectNode.cs" />
-    <Compile Include="ASTNodes\QuerySections\WhereNode.cs" />
-    <Compile Include="ASTNodes\Root\CommandNode.cs" />
-    <Compile Include="ASTNodes\UserQuery\UserQueryNode.cs" />
+    <Compile Include="ASTNodes\Commands\CommandOptionListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceStatementASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceColumnsStructureASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\InsertASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\SourceColumnsASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\Source\AlterSourceASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterSchemaASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterRoleASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterDatabaseASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterStreamASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterLoginASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Alter\AlterUserASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Drop\DropCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateSchemaASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateStreamASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateSourceASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateRoleASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateDatabaseASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateUserASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateLoginASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CommandOptionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\DictionaryCommandOptionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CommandListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\DictionaryASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\ApplyExtensionListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\TruncateASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\PermissionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\TakeOwnershipASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\PermissionOptionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\CRUD\Create\CreateCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\SpaceActionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\PermissionCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\SpaceObjectASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\SpaceObjectWithIdASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Permissions\GranularPermissionASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\TemporalStream\TemporalStreamCommandASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Use\UseASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\ValueASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\FourthLevelIdentifierPlanNodeASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\SecondLevelIdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\ThirdLevelIdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\FourthLevelIdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Lists\OrderByASTListNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\ApplyExtensions\ApplyExtesnsionASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\IntoASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Projections\TopASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Windows\TimeStatementASTNode.cs" />
+    <Compile Include="ASTNodes\UserQuery\TemporalStreamASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Cast\ExplicitCastASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Cast\TypeASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\BooleanASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\ConstantValueWithOptionalAliasASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\ConstantValueWithAliasASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\MathFunctionASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\StringFunctionASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\DateFunctionASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\DateTimeOrTimespanASTNode.cs" />
+    <Compile Include="ASTNodes\Identifier\IdentifierASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\NullValueASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\NumberASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Constants\StringASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Functions\IsNullFunctionASTNode.cs" />
+    <Compile Include="ASTNodes\Values\ValueASTNode.cs" />
+    <Compile Include="ASTNodes\Values\Objects\NonConstantValueASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Sources\JoinASTNode.cs" />
+    <Compile Include="ASTNodes\Lists\PlanNodeListASTNode.cs" />
+    <Compile Include="ASTNodes\Operations\ArithmeticExpressionASTNode.cs" />
+    <Compile Include="ASTNodes\Operations\ComparativeExpressionASTNode.cs" />
+    <Compile Include="ASTNodes\Operations\LogicExpressionASTNode.cs" />
+    <Compile Include="ASTNodes\Operations\UnaryArithmeticExpressionASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Windows\ApplyWindowASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Sources\SourceASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Conditions\OnASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\OrderByASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\GroupByASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Projections\ProjectionFunctionASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Projections\SelectASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Conditions\ConditionASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Conditions\WhereASTNode.cs" />
+    <Compile Include="ASTNodes\PassASTNode.cs" />
+    <Compile Include="ASTNodes\QuerySections\Windows\TimeoutASTNode.cs" />
+    <Compile Include="ASTNodes\Root\CommandASTNode.cs" />
+    <Compile Include="ASTNodes\UserQuery\UserQueryASTNode.cs" />
     <Compile Include="Errors\ErrorNode.cs" />
     <Compile Include="Errors\Errors.cs" />
     <Compile Include="Exceptions\CompilationException.cs" />
     <Compile Include="Exceptions\ParseException.cs" />
-    <Compile Include="Exceptions\RuntimeException.cs" />
     <Compile Include="Exceptions\SyntaxException.cs" />
+    <Compile Include="ExecutionPlan\Commands\CompiledCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSourceNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterSchemaNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterRoleNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterDatabaseNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterObjectNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterLoginNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterUserNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Alter\AlterStreamNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateSchemaNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateStreamNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateSourceNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateDatabaseNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateRoleNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateUserNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateLoginNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\Create\CreateObjectNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\DropObjectNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\InsertNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\SourceColumnNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\SourceColumnTypeNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
+    <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Metadata\TruncateNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\ReferencedSource.cs" />
+    <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Metadata\QueryCommandForMetadataNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Permissions\AddOrRemoveCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Permissions\PermissionNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Permissions\TakeOwnershipCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Permissions\PermissionsCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Status\StatusCommandNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\DDLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\TemporalStream\TemporalStreamNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Use\UseCommandNode.cs" />
+    <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
+    <Compile Include="Grammars\TemporalStreamGrammar.cs" />
+    <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
+    <Compile Include="Helpers\BnfTermExtensions.cs" />
+    <Compile Include="Helpers\EQLFunctionalityEnum.cs" />
+    <Compile Include="Helpers\IGrammarRuleValidator.cs" />
+    <Compile Include="Helpers\InternalPlanNodes.cs" />
+    <Compile Include="Helpers\NodesFinder.cs" />
+    <Compile Include="Helpers\ProjectionColumn.cs" />
+    <Compile Include="Helpers\ScopeParameter.cs" />
+    <Compile Include="Helpers\SourceColumnType.cs" />
+    <Compile Include="Parsers\BindingParameter.cs" />
+    <Compile Include="Parsers\CommandParser.cs" />
+    <Compile Include="Parsers\SpaceParser.cs" />
+    <Compile Include="ExecutionPlan\SpaceASTNode.cs" />
+    <Compile Include="Grammars\CommandGrammar.cs" />
+    <Compile Include="Grammars\CommandGrammarRuntime.cs" />
     <Compile Include="Grammars\Common\InterpretedLanguageGrammarExtensions.cs" />
-    <Compile Include="Grammars\GroupByGrammar.cs" />
-    <Compile Include="Grammars\ProjectionGrammar.cs" />
-    <Compile Include="Grammars\GroupByLanguageRuntime.cs" />
-    <Compile Include="Grammars\ProjectionLanguageRuntime.cs" />
+    <Compile Include="Metadata\MetadataGenerator.cs" />
+    <Compile Include="Metadata\SpaceMetadataTreeNode.cs" />
+    <Compile Include="Metadata\SpaceMetadataTreeNodeTypeEnum.cs" />
     <Compile Include="Parsers\ExpressionParser.cs" />
     <Compile Include="General\Validations\CastValidation.cs" />
     <Compile Include="General\Validations\TypeValidation.cs" />
-    <Compile Include="Grammars\EQLGrammar.cs" />
-    <Compile Include="Grammars\EQLLanguageRuntime.cs" />
+    <Compile Include="Grammars\QueryGrammar.cs" />
+    <Compile Include="Grammars\QueryLanguageRuntime.cs" />
     <Compile Include="Grammars\ExpressionGrammar.cs" />
     <Compile Include="Grammars\ExpressionLanguageRuntime.cs" />
-    <Compile Include="Parsers\EQLPublicParser.cs" />
+    <Compile Include="Parsers\QueryParser.cs" />
     <Compile Include="ExecutionPlan\PlanNode.cs" />
-    <Compile Include="ExecutionPlan\PlanNodeTypeEnum.cs" />
+    <Compile Include="ExecutionPlan\Enums\PlanNodeTypeEnum.cs" />
+    <Compile Include="ParseTree\SpaceParseTreeNodeTypeEnum.cs" />
+    <Compile Include="ParseTree\SpaceParseTreeNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources\RUNTIME_ERRORS.Designer.cs">
       <DependentUpon>RUNTIME_ERRORS.resx</DependentUpon>
@@ -167,15 +289,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
-    <Compile Include="Runtime\ConstructionValidator.cs" />
-    <Compile Include="Runtime\GroupByKeyComparer.cs" />
-    <Compile Include="Runtime\LanguageTypeBuilder.cs">
-      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
-    </Compile>
-    <Compile Include="Runtime\NodesFinder.cs" />
-    <Compile Include="Runtime\ObservableConstructor.cs" />
     <Compile Include="ExecutionPlan\PlanNodeTypeExtensions.cs" />
-    <Compile Include="Runtime\OrderByKeyComparer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">
@@ -219,12 +333,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Integra.Space.Event\Integra.Space.Event.csproj">
-      <Project>{38abf8b4-fc77-4ffc-96a2-1ee03bd22056}</Project>
-      <Name>Integra.Space.Event</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Integra.Space.Language.nuspec">
       <SubType>Designer</SubType>
     </None>
@@ -240,6 +348,16 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>RUNTIME_ERRORS.Strings.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Integra.Space.Common\Integra.Space.Common.csproj">
+      <Project>{d53e2176-9944-4134-b0e1-1258a7c0eb87}</Project>
+      <Name>Integra.Space.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Integra.Space.Runtime\Integra.Space.Runtime.csproj">
+      <Project>{87560b2c-3273-4f36-88a2-5fa49c2b6195}</Project>
+      <Name>Integra.Space.Runtime</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

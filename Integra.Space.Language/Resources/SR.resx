@@ -132,6 +132,9 @@
   <data name="AgentProperty" xml:space="preserve">
     <value>agent</value>
   </data>
+  <data name="ApplyExtensionsRole" xml:space="preserve">
+    <value>ApplyExtensions</value>
+  </data>
   <data name="ApplyWindowRole" xml:space="preserve">
     <value>ApplyWindow</value>
   </data>
@@ -173,6 +176,9 @@
   </data>
   <data name="InterpretationException" xml:space="preserve">
     <value>An exception has ocurred on command interpretation. The inner exception may contain more information.</value>
+  </data>
+  <data name="IntoRole" xml:space="preserve">
+    <value>Into</value>
   </data>
   <data name="JoinRole" xml:space="preserve">
     <value>Join</value>
@@ -273,6 +279,9 @@
   <data name="SourceRole" xml:space="preserve">
     <value>Source</value>
   </data>
+  <data name="SourceTimestamp" xml:space="preserve">
+    <value>sourcetimestamp</value>
+  </data>
   <data name="StartStopNodeText" xml:space="preserve">
     <value>{0} {1} {2}</value>
   </data>
@@ -291,8 +300,8 @@
   <data name="SyntaxError" xml:space="preserve">
     <value>Invalid input. Syntax error: {0}. Line {1}, column {2}</value>
   </data>
-  <data name="TimestampProperty" xml:space="preserve">
-    <value>timestamp</value>
+  <data name="SystemTimestamp" xml:space="preserve">
+    <value>systemtimestamp</value>
   </data>
   <data name="ToProperty" xml:space="preserve">
     <value>To</value>

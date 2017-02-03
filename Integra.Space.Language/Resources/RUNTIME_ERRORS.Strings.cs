@@ -20,127 +20,127 @@ namespace Integra.Space.Language.Resources
 	{
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'left' function"
+		///	RE1: Error in 'left' function
 		/// </summary>
 		public static string RE1 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE1; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'right' function"
+		///	RE10: Error in 'right' function
 		/// </summary>
 		public static string RE10 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE10; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'upper' function"
+		///	RE11: Error in 'upper' function
 		/// </summary>
 		public static string RE11 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE11; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'lower' function"
+		///	RE12: Error in 'lower' function
 		/// </summary>
 		public static string RE12 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE12; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'count' function"
+		///	RE13: Error in 'count' function
 		/// </summary>
 		public static string RE13 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE13; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error in 'sum' function"
+		///	RE14: Error in 'sum' function
 		/// </summary>
 		public static string RE14 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE14; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'apply window of' function."
+		///	RE15: Error with 'observable buffer' function.
 		/// </summary>
 		public static string RE15 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE15; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'top' function."
+		///	RE16: Error with 'take' function.
 		/// </summary>
 		public static string RE16 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE16; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'top' function."
+		///	RE17: Error with 'enumerable take' function.
 		/// </summary>
 		public static string RE17 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE17; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with observable buffer with time and size"
+		///	RE18: Error with observable buffer with time and size.
 		/// </summary>
 		public static string RE18 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE18; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'where' function."
+		///	RE19: Error with 'where' function.
 		/// </summary>
 		public static string RE19 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE19; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'select' function."
+		///	RE2: Error with 'select for observable group by' function.
 		/// </summary>
 		public static string RE2 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE2; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'select' function."
+		///	RE20: Error with 'select for enumerable group by' function.
 		/// </summary>
 		public static string RE20 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE20; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'select' function."
+		///	RE21: Error with 'select for observable buffer or source' function where right expression is a lambda expression.
 		/// </summary>
 		public static string RE21 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE21; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'select' function."
+		///	RE22: Error with 'select for observable buffer or source' function where right expression is not a lambda expression.
 		/// </summary>
 		public static string RE22 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE22; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'select' function."
+		///	RE23: Error with 'enumerable select' function.
 		/// </summary>
 		public static string RE23 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE23; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'group by' function."
+		///	RE24: Error with 'group by' function.
 		/// </summary>
 		public static string RE24 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE24; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'group by' function."
+		///	RE25: Error with 'group by' function.
 		/// </summary>
 		public static string RE25 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE25; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'order by' function."
+		///	RE26: Error with 'order by' function.
 		/// </summary>
 		public static string RE26 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE26; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with 'merge' function."
+		///	RE27: Error with 'merge' function.
 		/// </summary>
 		public static string RE27 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE27; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Cannot get the value of the object property {0}.
+		///	RE28: Cannot get the value of the object property {0}.
 		/// </summary>
 		public static string RE28(object arg0)
 		{
@@ -152,13 +152,13 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the message of the event."
+		///	RE29: Error with the message of the event.
 		/// </summary>
 		public static string RE29 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE29; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error getting the subfield {0}.
+		///	RE3: Error getting the subfield {0}.
 		/// </summary>
 		public static string RE3(object arg0)
 		{
@@ -170,7 +170,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error getting the field {0}.
+		///	RE30: Error getting the field {0}.
 		/// </summary>
 		public static string RE30(object arg0)
 		{
@@ -182,7 +182,7 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error getting the part {0}.
+		///	RE31: Error getting the part {0}.
 		/// </summary>
 		public static string RE31(object arg0)
 		{
@@ -194,159 +194,243 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the unbox operation"
+		///	RE32: Error with the unbox operation
 		/// </summary>
 		public static string RE32 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE32; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the convert operation"
+		///	RE33: Error with the convert operation
 		/// </summary>
 		public static string RE33 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE33; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the like operation with two wildcards"
+		///	RE34: Error with the like operation with two wildcards
 		/// </summary>
 		public static string RE34 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE34; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the like operation with left wildcard"
+		///	RE35: Error with the like operation with left wildcard
 		/// </summary>
 		public static string RE35 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE35; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the like operation with right wildcard"
+		///	RE36: Error with the like operation with right wildcard
 		/// </summary>
 		public static string RE36 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE36; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the like operation without wildcards"
+		///	RE37: Error with the like operation without wildcards
 		/// </summary>
 		public static string RE37 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE37; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the 'not' operation"
+		///	RE38: Error with the 'not' operation
 		/// </summary>
 		public static string RE38 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE38; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the greater than or equal operation '>='"
+		///	RE39: Error with the greater than or equal operation '>='
 		/// </summary>
 		public static string RE39 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE39; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the greater than operation '>'"
+		///	RE4: Error with the greater than operation '>'
 		/// </summary>
 		public static string RE4 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE4; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the less than or equal operation '<='"
+		///	RE40: Error with the less than or equal operation '<='
 		/// </summary>
 		public static string RE40 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE40; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the less operation '<'"
+		///	RE41: Error with the less operation '<'
 		/// </summary>
 		public static string RE41 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE41; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the not equal operation '!='"
+		///	RE42: Error with the not equal operation '!='
 		/// </summary>
 		public static string RE42 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE42; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the equal operation '=='"
+		///	RE43: Error with the equal operation '=='
 		/// </summary>
 		public static string RE43 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE43; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the substract operation '-' for timespan"
+		///	RE44: Error with the substract operation '-' for timespan
 		/// </summary>
 		public static string RE44 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE44; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the substract operation '-'"
+		///	RE45: Error with the substract operation '-'
 		/// </summary>
 		public static string RE45 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE45; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the negate operation '-'"
+		///	RE46: Error with the negate operation '-'
 		/// </summary>
 		public static string RE46 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE46; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the and operation 'and'"
+		///	RE47: Error with the and operation 'and'
 		/// </summary>
 		public static string RE47 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE47; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the or operation 'or'"
+		///	RE48: Error with the or operation 'or'
 		/// </summary>
 		public static string RE48 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE48; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the get property of a date type operation"
+		///	RE49: Error with the get property of a date type operation
 		/// </summary>
 		public static string RE49 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE49; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the get property operation"
+		///	RE5: Error with the get property operation
 		/// </summary>
 		public static string RE5 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE5; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the get group key operation"
+		///	RE50: Error with the get group key operation
 		/// </summary>
 		public static string RE50 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE50; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the get group key property operation"
+		///	RE51: Error with the get group key property operation
 		/// </summary>
 		public static string RE51 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE51; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	"Error with the get group key property value operation"
+		///	RE52: Error with the get group key property value operation
 		/// </summary>
 		public static string RE52 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE52; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	
+		///	RE53: Error with event dispose.
 		/// </summary>
 		public static string RE53 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE53; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	
+		///	RE54: Error with ToList method.
 		/// </summary>
 		public static string RE54 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE54; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	
+		///	RE55: Error with event dispose.
+		/// </summary>
+		public static string RE55 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE55; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE56: Error with event lock method.
+		/// </summary>
+		public static string RE56 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE56; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE57: Error with where for event lock method.
+		/// </summary>
+		public static string RE57 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE57; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE58: Error with event unlock in observable where.
+		/// </summary>
+		public static string RE58 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE58; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE59: Error in Switch.
+		/// </summary>
+		public static string RE59 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE59; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE6: Error in ToArray.
 		/// </summary>
 		public static string RE6 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE6; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE61: Error in ToObservable.
+		/// </summary>
+		public static string RE61 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE61; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE62: Error in observable concat.
+		/// </summary>
+		public static string RE62 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE62; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE63: Error calling the SetTimeout method of a ExtractedEventData object.
+		/// </summary>
+		public static string RE63 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE63; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE64: Error in 'abs' function.
+		/// </summary>
+		public static string RE64 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE64; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE65: Error with observable never.
+		/// </summary>
+		public static string RE65 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE65; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE66: Error with observable empty.
+		/// </summary>
+		public static string RE66 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE66; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE67: Error with observable timeout.
+		/// </summary>
+		public static string RE67 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE67; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE68: Error in observable catch.
+		/// </summary>
+		public static string RE68 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE68; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE69: Error in enumerable join.
+		/// </summary>
+		public static string RE69 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE69; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
@@ -356,9 +440,93 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
+		///	RE70: Error in observable join.
+		/// </summary>
+		public static string RE70 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE70; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE71: Error in observable plublish.
+		/// </summary>
+		public static string RE71 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE71; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE72: Error in observable refcount.
+		/// </summary>
+		public static string RE72 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE72; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE73: Error in observable create.
+		/// </summary>
+		public static string RE73 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE73; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE74: Error in observable subscribe.
+		/// </summary>
+		public static string RE74 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE74; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE75: Error in ObserveOn.
+		/// </summary>
+		public static string RE75 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE75; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE76: Error in SubscribeOn.
+		/// </summary>
+		public static string RE76 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE76; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE77: Error with select for query result.
+		/// </summary>
+		public static string RE77 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE77; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE78: Error calling Lock method of the event.
+		/// </summary>
+		public static string RE78 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE78; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE79: Error with enumerable where.
+		/// </summary>
+		public static string RE79 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE79; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
 		///	
 		/// </summary>
 		public static string RE8 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE8; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE80: Error with join projection.
+		/// </summary>
+		public static string RE80 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE80; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE81: Error with 'isnull' function.
+		/// </summary>
+		public static string RE81 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE81; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE82: Error in observable timer.
+		/// </summary>
+		public static string RE82 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE82; } }
+	
+		/// <summary>
+		/// Looks up a localized string similar to: 
+		///	RE83: Error defining the JoinProcessingTimestamp property at the observable join selector.
+		/// </summary>
+		public static string RE83 { get { return global::Integra.Space.Language.RUNTIME_ERRORS.RE83; } }
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

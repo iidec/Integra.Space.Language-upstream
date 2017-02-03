@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Integra.Space.Compiler;
+using Irony.Parsing;
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection.Emit;
 
 namespace Integra.Space.Language.Analysis
 {
@@ -13,35 +12,167 @@ namespace Integra.Space.Language.Analysis
         static void Main(string[] args)
         {
             string finish = "";
-            while (!finish.ToLower().Equals("stop"))
-            {
-                try
-                {
+            
+            Console.WriteLine("[1] for graph, [2] for generate metadata");
+            string option = Console.ReadLine();
+            //option = "2";
 
-                    Console.WriteLine("Creating graph directory...");
-                    CreateDirectory();
-                    Console.WriteLine("Write a EQL command or press enter for a test");
+            if (option.Equals("1"))
+            {
+                while (!finish.ToLower().Equals("stop"))
+                {
+                    try
+                    {
+                        Console.WriteLine("Creating graph directory...");
+                        CreateDirectory();
+                        Console.WriteLine("Write a EQL command or press enter");
+                        Console.WriteLine();
+
+                        int bufSize = 1024;
+                        Stream inStream = Console.OpenStandardInput(bufSize);
+                        Console.SetIn(new StreamReader(inStream, Console.InputEncoding, false, bufSize));
+                        string eql = Console.ReadLine();
+                        Console.WriteLine("Creating execution plan...");
+
+                        if (string.IsNullOrWhiteSpace(eql))
+                        {
+                            
+                            eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria, Llave into SourceXYZ",
+                                                                                            "SpaceObservable1",
+                                                                                            "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+                        
+                        /*
+                            eql = "LEFT JOIN SpaceObservable1 as t1 WHERE t1.@event.Message.#0.#0 == \"0100\" " +
+                                    "WITH SpaceObservable1 as t2 WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                    "ON t1.@event.Adapter.Name == t2.@event.Adapter.Name and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)" +
+                                    "TIMEOUT '00:00:01' " +
+                                    "EVENTLIFETIME '00:00:10' " +
+                                    "WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                    "SELECT t1.@event.Message.#1.#43 as c1 ";
+                          */  
+                        }
+
+                        QueryParser parser = new QueryParser(eql);
+                        PlanNode plan = parser.Evaluate().Item1;
+
+                        Console.WriteLine("Plan generated.");
+                        Console.WriteLine("Creating graph...");
+
+                        string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
+                        TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
+                        tgg.GenerateGraph(plan);
+
+                        Console.WriteLine("Graph created.");
+                        Console.WriteLine("Opening graph...");
+                        tgg.ShowGraph();
+                        Console.WriteLine("Graph opened.");
+                        Console.WriteLine("Write 'stop' to finish or enter to continue...");
+                        finish = Console.ReadLine();
+                        Console.WriteLine();
+                    }
+                    catch (Exception e)
+                    {
+                        // Get stack trace for the exception with source file information
+                        StackTrace st = new StackTrace(e, true);
+                        // Get the top stack frame
+                        StackFrame frame = st.GetFrame(0);
+                        // Get the line number from the stack frame
+                        int line = frame.GetFileLineNumber();
+                        int column = frame.GetFileColumnNumber();
+
+                        Console.WriteLine("Cannot create the graph. Error: Line: {0}, Column: {1}, Message {2}", line, column, e.Message);
+                        Console.WriteLine("Write 'stop' to finish or enter to continue...");
+                        finish = Console.ReadLine();
+                        Console.WriteLine();
+                    }
+                }
+            }
+            else if (option.Equals("2"))
+            {
+                while (!finish.ToLower().Equals("stop"))
+                {
+                    Console.WriteLine("Write a EQL command or press enter");
                     Console.WriteLine();
                     string eql = Console.ReadLine();
                     Console.WriteLine("Creating execution plan...");
 
                     if (string.IsNullOrWhiteSpace(eql))
                     {
-                        eql = string.Format("from {0} where {1} select {2} as CampoNulo",
-                                                                            "SpaceObservable1",
-                                                                            "@event.Message.#0.MessageType == \"0100\"",
-                                                                            "@event.Message.#0.[\"Campo que no existe\"]");
+                        
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SpaceObservable1",
+                                                                                            "SpaceObservable1.@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+
+                        
+                        /*eql = string.Format("from {0} apply window of {2} select {3} as monto",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.#0.MessageType == \"0100\"",
+                                                                                            "'00:00:01'", // hay un comportamiento inesperado cuando el segundo parametro es 2 y se envian dos EventObject                                                                                        
+                                                                                            "(decimal)@event.Message.#1.#4");
+                                                                                            */
+
+                        eql = "from Streams as x where (string)ServerId == \"59e858fc-c84d-48a7-8a98-c0e7adede20a\" select ServerId as servId, max(1) as maxTest order by desc servId, maxTest  into SourceXYZ";
+                        eql = "from Streams as x select ServerId as servId, max(1) as maxTest  into SourceXYZ";
+
+                        eql = string.Format("from {0} where {1} apply window of {2} group by {3} select top 1 {4} as Llave, {5} as Sumatoria order by asc Sumatoria into SourceXYZ",
+                                                                                            "SpaceObservable1",
+                                                                                            "@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount between 0m and 4m",
+                                                                                            //"@event.Message.#0.MessageType == \"0100\" and @event.Message.#1.TransactionAmount > 0m and @event.Message.#1.TransactionAmount < 3m",
+                                                                                            "'00:00:00:01'",
+                                                                                            "@event.Message.#1.CardAcceptorNameLocation as grupo1",
+                                                                                            "grupo1",
+                                                                                            "sum((decimal)@event.Message.#1.TransactionAmount)");
+
+
+                        eql = "cross " +
+                                "JOIN SpaceObservable1 as t1 " + //WHERE t1.@event.Message.#0.#0 == \"0100\"" +
+                                "WITH SpaceObservable1 as t2 " + //WHERE t2.@event.Message.#0.#0 == \"0110\" " +
+                                                                 //"ON t1.@event.Adapter.Name == t2.@event.Adapter.Name " + // and (decimal)t1.@event.Message.#1.#4 == (decimal)t2.@event.Message.#1.#4 and right((string)t1.@event.Message.#1.#43, 5) == right((string)t2.@event.Message.#1.#43, 5)
+                                "ON t1.@event.Message.#0.#0 == t2.@event.Message.#1.#43 " +
+                                "TIMEOUT '00:00:01' " +
+                                //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
+                                "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 apply duration of \"00:00:01\" apply repetition of 2 into SourceXYZ";
+
+                        eql = @"from SourceParaPruebas apply window of '00:00:00:01' group by CardAcceptorNameLocation as grupo1 select top 1 grupo1 as Llave, sum((decimal)TransactionAmount) as Sumatoria order by Sumatoria into SourceXYZ ";
                     }
 
-                    EQLPublicParser parser = new EQLPublicParser(eql);
-                    List<PlanNode> plan = parser.Parse();
-
+                    //MetadataQueryParser parser = new MetadataQueryParser(eql);
+                    QueryParser parser = new QueryParser(eql);
+                    ParseTree parseTree = parser.ParseTree;
                     Console.WriteLine("Plan generated.");
+                    Console.WriteLine("Creating metadata...");
+
+                    Language.Metadata.MetadataGenerator mg = new Language.Metadata.MetadataGenerator();
+                    SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parseTree.Root);
+                    //Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
+
+                    Console.WriteLine("Metadata created.");
+                    Console.WriteLine("Transforming plan...");
+
+                    PlanNode executionPlanNode = parser.Evaluate().Item1;
+
+                    SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + string.Empty);
+                    AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+                    SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(asmBuilder);
+                    modBuilder.CreateModuleBuilder();
+
+                    TreeTransformations tt = new TreeTransformations(asmBuilder, executionPlanNode, new SourceTypeFactory());
+                    tt.Transform();
+
+                    Console.WriteLine("Plan transformed.");
                     Console.WriteLine("Creating graph...");
 
                     string fileName = DateTime.Now.ToString("yyyy_MM_dd hh_mm_ss");
                     TreeGraphGenerator tgg = new TreeGraphGenerator(fileName);
-                    tgg.GenerateGraph(plan.First());
+                    tgg.GenerateGraph(executionPlanNode);
 
                     Console.WriteLine("Graph created.");
                     Console.WriteLine("Opening graph...");
@@ -50,18 +181,7 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Write 'stop' to finish or enter to continue...");
                     finish = Console.ReadLine();
                     Console.WriteLine();
-                }
-                catch (Exception e)
-                {
-                    // Get stack trace for the exception with source file information
-                    StackTrace st = new StackTrace(e, true);
-                    // Get the top stack frame
-                    StackFrame frame = st.GetFrame(0);
-                    // Get the line number from the stack frame
-                    int line = frame.GetFileLineNumber();
-                    int column = frame.GetFileColumnNumber();
 
-                    Console.WriteLine("Cannot create the graph. Error: Line: {0}, Column: {1}, Message {2}", line, column, e.Message);
                     Console.WriteLine("Write 'stop' to finish or enter to continue...");
                     finish = Console.ReadLine();
                     Console.WriteLine();
@@ -86,10 +206,6 @@ namespace Integra.Space.Language.Analysis
                 // Try to create the directory.
                 DirectoryInfo di = Directory.CreateDirectory(path);
                 Console.WriteLine("The directory was created successfully at {0}.", Directory.GetCreationTime(path));
-
-                // Delete the directory.
-                di.Delete();
-                Console.WriteLine("The directory was deleted successfully.");
             }
             catch (Exception e)
             {
