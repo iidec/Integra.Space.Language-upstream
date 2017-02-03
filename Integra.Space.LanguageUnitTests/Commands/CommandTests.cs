@@ -807,7 +807,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         [TestMethod]
         public void AlterSourceRemoveColumns()
         {
-            string command = "alter source source1 remove (column1 string(20), column2 int, column3 double)";
+            string command = "alter source source1 remove (column1, column2, column3)";
             this.Process(command);
         }
 

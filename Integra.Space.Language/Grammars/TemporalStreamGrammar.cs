@@ -115,6 +115,7 @@ namespace Integra.Space.Language.Grammars
             ConstantTerminal nt_SYSTEM_OBJECTS = new ConstantTerminal("SYSTEM_OBJECTS");
             nt_SYSTEM_OBJECTS.Add("servers", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.Server, "servers"));
             nt_SYSTEM_OBJECTS.Add("logins", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.Login, "logins"));
+            nt_SYSTEM_OBJECTS.Add("endpoints", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.Endpoint, "endpoints"));
             nt_SYSTEM_OBJECTS.Add("serverroles", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.ServerRole, "serverroles"));
             nt_SYSTEM_OBJECTS.Add("databases", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.Database, "databases"));
             nt_SYSTEM_OBJECTS.Add("users", this.GetPlanNodeForMetadataSource(Common.SystemObjectEnum.DatabaseUser, "users"));

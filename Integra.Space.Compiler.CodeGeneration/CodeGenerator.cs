@@ -14,7 +14,6 @@ namespace Integra.Space.Compiler
     using System.Reactive;
     using System.Reactive.Linq;
     using System.Reflection;
-    using Database;
     using Language.Exceptions;
     using Language;
     using System.Reflection.Emit;

@@ -499,9 +499,15 @@ namespace Integra.Space.Language.Grammars
             NonTerminal nt_SOURCE_COLUMN = new NonTerminal("SOURCE_COLUMN", typeof(SourceColumnsASTNode));
             nt_SOURCE_COLUMN.AstConfig.NodeType = null;
             nt_SOURCE_COLUMN.AstConfig.DefaultNodeCreator = () => new SourceColumnsASTNode();
+            NonTerminal nt_SOURCE_COLUMN_TO_REMOVE = new NonTerminal("SOURCE_COLUMN_TO_REMOVE", typeof(SourceColumnsASTNode));
+            nt_SOURCE_COLUMN_TO_REMOVE.AstConfig.NodeType = null;
+            nt_SOURCE_COLUMN_TO_REMOVE.AstConfig.DefaultNodeCreator = () => new SourceColumnsASTNode();
             NonTerminal nt_SOURCE_COLUMN_LIST = new NonTerminal("SOURCE_COLUMN_LIST", typeof(ListASTNode<SourceColumnsASTNode, SourceColumnNode>));
             nt_SOURCE_COLUMN_LIST.AstConfig.NodeType = null;
             nt_SOURCE_COLUMN_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SourceColumnsASTNode, SourceColumnNode>();
+            NonTerminal nt_SOURCE_COLUMN_TO_REMOVE_LIST = new NonTerminal("SOURCE_COLUMN_TO_REMOVE_LIST", typeof(ListASTNode<SourceColumnsASTNode, SourceColumnNode>));
+            nt_SOURCE_COLUMN_TO_REMOVE_LIST.AstConfig.NodeType = null;
+            nt_SOURCE_COLUMN_TO_REMOVE_LIST.AstConfig.DefaultNodeCreator = () => new ListASTNode<SourceColumnsASTNode, SourceColumnNode>();
             /************************************************/
 
             /* PERMISSION COMMANDS */
@@ -718,6 +724,9 @@ namespace Integra.Space.Language.Grammars
                                     | terminalId + terminalString + terminalParentesisIz + terminalUnsignedIntValue + terminalParentesisDer;
             nt_SOURCE_COLUMN_LIST.Rule = this.MakePlusRule(nt_SOURCE_COLUMN_LIST, terminalComa, nt_SOURCE_COLUMN);
 
+            nt_SOURCE_COLUMN_TO_REMOVE.Rule = terminalId;
+            nt_SOURCE_COLUMN_TO_REMOVE_LIST.Rule = this.MakePlusRule(nt_SOURCE_COLUMN_TO_REMOVE_LIST, terminalComa, nt_SOURCE_COLUMN_TO_REMOVE);
+
             /* ALTER */
 
             nt_ALTER_LOGIN.Rule = terminalAlter + terminalLogin + nt_SECOND_LEVEL_OBJECT_IDENTIFIER + terminalWith + nt_LOGIN_OPTION_LIST;
@@ -729,7 +738,7 @@ namespace Integra.Space.Language.Grammars
 
             nt_ALTER_SOURCE.Rule = terminalAlter + terminalSource + nt_FOURTH_LEVEL_OBJECT_IDENTIFIER + nt_ALTER_SOURCE_STATEMENTS;
             nt_ALTER_SOURCE_COLUMNS_STRUCTURE.Rule = terminalAdd + terminalParentesisIz + nt_SOURCE_COLUMN_LIST + terminalParentesisDer
-                                                    | terminalRemove + terminalParentesisIz + nt_SOURCE_COLUMN_LIST + terminalParentesisDer;
+                                                    | terminalRemove + terminalParentesisIz + nt_SOURCE_COLUMN_TO_REMOVE_LIST + terminalParentesisDer;
             nt_ALTER_SOURCE_STATEMENTS.Rule = terminalWith + nt_SOURCE_OPTION_LIST
                                                 | nt_ALTER_SOURCE_COLUMNS_STRUCTURE;
 

@@ -1,9 +1,4 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="AssemblyInfo.cs" company="Integra.Space">
-//     Copyright (c) Integra.Space. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -15,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Integra.Space.Common")]
-[assembly: AssemblyCopyright("Copyright ©  2016")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -25,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("27c39916-4c52-4472-8168-07a33448a5fc")]
+[assembly: Guid("d53e2176-9944-4134-b0e1-1258a7c0eb87")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -39,11 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("Integra.Space")]
-[assembly: InternalsVisibleTo("Integra.Space.UnitTests")]
-[assembly: InternalsVisibleTo("Integra.Space.Language")]
-[assembly: InternalsVisibleTo("Integra.Space.Database")]
-[assembly: InternalsVisibleTo("Integra.Space.Compiler.CodeGeneration")]
-[assembly: InternalsVisibleTo("Integra.Space.LanguageUnitTests")]
-[assembly: InternalsVisibleTo("Integra.Space.Language.Analysis")]
-[assembly: InternalsVisibleTo("ET_Test")]

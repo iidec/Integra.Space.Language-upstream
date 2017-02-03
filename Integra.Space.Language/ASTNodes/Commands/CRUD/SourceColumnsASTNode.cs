@@ -54,6 +54,10 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 this.columnType = (Type)ChildrenNodes[1].Token.Value;
                 this.columnLength = (uint)(int)ChildrenNodes[2].Token.Value;
             }
+            else if (childCount == 1)
+            {
+                this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
+            }
         }
 
         /// <summary>
@@ -67,7 +71,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
 
-            SourceColumnTypeNode type = new SourceColumnTypeNode(this.columnType, this.columnLength, null);
+            SourceColumnTypeNode type = null;
+            if (ChildrenNodes.Count > 1)
+            {
+                type = new SourceColumnTypeNode(this.columnType, this.columnLength, null);
+            }
+
             SourceColumnNode column = new SourceColumnNode(this.columnIdentifier, type);
             return column;
         }
