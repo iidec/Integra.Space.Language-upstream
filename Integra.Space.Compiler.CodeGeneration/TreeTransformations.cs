@@ -133,8 +133,16 @@ namespace Integra.Space.Compiler
                 foreach (PlanNode @object in grupo.Distinct(new PropertyNameComparer()))
                 {
                     Type sourceType = this.sourceTypeFactory.GetSourceType(new Common.CommandObject(Common.SystemObjectEnum.Source, source.Name, Common.PermissionsEnum.None, false));
-                    Type propType = sourceType.GetProperty(@object.Properties["Property"].ToString()).PropertyType;
-                    fieldList.Add(new FieldNode(@object.Properties["Property"].ToString(), this.ConvertToNullable(propType), 0));
+                    string propName = @object.Properties["Property"].ToString();
+                    if (sourceType.GetProperties().Any(x => x.Name == propName))
+                    {
+                        Type propType = sourceType.GetProperty(propName).PropertyType;
+                        fieldList.Add(new FieldNode(propName, this.ConvertToNullable(propType), 0));
+                    }
+                    else
+                    {
+                        throw new Language.Exceptions.ParseException(string.Format("The input source column '{0}' does not exist.", propName));
+                    }
                 }
 
                 eedtb = new ExtractedEventDataTypeBuilder(this.asmBuilder, fieldList, position);

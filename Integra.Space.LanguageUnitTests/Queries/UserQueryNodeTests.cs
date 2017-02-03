@@ -58,10 +58,11 @@ namespace Integra.Space.LanguageUnitTests.Queries
         [TestMethod]
         public void ConsultaProyeccionCampoNuloConWhere()
         {
+            string campo = "Campo_que_no_existe";
             string eql = string.Format("from {0} where {1} select {2} as CampoNulo into SourceXYZ",
                                                                 "SourceParaPruebas1",
                                                                 "MessageType == \"0100\"",
-                                                                "Campo_que_no_existe");
+                                                                campo);
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
@@ -69,61 +70,15 @@ namespace Integra.Space.LanguageUnitTests.Queries
                 new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
-            ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => this.Process(eql, dsf, input)
-                .Select(x =>
-                    (object)(new
-                    {
-                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
-                    })
-                ),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
 
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(100, Notification.CreateOnNext((object)(new { CampoNulo = default(object) }))),
-                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
-                });
-
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
-                });
-        }
-
-        [TestMethod]
-        public void ConsultaProyeccionCampoNuloSinWhere()
-        {
-            string eql = string.Format("from {0} select {1} as CampoNulo into SourceXYZ",
-                                                                "SourceParaPruebas1",
-                                                                "@event.Message.#0.[\"Campo que no existe\"]");
-            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
-                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
-                );
-
-            ITestableObserver<object> results = dsf.TestScheduler.Start(
-                () => this.Process(eql, dsf, input)
-                .Select(x =>
-                    (object)(new
-                    {
-                        CampoNulo = ((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("CampoNulo").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0))
-                    })
-                ),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
-
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<object>>[] {
-                    new Recorded<Notification<object>>(100, Notification.CreateOnNext((object)(new { CampoNulo = default(object) }))),
-                    new Recorded<Notification<object>>(200, Notification.CreateOnCompleted<object>())
-                });
-
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
-                });
+            try
+            {
+                this.Process(eql, dsf, input);
+            }
+            catch(ParseException e)
+            {
+                Assert.AreEqual(string.Format("The input source column '{0}' does not exist.", campo), e.Message);
+            }
         }
 
         [TestMethod]

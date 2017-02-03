@@ -27,6 +27,8 @@ namespace Integra.Space.LanguageUnitTests.Operations
             bool isTestMode = true;
             SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("Test");
             AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+            SpaceModuleBuilder smodBuilder = new SpaceModuleBuilder(asmBuilder);
+            smodBuilder.CreateModuleBuilder();
             StandardKernel kernel = new StandardKernel();
             kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
             CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
@@ -624,60 +626,6 @@ namespace Integra.Space.LanguageUnitTests.Operations
         }
 
         [TestMethod]
-        public void EventoCampoInexistenteIgualdadNulo()
-        {
-            string eql = "from SourceParaPruebas1 where @event.Message.Body.#103.[\"Campo que no existe\"] == null select true as resultado into SourceXYZ";
-            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
-                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
-                );
-
-            ITestableObserver<bool> results = dsf.TestScheduler.Start(
-                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
-
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
-                });
-
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
-                });
-        }
-
-        [TestMethod]
-        public void NuloIgualdadEventoCampoInexistente()
-        {
-            string eql = "from SourceParaPruebas1 where null == @event.Message.Body.#103.[\"Campo que no existe\"] select true as resultado into SourceXYZ";
-            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
-                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
-                );
-
-            ITestableObserver<bool> results = dsf.TestScheduler.Start(
-                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
-
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
-                });
-
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
-                });
-        }
-
-        [TestMethod]
         public void EventosIgualdad1()
         {
             string eql = "from SourceParaPruebas1 where Campo104 == Campo104 select true as resultado into SourceXYZ";
@@ -882,33 +830,6 @@ namespace Integra.Space.LanguageUnitTests.Operations
         public void EventoConConstanteIgualdad1()
         {
             string eql = "from SourceParaPruebas1 where MessageType == \"0100\" select true as resultado into SourceXYZ";
-            DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
-                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
-                );
-
-            ITestableObserver<bool> results = dsf.TestScheduler.Start(
-                () => this.Process(eql, dsf, input).Select(x => bool.Parse(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0).GetType().GetProperty("resultado").GetValue(((Array)x.GetType().GetProperty("Result").GetValue(x)).GetValue(0)).ToString())),
-                created: 10,
-                subscribed: 50,
-                disposed: 400);
-
-            ReactiveAssert.AreElementsEqual(results.Messages, new Recorded<Notification<bool>>[] {
-                    new Recorded<Notification<bool>>(100, Notification.CreateOnNext(true)),
-                    new Recorded<Notification<bool>>(200, Notification.CreateOnCompleted<bool>())
-                });
-
-            ReactiveAssert.AreElementsEqual(input.Subscriptions, new Subscription[] {
-                    new Subscription(50, 200)
-                });
-        }
-
-        [TestMethod]
-        public void EventoConConstanteIgualdad2()
-        {
-            string eql = "from SourceParaPruebas1 where @event.Adapter.Name == \"Anonimo\" select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
             ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
