@@ -47,10 +47,6 @@
       <HintPath>..\packages\EntityFramework.6.1.3\lib\net45\EntityFramework.SqlServer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Integra.Space.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Integra.Space\Integra.Space.Common\bin\Debug\Integra.Space.Common.dll</HintPath>
-    </Reference>
     <Reference Include="Irony, Version=1.0.0.0, Culture=neutral, PublicKeyToken=ca48ace7223ead47, processorArchitecture=MSIL">
       <HintPath>..\packages\Irony.0.9.1\lib\net40\Irony.dll</HintPath>
       <Private>True</Private>
@@ -203,6 +199,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Integra.Space.Common\Integra.Space.Common.csproj">
+      <Project>{d53e2176-9944-4134-b0e1-1258a7c0eb87}</Project>
+      <Name>Integra.Space.Common</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Integra.Space.Compiler.CodeGeneration\Integra.Space.Compiler.CodeGeneration.csproj">
       <Project>{1d6451da-513d-4e88-bcb2-91ec86a52725}</Project>
       <Name>Integra.Space.Compiler.CodeGeneration</Name>

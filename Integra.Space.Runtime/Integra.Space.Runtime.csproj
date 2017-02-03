@@ -31,14 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Integra.Common, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Integra.Common.Debug.2.1.0.0\lib\net45\Integra.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Integra.Messaging, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Integra.Messaging.Debug.2.1.0.0\lib\net45\Integra.Messaging.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
