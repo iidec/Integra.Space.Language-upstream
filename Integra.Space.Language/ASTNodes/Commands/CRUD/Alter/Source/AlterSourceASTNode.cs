@@ -19,11 +19,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
     internal class AlterSourceASTNode : AlterCommandASTNode<SourceOptionEnum>
     {
         /// <summary>
-        /// Options AST node.
-        /// </summary>
-        private DictionaryCommandOptionASTNode<SourceOptionEnum> options;
-
-        /// <summary>
         /// Alter statements AST node.
         /// </summary>
         private AstNodeBase alterStatement;
@@ -64,15 +59,15 @@ namespace Integra.Space.Language.ASTNodes.Commands
             var statement = this.alterStatement.Evaluate(thread);
 
             AlterSourceNode sourceNode = null;
-            if (statement is Tuple<string, Dictionary<string, Type>>)
+            if (statement is Tuple<string, List<SourceColumnNode>>)
             {
-                Tuple<string, Dictionary<string, Type>> columns = (Tuple<string, Dictionary<string, Type>>)statement;
-                sourceNode = new AlterSourceNode(commandObject, columns, this.Location.Line, this.Location.Column, this.GetNodeText());
+                Tuple<string, List<SourceColumnNode>> columns = (Tuple<string, List<SourceColumnNode>>)statement;
+                sourceNode = new AlterSourceNode(commandObject, columns, this.Location.Line, this.Location.Column, this.NodeText);
             }
             else if (statement is Dictionary<SourceOptionEnum, object>)
             {
                 Dictionary<SourceOptionEnum, object> options = (Dictionary<SourceOptionEnum, object>)statement;
-                sourceNode = new AlterSourceNode(commandObject, options, this.Location.Line, this.Location.Column, this.GetNodeText());
+                sourceNode = new AlterSourceNode(commandObject, options, this.Location.Line, this.Location.Column, this.NodeText);
             }
 
             this.EndEvaluate(thread);

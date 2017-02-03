@@ -1,4 +1,5 @@
 ﻿using Integra.Space.LanguageUnitTests.Database;
+using Integra.Space.LanguageUnitTests.TestObject;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
@@ -15,7 +16,7 @@ namespace Integra.Space.LanguageUnitTests.Helpers
         #region Locals
 
         private int cantEventos;
-        private long eventLifeTime;
+        private long whereDifference;
         private int porcentajeTimeouts;
         private const long MAX_TIMEOUT = 100000000; // TimeSpan.FromSeconds(10).Ticks;
         private long maxLimitTimeTest;
@@ -50,21 +51,23 @@ namespace Integra.Space.LanguageUnitTests.Helpers
         /// Initializes a new instance of the class <see cref="LoadTestsHelper"/> class.
         /// </summary>
         /// <param name="cantEventos">Number of eventos to generate</param>
-        /// <param name="eventLifeTime">Timeout in events in milliseconds.</param>
+        /// <param name="whereDifference"></param>
+        /// <param name="timeout">Timeout in events in milliseconds.</param>
         /// <param name="maxLimitTimeTest">Limit maximum test duration in milliseconds.</param>
         /// <param name="porcentajeTimeouts">Timeouts percentage.</param>
-        public LoadTestsHelper(int cantEventos, int eventLifeTime, int timeout, int maxLimitTimeTest, int porcentajeTimeouts, bool evaluateMatchedEvents)
+        /// <param name="evaluateMatchedEvents"></param>
+        public LoadTestsHelper(int cantEventos, int timeout, int whereDifference, int maxLimitTimeTest, int porcentajeTimeouts, bool evaluateMatchedEvents)
         {
             Contract.Requires(cantEventos > 0);
-            Contract.Requires(eventLifeTime > 0 && eventLifeTime <= MAX_TIMEOUT && eventLifeTime < maxLimitTimeTest);
+            Contract.Requires(whereDifference > 0 && whereDifference <= MAX_TIMEOUT && whereDifference < maxLimitTimeTest);
             Contract.Requires(timeout > 0 && timeout <= MAX_TIMEOUT && timeout < maxLimitTimeTest);
-            Contract.Requires(maxLimitTimeTest > 0 && maxLimitTimeTest > eventLifeTime);
+            Contract.Requires(maxLimitTimeTest > 0 && maxLimitTimeTest > whereDifference);
             Contract.Requires(porcentajeTimeouts >= 0 && porcentajeTimeouts <= 100);
 
             this.cantEventos = cantEventos;
-            this.eventLifeTime = TimeSpan.FromMilliseconds(eventLifeTime).Ticks;
+            this.whereDifference = TimeSpan.FromMilliseconds(whereDifference).Ticks;
             this.timeout = TimeSpan.FromMilliseconds(timeout).Ticks;
-            this.maxLimitTimeTest = TimeSpan.FromMilliseconds(maxLimitTimeTest - eventLifeTime).Ticks;
+            this.maxLimitTimeTest = TimeSpan.FromMilliseconds(maxLimitTimeTest - whereDifference).Ticks;
             this.porcentajeTimeouts = porcentajeTimeouts;
             this.evaluateMatchedEvents = evaluateMatchedEvents;
             this.expectedResults = new List<Tuple<string, string, string, string, bool>>();
@@ -91,14 +94,14 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             return this.cantEventos - this.CantidadTimeouts();
         }
 
-        public Tuple<Tuple<EventObject, long>[], Tuple<EventObject, long>[], Tuple<string, string, string, string, bool>[]> CreateEvents(JoinTypeEnum joinType)
+        public Tuple<Tuple<TestObject1, long>[], Tuple<TestObject1, long>[], Tuple<string, string, string, string, bool>[]> CreateEvents(JoinTypeEnum joinType)
         {
             DateTime now = DateTime.Now;
             int matches = this.CantidadMatched();
             int timeouts = this.CantidadTimeouts();
-            long lowerLimit = TimeSpan.FromMilliseconds(1000).Ticks;
-            List<Tuple<EventObject, long>> rq = new List<Tuple<EventObject, long>>();
-            List<Tuple<EventObject, long>> rs = new List<Tuple<EventObject, long>>();
+            long lowerLimit = TimeSpan.FromMilliseconds(10).Ticks;
+            List<Tuple<TestObject1, long>> rq = new List<Tuple<TestObject1, long>>();
+            List<Tuple<TestObject1, long>> rs = new List<Tuple<TestObject1, long>>();
             //List<Tuple<string, string, string, string, bool>> expectedResults = new List<Tuple<string, string, string, string, bool>>();
             Random rand = new Random();
 
@@ -109,18 +112,31 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 long timeToAdd = this.LongRandom(0, this.maxLimitTimeTest, rand);
 
                 // requests
-                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
-                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
-                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, rqSystemTimestamp), relativeTimeRq));
+                long relativeTimeRq = this.LongRandom(lowerLimit, this.whereDifference, rand) + timeToAdd; // momento en que fue generado
+                long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd; // momento en que llegará al sistema
+                DateTime rqSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, rqSystemTimestamp), relativeSystemTimestampRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
-                long relativeSystemTimestampRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
-                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, rsSystemTimestamp), relativeTimeRs));
+                long relativeTimeRs = this.LongRandom(lowerLimit, this.whereDifference, rand) + timeToAdd; // momento en que fue generado
+                long relativeSystemTimestampRs = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd; // momento en que llegará al sistema
+                DateTime rsSystemTimestamp = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, rsSystemTimestamp), relativeSystemTimestampRs));
+                
+                var timeToAddTS = TimeSpan.FromTicks(timeToAdd);
+                var rtrq = TimeSpan.FromTicks(relativeTimeRq);
+                var rtsrq = TimeSpan.FromTicks(relativeSystemTimestampRq);
+                var rtrs = TimeSpan.FromTicks(relativeTimeRs);
+                var rtsrs = TimeSpan.FromTicks(relativeSystemTimestampRs);
+                var time1 = TimeSpan.FromTicks(Math.Abs(relativeTimeRs - relativeTimeRq));
+                var time2 = TimeSpan.FromTicks(Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq));
 
                 if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) >= this.timeout)
+                {
+                    throw new Exception("Diferencia inválida en eventos que deben coincidir.");
+                }
+
+                if (Math.Abs(relativeTimeRs - relativeTimeRq) > this.whereDifference)
                 {
                     throw new Exception("Diferencia inválida en eventos que deben coincidir.");
                 }
@@ -135,31 +151,24 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                 long timeToAdd = this.LongRandom(0, this.maxLimitTimeTest, rand);
 
                 // requests
-                long relativeTimeRq = this.LongRandom(lowerLimit, this.eventLifeTime, rand) + timeToAdd;
+                long relativeTimeRq = this.LongRandom(lowerLimit, this.whereDifference, rand) + timeToAdd;
                 long relativeSystemTimestampRq = this.LongRandom(lowerLimit, this.timeout, rand) + timeToAdd;
-                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRq));
-                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, auxNowRq), relativeTimeRq));
+                DateTime auxNowRq = now.Add(TimeSpan.FromTicks(relativeTimeRq));
+                rq.Add(Tuple.Create(this.GenerateEvent("0100", tarjeta, referencia, auxNowRq), relativeSystemTimestampRq));
 
                 // responses
-                long relativeTimeRs = this.LongRandom(this.timeout + 100 /* mas 100 milisegundos */, this.eventLifeTime + MAX_TIMEOUT, rand) + timeToAdd;
-                long relativeSystemTimestampRs = this.LongRandom(relativeSystemTimestampRq + this.timeout + TimeSpan.FromMilliseconds(100).Ticks /* mas 100 milisegundos */, relativeSystemTimestampRq + this.timeout + MAX_TIMEOUT, rand) + timeToAdd;
-
-                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeSystemTimestampRs));
-                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, auxNowRs), relativeTimeRs));
+                long relativeTimeRs = this.LongRandom(this.timeout + TimeSpan.FromMilliseconds(10).Ticks /* mas 10 milisegundos */, this.whereDifference + MAX_TIMEOUT, rand) + timeToAdd;
+                long relativeSystemTimestampRs = this.LongRandom(this.timeout + relativeSystemTimestampRq + TimeSpan.FromMilliseconds(10).Ticks /* mas 10 milisegundos */, this.timeout + relativeSystemTimestampRq + MAX_TIMEOUT, rand) + timeToAdd;
+                DateTime auxNowRs = now.Add(TimeSpan.FromTicks(relativeTimeRs));
+                rs.Add(Tuple.Create(this.GenerateEvent("0110", tarjeta, referencia, auxNowRs), relativeSystemTimestampRs));
 
                 if (Math.Abs(relativeSystemTimestampRs - relativeSystemTimestampRq) <= this.timeout)
                 {
                     throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
                 }
 
-                //if (auxNowRs.Subtract(auxNowRq) < TimeSpan.FromSeconds(0) || auxNowRs.Subtract(auxNowRq) <= TimeSpan.FromTicks(this.timeout))
-                //{
-                //    throw new Exception("Diferencia inválida en eventos que NO deben coincidir.");
-                //}
-
-                if (relativeTimeRs - relativeTimeRq <= this.eventLifeTime)
+                if (Math.Abs(relativeTimeRs - relativeTimeRq) <= this.whereDifference)
                 {
-
                     this.AddToExpectedResults(false, tarjeta, referencia, tarjeta, referencia);
                 }
                 else
@@ -237,9 +246,15 @@ namespace Integra.Space.LanguageUnitTests.Helpers
             return RandomGen3.Next(1, 1000).ToString().PadLeft(4, '0') + RandomGen3.Next(1, 1000).ToString().PadLeft(4, '0') + RandomGen3.Next(1, 1000).ToString().PadLeft(4, '0') + RandomGen3.Next(1, 1000).ToString().PadLeft(4, '0');
         }
 
-        private EventObject GenerateEvent(string messageType, string tarjeta, string referencia, DateTime systemTimeStamp)
+        private TestObject1 GenerateEvent(string messageType, string tarjeta, string referencia, DateTime systemTimeStamp)
         {
-            return new EventObject(new string[] { string.Empty })
+            return new TestObject1(messageType: messageType, primaryAccountNumber: tarjeta, retrievalReferenceNumber: referencia)
+            {
+                SourceTimestamp = systemTimeStamp
+            };
+
+            /*
+             return new EventObject(new string[] { string.Empty })
             {
                 SourceTimestamp = systemTimeStamp,
                 Message = new Messaging.Message()
@@ -255,175 +270,11 @@ namespace Integra.Space.LanguageUnitTests.Helpers
                     }
                 }
             };
+             */
         }
 
         #endregion Private methods
-
-        #region Creators
-
-        public void CreateTest(Guid id, string name)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                Test newTest = new Test() { id_test = id, test_name = name, fecha_creacion = DateTime.Now };
-                context.Tests.Add(newTest);
-                context.SaveChanges();
-            }
-        }
-
-        public void SaveEvents(Guid id, Tuple<EventObject, long>[] events)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                Database.Event newEvent = null;
-
-                foreach (Tuple<EventObject, long> t in events)
-                {
-                    string mt = t.Item1.Message[0][0].Value.ToString();
-                    string pan = t.Item1.Message[1][0].Value.ToString();
-                    string referencia = t.Item1.Message[0][1].Value.ToString();
-
-                    newEvent = new Database.Event()
-                    {
-                        id_test = id,
-                        message_type = mt,
-                        primary_account_number = pan,
-                        retrieval_reference_number = referencia,
-                        relative_time = t.Item2
-                    };
-
-                    context.Events.Add(newEvent);
-                }
-
-                context.SaveChanges();
-            }
-        }
-
-        public void SaveExpectedResults(Guid id, Tuple<string, string, string, string>[] expectedResults)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                Database.ExpectedResult newExpectedResult = null;
-
-                foreach (Tuple<string, string, string, string> t in expectedResults)
-                {
-                    string lpan = t.Item1;
-                    string lref = t.Item2;
-                    string rpan = t.Item3;
-                    string rref = t.Item4;
-
-                    newExpectedResult = new Database.ExpectedResult()
-                    {
-                        id_test = id,
-                        left_primary_account_number = lpan,
-                        left_retrieval_reference_number = lref,
-                        right_primary_account_number = rpan,
-                        right_retrieval_reference_number = rref
-                    };
-
-                    context.ExpectedResults.Add(newExpectedResult);
-                }
-
-                context.SaveChanges();
-            }
-        }
-
-        public void SaveActualResults(Guid id, Tuple<string, string, string, string>[] actualResults)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                Database.ActualResult newActualResult = null;
-
-                foreach (Tuple<string, string, string, string> t in actualResults)
-                {
-                    string lpan = t.Item1;
-                    string lref = t.Item2;
-                    string rpan = t.Item3;
-                    string rref = t.Item4;
-
-                    newActualResult = new Database.ActualResult()
-                    {
-                        id_test = id,
-                        left_primary_account_number = lpan,
-                        left_retrieval_reference_number = lref,
-                        right_primary_account_number = rpan,
-                        right_retrieval_reference_number = rref
-                    };
-
-                    context.ActualResults.Add(newActualResult);
-                }
-
-                context.SaveChanges();
-            }
-        }
-
-        #endregion Creators
-
-        #region Getters
-
-        public IQueryable<ExpectedResult> GetExpectedResults(string testName)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                return context.ExpectedResults.Where(x => x.Test.test_name == testName);
-            }
-        }
-
-        public IQueryable<ActualResult> GetActualResults(string testName)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                return context.ActualResults.Where(x => x.Test.test_name == testName);
-            }
-        }
-
-        public IQueryable<Database.Event> GetEvents(string testName)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                return context.Events.Where(x => x.Test.test_name == testName);
-            }
-        }
-
-        public IQueryable<Database.ExpectedResult> GetNotMatchedEvents(string testName)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                return context.ExpectedResults.Where(x => x.Test.test_name == testName && x.matched == false);
-            }
-        }
-
-        public IQueryable<Database.ExpectedResult> GetMatchedEvents(string testName)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                return context.ExpectedResults.Where(x => x.Test.test_name == testName && x.matched == true);
-            }
-        }
-
-        #endregion Getters
-
-        #region updaters
-
-        public void UpdateExpectedEventsMatchedFlag(Tuple<string, string, string, string>[] actualResults)
-        {
-            using (SpaceTestsEntities context = new SpaceTestsEntities())
-            {
-                context.ExpectedResults.ToList().ForEach(x =>
-                {
-                    Tuple<string, string, string, string> expectAux = Tuple.Create(x.left_primary_account_number, x.left_retrieval_reference_number, x.right_primary_account_number, x.right_retrieval_reference_number);
-                    if (actualResults.Contains(expectAux))
-                    {
-                        x.matched = true;
-                    }
-                });
-
-                context.SaveChanges();
-            }
-        }
-
-        #endregion updaters
-
+        
         private static class RandomGen3
         {
             private static RNGCryptoServiceProvider _global = new RNGCryptoServiceProvider();

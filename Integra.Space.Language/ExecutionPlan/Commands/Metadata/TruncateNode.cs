@@ -6,6 +6,7 @@
 namespace Integra.Space.Language
 {
     using System.Diagnostics.Contracts;
+    using Common;
 
     /// <summary>
     /// Command object class.

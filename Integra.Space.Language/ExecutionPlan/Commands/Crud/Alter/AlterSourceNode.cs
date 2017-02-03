@@ -39,7 +39,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public AlterSourceNode(CommandObject commandObject, Tuple<string, Dictionary<string, Type>> columns, int line, int column, string nodeText) : base(commandObject, new Dictionary<SourceOptionEnum, object>(), line, column, nodeText)
+        public AlterSourceNode(CommandObject commandObject, Tuple<string, List<SourceColumnNode>> columns, int line, int column, string nodeText) : base(commandObject, new Dictionary<SourceOptionEnum, object>(), line, column, nodeText)
         {
             System.Diagnostics.Contracts.Contract.Assert(!string.IsNullOrWhiteSpace(columns.Item1));
 
@@ -55,20 +55,20 @@ namespace Integra.Space.Language
                 isNew = false;
             }
 
-            foreach (KeyValuePair<string, Type> sourceColumn in columns.Item2)
+            foreach (SourceColumnNode sourceColumn in columns.Item2)
             {
-                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.SourceColumn, commandObject.DatabaseName, commandObject.SchemaName, commandObject.Name, sourceColumn.Key, PermissionsEnum.None, isNew));
+                this.CommandObjects.Add(new CommandObject(SystemObjectEnum.SourceColumn, commandObject.DatabaseName, commandObject.SchemaName, commandObject.Name, sourceColumn.Name, PermissionsEnum.None, isNew));
             }
         }
 
         /// <summary>
         /// Gets the columns to add to the existing source.
         /// </summary>
-        public Dictionary<string, Type> ColumnsToAdd { get; private set; }
+        public List<SourceColumnNode> ColumnsToAdd { get; private set; }
 
         /// <summary>
         /// Gets the columns to remove to the existing source.
         /// </summary>
-        public Dictionary<string, Type> ColumnsToRemove { get; private set; }
+        public List<SourceColumnNode> ColumnsToRemove { get; private set; }
     }
 }

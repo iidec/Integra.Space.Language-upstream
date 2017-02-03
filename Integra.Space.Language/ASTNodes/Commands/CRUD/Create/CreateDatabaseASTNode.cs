@@ -65,7 +65,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.CheckAllowedOptions(optionsAux);
             
-            return new CreateDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

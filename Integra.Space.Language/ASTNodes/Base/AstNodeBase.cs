@@ -25,6 +25,27 @@ namespace Integra.Space.Language.ASTNodes.Base
         private IList<ParseTreeNode> childrenNodes;
 
         /// <summary>
+        /// Node text.
+        /// </summary>
+        private string nodeText;
+
+        /// <summary>
+        /// Gets the node text.
+        /// </summary>
+        public string NodeText
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(this.nodeText))
+                {
+                    this.nodeText = this.GetNodeText(this.childrenNodes);
+                }
+
+                return this.nodeText;
+            }
+        }
+
+        /// <summary>
         /// Gets the list of children
         /// </summary>
         protected virtual IList<ParseTreeNode> ChildrenNodes
@@ -42,7 +63,7 @@ namespace Integra.Space.Language.ASTNodes.Base
         /// <param name="treeNode">Contains the tree of the context</param>
         public override void Init(Irony.Ast.AstContext context, ParseTreeNode treeNode)
         {
-            base.Init(context, treeNode);
+            base.Init(context, treeNode);            
             this.childrenNodes = treeNode.GetMappedChildNodes();
         }
 
@@ -67,15 +88,6 @@ namespace Integra.Space.Language.ASTNodes.Base
         }
 
         /// <summary>
-        /// Gets the text of the non terminal.
-        /// </summary>
-        /// <returns>Non terminal text value.</returns>
-        protected string GetNodeText()
-        {
-            return this.GetNodeText(this.childrenNodes);
-        }
-
-        /// <summary>
         /// Gets the test of the non terminal children.
         /// </summary>
         /// <param name="childrenNodes">Non terminal children nodes.</param>
@@ -83,17 +95,26 @@ namespace Integra.Space.Language.ASTNodes.Base
         private string GetNodeText(System.Collections.IEnumerable childrenNodes)
         {
             string nodeText = string.Empty;
-            foreach (ParseTreeNode node in childrenNodes)
+
+            if (childrenNodes != null)
             {
-                if (node.ChildNodes.Count > 0)
+                foreach (ParseTreeNode node in childrenNodes)
                 {
-                    nodeText = string.Concat(nodeText, " ", this.GetNodeText(node.ChildNodes));
-                }
-                else
-                {
-                    if (node.Token != null)
+                    if (node.IsPunctuationOrEmptyTransient())
                     {
-                        nodeText = string.Concat(nodeText, " ", node.Token.Text);
+                        throw new System.Exception();
+                    }
+
+                    if (node.ChildNodes.Count > 0)
+                    {
+                        nodeText = string.Concat(nodeText, " ", this.GetNodeText(node.ChildNodes));
+                    }
+                    else
+                    {
+                        if (node.Token != null)
+                        {
+                            nodeText = string.Concat(nodeText, " ", node.Token.Text);
+                        }
                     }
                 }
             }

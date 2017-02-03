@@ -1,14 +1,9 @@
-﻿using Integra.Space.Language.Analysis.Metadata.MetadataNodes;
-using Integra.Space.Language.Runtime;
+﻿using Integra.Space.Compiler;
 using Irony.Parsing;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Integra.Space.Language.Analysis
 {
@@ -145,6 +140,8 @@ namespace Integra.Space.Language.Analysis
                                 "TIMEOUT '00:00:01' " +
                                 //"WHERE  t1.@event.Message.#0.#0 == \"0100\" " +
                                 "SELECT t1.@event.Message.#0.#0 as c1, t2.@event.Message.#0.#0 as c2 apply duration of \"00:00:01\" apply repetition of 2 into SourceXYZ";
+
+                        eql = @"from SourceParaPruebas apply window of '00:00:00:01' group by CardAcceptorNameLocation as grupo1 select top 1 grupo1 as Llave, sum((decimal)TransactionAmount) as Sumatoria order by Sumatoria into SourceXYZ ";
                     }
 
                     //MetadataQueryParser parser = new MetadataQueryParser(eql);
@@ -153,7 +150,7 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Plan generated.");
                     Console.WriteLine("Creating metadata...");
 
-                    Integra.Space.Language.Metadata.MetadataGenerator mg = new Integra.Space.Language.Metadata.MetadataGenerator();
+                    Language.Metadata.MetadataGenerator mg = new Language.Metadata.MetadataGenerator();
                     SpaceParseTreeNode spaceParseTreeNode = mg.ConvertIronyParseTree(parseTree.Root);
                     //Integra.Space.Language.Metadata.SpaceMetadataTreeNode metadataRootNode = mg.GenerateMetadata(spaceParseTreeNode);
 
@@ -167,9 +164,9 @@ namespace Integra.Space.Language.Analysis
                     SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(asmBuilder);
                     modBuilder.CreateModuleBuilder();
 
-                    TreeTransformations tf = new TreeTransformations(asmBuilder, executionPlanNode);
-                    tf.Transform();
-                    
+                    TreeTransformations tt = new TreeTransformations(asmBuilder, executionPlanNode, new SourceTypeFactory());
+                    tt.Transform();
+
                     Console.WriteLine("Plan transformed.");
                     Console.WriteLine("Creating graph...");
 

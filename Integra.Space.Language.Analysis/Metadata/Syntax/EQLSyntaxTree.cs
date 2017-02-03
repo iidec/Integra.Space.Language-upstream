@@ -8,7 +8,6 @@ namespace Integra.Space.Language.Analysis.Metadata.Syntax
 {
     public class EQLSyntaxTree
     {
-        bool complete = false;
         bool iterateOverAll = false;
 
         public static SyntaxNode Parse(string text)

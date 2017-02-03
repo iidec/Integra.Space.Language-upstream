@@ -106,7 +106,7 @@ namespace Integra.Space.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to CE14: Error in &apos;sum&apos; function..
+        ///   Looks up a localized string similar to CE14: Error in agregation function {0}..
         /// </summary>
         internal static string CE14 {
             get {

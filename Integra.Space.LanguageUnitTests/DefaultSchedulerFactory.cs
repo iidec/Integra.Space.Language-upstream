@@ -7,7 +7,7 @@ using Integra.Space.Scheduler;
 
 namespace Integra.Space.LanguageUnitTests
 {
-    class DefaultSchedulerFactory : IQuerySchedulerFactory
+    public class DefaultSchedulerFactory : IQuerySchedulerFactory
     {
         private static DefaultSchedulerFactory factory = new DefaultSchedulerFactory();
         private TestScheduler testScheduler;

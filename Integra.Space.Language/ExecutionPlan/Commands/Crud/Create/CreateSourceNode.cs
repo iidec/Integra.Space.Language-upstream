@@ -22,7 +22,7 @@ namespace Integra.Space.Language
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public CreateSourceNode(CommandObject commandObject, Dictionary<string, System.Type> sourceColumns, Dictionary<SourceOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
+        public CreateSourceNode(CommandObject commandObject, List<SourceColumnNode> sourceColumns, Dictionary<SourceOptionEnum, object> options, int line, int column, string nodeText) : base(commandObject, options, line, column, nodeText)
         {
             this.Columns = sourceColumns;
         }
@@ -30,6 +30,6 @@ namespace Integra.Space.Language
         /// <summary>
         /// Gets the column list of the source.
         /// </summary>
-        public Dictionary<string, System.Type> Columns { get; private set; }
+        public List<SourceColumnNode> Columns { get; private set; }
     }
 }

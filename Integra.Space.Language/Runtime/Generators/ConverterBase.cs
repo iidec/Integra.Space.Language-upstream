@@ -25,13 +25,13 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Compiler configuration.
         /// </summary>
-        private CompilerConfiguration config;
+        private CodeGeneratorConfiguration config;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConverterBase"/> class.
         /// </summary>
         /// <param name="config">Compiler configuration.</param>
-        public ConverterBase(CompilerConfiguration config)
+        public ConverterBase(CodeGeneratorConfiguration config)
         {
             this.config = config;
         }
@@ -41,7 +41,7 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="context">Compilation context.</param>
         /// <returns>The result expression of the execution plan node.</returns>
-        public CompilationContext Transform(CompilationContext context)
+        public CodeGeneratorScope Transform(CodeGeneratorScope context)
         {
             this.PreTransformation(context);
             context.ResultExpression = this.TranformNode(context);
@@ -54,7 +54,7 @@ namespace Integra.Space.Language.Runtime
         /// Actions before the execution plan node transformation.
         /// </summary>
         /// <param name="context">Compilation context.</param>
-        protected virtual void PreTransformation(CompilationContext context)
+        protected virtual void PreTransformation(CodeGeneratorScope context)
         {
         }
 
@@ -62,7 +62,7 @@ namespace Integra.Space.Language.Runtime
         /// Actions after the execution plan node transformation.
         /// </summary>
         /// <param name="context">Compilation context.</param>
-        protected virtual void PostTransformation(CompilationContext context)
+        protected virtual void PostTransformation(CodeGeneratorScope context)
         {
         }
 
@@ -71,7 +71,7 @@ namespace Integra.Space.Language.Runtime
         /// </summary>
         /// <param name="context">Compilation context.</param>
         /// <returns>The result expression of the execution plan node.</returns>
-        protected virtual Expression TranformNode(CompilationContext context)
+        protected virtual Expression TranformNode(CodeGeneratorScope context)
         {
             throw new NotImplementedException("Implementation for the node transormation is required.");
         }

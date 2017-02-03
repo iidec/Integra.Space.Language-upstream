@@ -23,7 +23,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly Process(CompilerConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly Process(CodeGeneratorConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
         {
             QueryParser parser = new QueryParser(script);
             PlanNode executionPlan = parser.Evaluate().Item1;
@@ -49,7 +49,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly ProcessWithExpressionParser(CompilerConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly ProcessWithExpressionParser(CodeGeneratorConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
         {
             ExpressionParser parser = new ExpressionParser(script);
             PlanNode executionPlan = parser.Evaluate();
@@ -75,7 +75,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="context">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParser<T>(CompilerConfiguration context, string script)
+        public Delegate ProcessWithCommandParser<T>(CodeGeneratorConfiguration context, string script)
         {
             /*MetadataQueryParser parser = new MetadataQueryParser(script);
             PlanNode executionPlan = parser.Evaluate();*/
@@ -104,7 +104,7 @@ namespace Integra.Space.Language.Runtime
         /// <param name="context">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParserForMetadata<T>(CompilerConfiguration context, string script)
+        public Delegate ProcessWithCommandParserForMetadata<T>(CodeGeneratorConfiguration context, string script)
         {
             /*MetadataQueryParser parser = new MetadataQueryParser(script);
             PlanNode executionPlan = parser.Evaluate();*/

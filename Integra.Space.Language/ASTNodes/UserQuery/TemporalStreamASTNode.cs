@@ -10,12 +10,12 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
     using System.Configuration;
     using System.Linq;
     using Commands;
+    using Common;
     using Integra.Space.Language.ASTNodes.Base;
     using Irony.Ast;
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
     /// User query node.
@@ -97,8 +97,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 this.into = AddChild(NodeUseType.Keyword, SR.SelectRole, ChildrenNodes[7]) as AstNodeBase;
             }
 
-            this.result = new PlanNode();
-            this.result.NodeType = PlanNodeTypeEnum.UserQuery;
+            this.result = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.UserQuery, this.NodeText);
         }
 
         /// <summary>
@@ -121,8 +120,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             {
                 PlanNode subsAndCreate = this.AddSubscribeAndCreate(fromAux);
 
-                PlanNode concatNode = new PlanNode();
-                concatNode.NodeType = PlanNodeTypeEnum.ObservableConcat;
+                PlanNode concatNode = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableConcat, this.NodeText);
                 concatNode.Children = new List<PlanNode>();
                 concatNode.Children.Add(subsAndCreate);
 
@@ -206,8 +204,6 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
 
             this.EndEvaluate(thread);
 
-            this.result.Column = sources.Column;
-            this.result.Line = sources.Line;
             /* ******************************************************************************************************************************************************** */
 
             PlanNode lastExtension = this.result;
@@ -235,23 +231,19 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             // nodos para crear el objeto QueryResult resultante
-            PlanNode scopeFinalResult = new PlanNode();
-            scopeFinalResult.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeFinalResult = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeFinalResult.Children = new List<PlanNode>();
 
             scopeFinalResult.Children.Add(lastExtension);
 
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda, this.NodeText);
 
-            PlanNode lambdaForResult = new PlanNode();
-            lambdaForResult.NodeType = PlanNodeTypeEnum.SelectForResultProjection;
+            PlanNode lambdaForResult = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.SelectForResultProjection, this.NodeText);
             lambdaForResult.Children = new List<PlanNode>();
 
             lambdaForResult.Children.Add(fromForLambda);
 
-            PlanNode finalSelect = new PlanNode();
-            finalSelect.NodeType = PlanNodeTypeEnum.SelectForResult;
+            PlanNode finalSelect = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.SelectForResult, this.NodeText);
             finalSelect.NodeText = this.result.NodeText;
             finalSelect.Children = new List<PlanNode>();
 
@@ -265,7 +257,14 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 finalResult = this.AddSubscribeAndCreate(finalSelect);
             }
 
-            return new TemporalStreamNode(Common.ActionCommandEnum.Read, finalResult, source, this.Location.Line, this.Location.Column, this.GetNodeText(), null, databaseName);
+            if (fromAux.Properties.ContainsKey("IsMetadataSource") && (bool)fromAux.Properties["IsMetadataSource"] == true)
+            {
+                return new QueryCommandForMetadataNode(ActionCommandEnum.ViewDefinition, finalResult, source, this.Location.Line, this.Location.Column, this.NodeText, databaseName);
+            }
+            else
+            {
+                return new TemporalStreamNode(ActionCommandEnum.Read, finalResult, source, this.Location.Line, this.Location.Column, this.NodeText, databaseName);
+            }
         }
 
         /// <summary>
@@ -276,18 +275,15 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode AddSubscribeAndCreate(PlanNode child)
         {
             // nodo para crear el subscribe
-            PlanNode scopeSubscribe = new PlanNode();
-            scopeSubscribe.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSubscribe = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeSubscribe.Children = new List<PlanNode>();
             scopeSubscribe.Children.Add(child);
 
-            PlanNode subscriptionNode = new PlanNode();
-            subscriptionNode.NodeType = PlanNodeTypeEnum.Subscription;
+            PlanNode subscriptionNode = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Subscription, this.NodeText);
             subscriptionNode.Children = new List<PlanNode>();
             subscriptionNode.Children.Add(scopeSubscribe);
 
-            PlanNode observableCreateNode = new PlanNode();
-            observableCreateNode.NodeType = PlanNodeTypeEnum.ObservableCreate;
+            PlanNode observableCreateNode = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableCreate, this.NodeText);
             observableCreateNode.NodeText = child.NodeText;
             observableCreateNode.Children = new List<PlanNode>();
             observableCreateNode.Children.Add(subscriptionNode);
@@ -312,7 +308,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         /// <returns>True or false.</returns>
         private bool CheckProjectionIfAllAreValues(PlanNode projection)
         {
-            return projection.Children.All(x => PlanNodeTypeEnum.Event.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Constant.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Identifier.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.GroupKey.Equals(x.Children[1].NodeType));
+            return projection.Children.All(x => PlanNodeTypeEnum.Property.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Constant.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.Identifier.Equals(x.Children[1].NodeType) || PlanNodeTypeEnum.GroupKey.Equals(x.Children[1].NodeType));
         }
 
         /// <summary>
@@ -472,31 +468,25 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromSelect(PlanNode fromAux, PlanNode projectionAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForSource = new PlanNode();
-            scopeSelectForSource.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForSource = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeSelectForSource.Children = new List<PlanNode>();
 
             scopeSelectForSource.Children.Add(fromAux);
 
-            PlanNode selectForSource = new PlanNode();
-            selectForSource.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForSource = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource, this.NodeText);
             selectForSource.Children = new List<PlanNode>();
 
             selectForSource.Children.Add(scopeSelectForSource);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForSource.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(selectForSource);
 
-            PlanNode buffer = new PlanNode();
-            buffer.NodeType = PlanNodeTypeEnum.ObservableBuffer;
+            PlanNode buffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBuffer, this.NodeText);
             buffer.Children = new List<PlanNode>();
 
-            PlanNode bufferSize = new PlanNode();
-            bufferSize.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode bufferSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant, this.NodeText);
             bufferSize.Properties.Add("Value", int.Parse(ConfigurationManager.AppSettings["DefaultWindowSize"]));
             bufferSize.Properties.Add("DataType", typeof(int));
 
@@ -527,31 +517,25 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(whereAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource, this.NodeText);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForBuffer.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(selectForBuffer);
 
-            PlanNode buffer = new PlanNode();
-            buffer.NodeType = PlanNodeTypeEnum.ObservableBuffer;
+            PlanNode buffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBuffer, this.NodeText);
             buffer.Children = new List<PlanNode>();
 
-            PlanNode bufferSize = new PlanNode();
-            bufferSize.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode bufferSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant, this.NodeText);
             bufferSize.Properties.Add("Value", int.Parse(ConfigurationManager.AppSettings["DefaultWindowSize"]));
             bufferSize.Properties.Add("DataType", typeof(int));
 
@@ -582,8 +566,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromApplyWindowSelectWithOnlyFunctionsInProjection(PlanNode fromAux, PlanNode applyWindow, PlanNode projectionAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(fromAux);
 
@@ -591,31 +574,25 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindow.Children[1] = applyWindow.Children[1].Children[0].Children[1];
             applyWindow.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope, this.NodeText);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindow);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
             /* ******************************************************************************************************************************************************** */
             selectForBuffer.Children.Add(scopeSelectForBuffer);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForBuffer.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow2 = new PlanNode();
-            scopeForApplyWindow2.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow2.Children = new List<PlanNode>();
             scopeForApplyWindow2.Children.Add(selectForBuffer);
 
-            PlanNode buffer = new PlanNode();
-            buffer.NodeType = PlanNodeTypeEnum.ObservableBuffer;
+            PlanNode buffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBuffer);
             buffer.Children = new List<PlanNode>();
 
-            PlanNode bufferSize = new PlanNode();
-            bufferSize.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode bufferSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
             bufferSize.Properties.Add("Value", applyWindow.Children[1].Properties["Value"]);
             bufferSize.Properties.Add("DataType", applyWindow.Children[1].Properties["DataType"]);
             /* ******************************************************************************************************************************************************** */
@@ -636,36 +613,30 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjection(PlanNode fromAux, PlanNode applyWindowAux, PlanNode projectionAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(fromAux);
 
             applyWindowAux.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeSelectForEnumerable = new PlanNode();
-            scopeSelectForEnumerable.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForEnumerable.Children = new List<PlanNode>();
 
             scopeSelectForEnumerable.Children.Add(fromForLambda);
 
-            PlanNode selectForEnumerable = new PlanNode();
-            selectForEnumerable.NodeType = PlanNodeTypeEnum.EnumerableSelectForEnumerable;
+            PlanNode selectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForEnumerable);
             selectForEnumerable.Children = new List<PlanNode>();
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
@@ -673,8 +644,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             selectForEnumerable.Children.Add(projectionAux);
 
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(selectForEnumerable);
@@ -706,36 +676,30 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromApplyWindowSelectWithoutOnlyFunctionsInProjectionOrderBy(PlanNode fromAux, PlanNode applyWindowAux, PlanNode projectionAux, PlanNode orderByAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(fromAux);
 
             applyWindowAux.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeSelectForEnumerable = new PlanNode();
-            scopeSelectForEnumerable.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForEnumerable.Children = new List<PlanNode>();
 
             scopeSelectForEnumerable.Children.Add(fromForLambda);
 
-            PlanNode selectForEnumerable = new PlanNode();
-            selectForEnumerable.NodeType = PlanNodeTypeEnum.EnumerableSelectForEnumerable;
+            PlanNode selectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForEnumerable);
             selectForEnumerable.Children = new List<PlanNode>();
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
@@ -745,8 +709,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForEnumerable);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(orderByAux);
@@ -780,8 +743,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
 
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(whereAux);
 
@@ -795,10 +757,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 PlanNode tupleValue = tuple.Children[1];
                 if (tupleValue.NodeType.Equals(PlanNodeTypeEnum.Identifier))
                 {
-                    PlanNode groupKey = new PlanNode();
-                    groupKey.NodeType = PlanNodeTypeEnum.GroupKey;
-                    groupKey.Column = tupleValue.Column;
-                    groupKey.Line = tupleValue.Line;
+                    PlanNode groupKey = new PlanNode(tupleValue.Line, tupleValue.Column, PlanNodeTypeEnum.GroupKey);
                     groupKey.NodeText = tupleValue.NodeText;
                     groupKey.Properties.Add("Value", "Key");
 
@@ -809,44 +768,36 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeKeySelectorForGroupBy = new PlanNode();
-            scopeKeySelectorForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeKeySelectorForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeKeySelectorForGroupBy.Children = new List<PlanNode>();
 
             scopeKeySelectorForGroupBy.Children.Add(fromForLambda);
             groupByAux.Children[0].Children.Add(fromForLambda);
 
-            PlanNode scopeSelectForGroupBy = new PlanNode();
-            scopeSelectForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForGroupBy.Children = new List<PlanNode>();
 
             scopeSelectForGroupBy.Children.Add(groupByAux);
 
-            PlanNode selectForGroupBy = new PlanNode();
-            selectForGroupBy.NodeType = PlanNodeTypeEnum.EnumerableSelectForGroupBy;
+            PlanNode selectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForGroupBy);
             selectForGroupBy.Children = new List<PlanNode>();
 
             selectForGroupBy.Children.Add(scopeSelectForGroupBy);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForGroupBy.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(selectForGroupBy);
@@ -878,8 +829,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromApplyWindowGroupBySelect(PlanNode fromAux, PlanNode applyWindowAux, PlanNode groupByAux, PlanNode projectionAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(fromAux);
 
@@ -893,10 +843,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 PlanNode tupleValue = tuple.Children[1];
                 if (tupleValue.NodeType.Equals(PlanNodeTypeEnum.Identifier))
                 {
-                    PlanNode groupKey = new PlanNode();
-                    groupKey.NodeType = PlanNodeTypeEnum.GroupKey;
-                    groupKey.Column = tupleValue.Column;
-                    groupKey.Line = tupleValue.Line;
+                    PlanNode groupKey = new PlanNode(tupleValue.Line, tupleValue.Column, PlanNodeTypeEnum.GroupKey);
                     groupKey.NodeText = tupleValue.NodeText;
                     groupKey.Properties.Add("Value", "Key");
 
@@ -907,44 +854,36 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeKeySelectorForGroupBy = new PlanNode();
-            scopeKeySelectorForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeKeySelectorForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeKeySelectorForGroupBy.Children = new List<PlanNode>();
 
             scopeKeySelectorForGroupBy.Children.Add(fromForLambda);
             groupByAux.Children[0].Children.Add(fromForLambda);
 
-            PlanNode scopeSelectForGroupBy = new PlanNode();
-            scopeSelectForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForGroupBy.Children = new List<PlanNode>();
 
             scopeSelectForGroupBy.Children.Add(groupByAux);
 
-            PlanNode selectForGroupBy = new PlanNode();
-            selectForGroupBy.NodeType = PlanNodeTypeEnum.EnumerableSelectForGroupBy;
+            PlanNode selectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForGroupBy);
             selectForGroupBy.Children = new List<PlanNode>();
 
             selectForGroupBy.Children.Add(scopeSelectForGroupBy);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForGroupBy.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(selectForGroupBy);
@@ -978,8 +917,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
 
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(whereAux);
 
@@ -987,31 +925,25 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             applyWindowAux.Children[1] = applyWindowAux.Children[1].Children[0].Children[1];
             applyWindowAux.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
             /* ******************************************************************************************************************************************************** */
             selectForBuffer.Children.Add(scopeSelectForBuffer);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForBuffer.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow2 = new PlanNode();
-            scopeForApplyWindow2.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow2 = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow2.Children = new List<PlanNode>();
             scopeForApplyWindow2.Children.Add(selectForBuffer);
 
-            PlanNode buffer = new PlanNode();
-            buffer.NodeType = PlanNodeTypeEnum.ObservableBuffer;
+            PlanNode buffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableBuffer);
             buffer.Children = new List<PlanNode>();
 
-            PlanNode bufferSize = new PlanNode();
-            bufferSize.NodeType = PlanNodeTypeEnum.Constant;
+            PlanNode bufferSize = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.Constant);
             bufferSize.Properties.Add("Value", applyWindowAux.Children[1].Properties["Value"]);
             bufferSize.Properties.Add("DataType", applyWindowAux.Children[1].Properties["DataType"]);
 
@@ -1035,44 +967,37 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
 
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(whereAux);
 
             applyWindowAux.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeSelectForEnumerable = new PlanNode();
-            scopeSelectForEnumerable.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForEnumerable.Children = new List<PlanNode>();
 
             scopeSelectForEnumerable.Children.Add(fromForLambda);
 
-            PlanNode selectForEnumerable = new PlanNode();
-            selectForEnumerable.NodeType = PlanNodeTypeEnum.EnumerableSelectForEnumerable;
+            PlanNode selectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForEnumerable);
             selectForEnumerable.Children = new List<PlanNode>();
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
             projectionAux.Properties.Add("DisposeEvents", false);
             selectForEnumerable.Children.Add(projectionAux);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(selectForEnumerable);
@@ -1107,36 +1032,30 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
 
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(whereAux);
 
             applyWindowAux.Children[0] = scopeForApplyWindow;
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeSelectForEnumerable = new PlanNode();
-            scopeSelectForEnumerable.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForEnumerable.Children = new List<PlanNode>();
 
             scopeSelectForEnumerable.Children.Add(fromForLambda);
 
-            PlanNode selectForEnumerable = new PlanNode();
-            selectForEnumerable.NodeType = PlanNodeTypeEnum.EnumerableSelectForEnumerable;
+            PlanNode selectForEnumerable = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForEnumerable);
             selectForEnumerable.Children = new List<PlanNode>();
 
             selectForEnumerable.Children.Add(scopeSelectForEnumerable);
@@ -1146,8 +1065,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForEnumerable);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(orderByAux);
@@ -1180,8 +1098,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
         private PlanNode CreateFromApplyWindowGroupBySelectOrderBy(PlanNode fromAux, PlanNode applyWindowAux, PlanNode groupByAux, PlanNode projectionAux, PlanNode orderByAux)
         {
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(fromAux);
 
@@ -1195,10 +1112,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 PlanNode tupleValue = tuple.Children[1];
                 if (tupleValue.NodeType.Equals(PlanNodeTypeEnum.Identifier))
                 {
-                    PlanNode groupKey = new PlanNode();
-                    groupKey.NodeType = PlanNodeTypeEnum.GroupKey;
-                    groupKey.Column = tupleValue.Column;
-                    groupKey.Line = tupleValue.Line;
+                    PlanNode groupKey = new PlanNode(tupleValue.Line, tupleValue.Column, PlanNodeTypeEnum.GroupKey);
                     groupKey.NodeText = tupleValue.NodeText;
                     groupKey.Properties.Add("Value", "Key");
 
@@ -1209,47 +1123,39 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeKeySelectorForGroupBy = new PlanNode();
-            scopeKeySelectorForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeKeySelectorForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeKeySelectorForGroupBy.Children = new List<PlanNode>();
 
             scopeKeySelectorForGroupBy.Children.Add(fromForLambda);
             groupByAux.Children[0].Children.Add(fromForLambda);
 
-            PlanNode scopeSelectForGroupBy = new PlanNode();
-            scopeSelectForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForGroupBy.Children = new List<PlanNode>();
 
             scopeSelectForGroupBy.Children.Add(groupByAux);
 
-            PlanNode selectForGroupBy = new PlanNode();
-            selectForGroupBy.NodeType = PlanNodeTypeEnum.EnumerableSelectForGroupBy;
+            PlanNode selectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForGroupBy);
             selectForGroupBy.Children = new List<PlanNode>();
 
             selectForGroupBy.Children.Add(scopeSelectForGroupBy);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForGroupBy.Children.Add(projectionAux);
 
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForGroupBy);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(orderByAux);
@@ -1285,8 +1191,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             /* ******************************************************************************************************************************************************** */
             whereAux.Children.ElementAt(0).Children.Add(fromAux);
 
-            PlanNode scopeForApplyWindow = new PlanNode();
-            scopeForApplyWindow.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeForApplyWindow = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeForApplyWindow.Children = new List<PlanNode>();
             scopeForApplyWindow.Children.Add(whereAux);
 
@@ -1300,10 +1205,7 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
                 PlanNode tupleValue = tuple.Children[1];
                 if (tupleValue.NodeType.Equals(PlanNodeTypeEnum.Identifier))
                 {
-                    PlanNode groupKey = new PlanNode();
-                    groupKey.NodeType = PlanNodeTypeEnum.GroupKey;
-                    groupKey.Column = tupleValue.Column;
-                    groupKey.Line = tupleValue.Line;
+                    PlanNode groupKey = new PlanNode(tupleValue.Line, tupleValue.Column, PlanNodeTypeEnum.GroupKey);
                     groupKey.NodeText = tupleValue.NodeText;
                     groupKey.Properties.Add("Value", "Key");
 
@@ -1314,47 +1216,39 @@ namespace Integra.Space.Language.ASTNodes.UserQuery
             }
 
             /* ******************************************************************************************************************************************************** */
-            PlanNode scopeSelectForBuffer = new PlanNode();
-            scopeSelectForBuffer.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForBuffer.Children = new List<PlanNode>();
 
             scopeSelectForBuffer.Children.Add(applyWindowAux);
 
-            PlanNode selectForBuffer = new PlanNode();
-            selectForBuffer.NodeType = PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource;
+            PlanNode selectForBuffer = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableSelectForObservableBufferOrSource);
             selectForBuffer.Children = new List<PlanNode>();
 
             selectForBuffer.Children.Add(scopeSelectForBuffer);
             /* ******************************************************************************************************************************************************** */
-            PlanNode fromForLambda = new PlanNode();
-            fromForLambda.NodeType = PlanNodeTypeEnum.ObservableFromForLambda;
+            PlanNode fromForLambda = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.ObservableFromForLambda);
 
-            PlanNode scopeKeySelectorForGroupBy = new PlanNode();
-            scopeKeySelectorForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeKeySelectorForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeKeySelectorForGroupBy.Children = new List<PlanNode>();
 
             scopeKeySelectorForGroupBy.Children.Add(fromForLambda);
             groupByAux.Children[0].Children.Add(fromForLambda);
 
-            PlanNode scopeSelectForGroupBy = new PlanNode();
-            scopeSelectForGroupBy.NodeType = PlanNodeTypeEnum.NewScope;
+            PlanNode scopeSelectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.NewScope);
             scopeSelectForGroupBy.Children = new List<PlanNode>();
 
             scopeSelectForGroupBy.Children.Add(groupByAux);
 
-            PlanNode selectForGroupBy = new PlanNode();
-            selectForGroupBy.NodeType = PlanNodeTypeEnum.EnumerableSelectForGroupBy;
+            PlanNode selectForGroupBy = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableSelectForGroupBy);
             selectForGroupBy.Children = new List<PlanNode>();
 
             selectForGroupBy.Children.Add(scopeSelectForGroupBy);
-            /*projectionAux.Properties.Add("DisposeEvents", true);*/
             selectForGroupBy.Children.Add(projectionAux);
 
             orderByAux.Children[0].Children = new List<PlanNode>();
             orderByAux.Children[0].Children.Add(selectForGroupBy);
             /* ******************************************************************************************************************************************************** */
-            PlanNode toList = new PlanNode();
-            toList.NodeType = PlanNodeTypeEnum.EnumerableToList;
+            PlanNode toList = new PlanNode(this.Location.Line, this.Location.Column, PlanNodeTypeEnum.EnumerableToList);
             toList.Children = new List<PlanNode>();
 
             toList.Children.Add(orderByAux);

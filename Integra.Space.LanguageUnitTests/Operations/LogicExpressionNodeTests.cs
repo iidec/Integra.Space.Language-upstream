@@ -4,22 +4,45 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
-using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
 using Microsoft.Reactive.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Integra.Space.Compiler;
+using Integra.Space.Database;
+using System.Reflection.Emit;
+using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Operations
 {
     [TestClass]
     public class LogicExpressionNodeTests
     {
-        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
         {
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<TestObject1> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -37,12 +60,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void EventosIgualdadAndEventosIgualdad()
         {
-            string eql = "from SpaceObservable1 where @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] and @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where Campo104 == Campo104 and Campo104 == Campo104 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -64,12 +87,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void EventosIgualdadAndEventosIgualdadFalse()
         {
-            string eql = "from SpaceObservable1 where not (@event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not (Campo104 == Campo104 or Campo104 == Campo104) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -90,12 +113,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void EventosIgualdadOrEventosIgualdad()
         {
-            string eql = "from SpaceObservable1 where @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where Campo104 == Campo104 or Campo104 == Campo104 select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -117,12 +140,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void EventosIgualdadOrEventosIgualdadFalse()
         {
-            string eql = "from SpaceObservable1 where not (@event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"] or @event.Message.Body.#103.[\"Campo103.1\"] == @event.Message.Body.#103.[\"Campo103.1\"]) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not (Campo104 == Campo104 or Campo104 == Campo104) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -143,12 +166,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void TrueAndTrue()
         {
-            string eql = "from SpaceObservable1 where true and true select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where true and true select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
            
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -170,12 +193,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void FalseAndFalse()
         {
-            string eql = "from SpaceObservable1 where false and false select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where false and false select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -196,12 +219,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void TrueAndFalse()
         {
-            string eql = "from SpaceObservable1 where true and false select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where true and false select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool> results = dsf.TestScheduler.Start(
@@ -222,12 +245,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void FalseAndTrue()
         {
-            string eql = "from SpaceObservable1 where false and true select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where false and true select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -248,12 +271,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void TrueOrTrue()
         {
-            string eql = "from SpaceObservable1 where true or true select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where true or true select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -275,13 +298,13 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void TrueOrFalse()
         {
-            string eql = "from SpaceObservable1 where true or false select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where true or false select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -303,12 +326,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void FalseOrTrue()
         {
-            string eql = "from SpaceObservable1 where false or true select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where false or true select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -330,12 +353,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void FalseOrFalse()
         {
-            string eql = "from SpaceObservable1 where false or false select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where false or false select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -356,12 +379,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotFalseOrFalse()
         {
-            string eql = "from SpaceObservable1 where not(false or false) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not(false or false) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -383,12 +406,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotTrueOrTrue()
         {
-            string eql = "from SpaceObservable1 where not(true or true) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not(true or true) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -409,12 +432,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotFalseAndFalse()
         {
-            string eql = "from SpaceObservable1 where not(false and false) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not(false and false) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -436,12 +459,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotTrueAndTrue()
         {
-            string eql = "from SpaceObservable1 where not(true and true) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not(true and true) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -462,12 +485,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotTrueOrFalseAndTrue1()
         {
-            string eql = "from SpaceObservable1 where not (true) or false and true select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not (true) or false and true select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(
@@ -488,12 +511,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void NotTrueOrFalseAndTrue2()
         {
-            string eql = "from SpaceObservable1 where not (true or false and true) select true as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas1 where not (true or false and true) select true as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<bool?> results = dsf.TestScheduler.Start(

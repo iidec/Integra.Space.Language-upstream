@@ -134,7 +134,7 @@
     <value>CE13: Aggregation function without 'apply window of'.</value>
   </data>
   <data name="CE14" xml:space="preserve">
-    <value>CE14: Error in 'sum' function.</value>
+    <value>CE14: Error in agregation function {0}.</value>
   </data>
   <data name="CE15" xml:space="preserve">
     <value>CE15: Error in 'apply window of' function.</value>

@@ -16,7 +16,8 @@ namespace Integra.Space.Language.Grammars
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandGrammarRuntime"/> class.
         /// </summary>
-        public CommandGrammarRuntime() : base(new LanguageData(new CommandGrammar()))
+        /// <param name="validator">Grammar rule validator.</param>
+        public CommandGrammarRuntime(IGrammarRuleValidator validator) : base(new LanguageData(new CommandGrammar(validator)))
         {
         }
     }
