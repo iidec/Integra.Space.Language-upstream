@@ -114,12 +114,7 @@ namespace Integra.Space.Language
         /// And type
         /// </summary>
         And = 51,
-
-        /// <summary>
-        /// Event type
-        /// </summary>
-        Event = 60,
-
+        
         /// <summary>
         /// Timestamp type
         /// </summary>
@@ -144,27 +139,7 @@ namespace Integra.Space.Language
         /// Source type
         /// </summary>
         Source = 70,
-
-        /// <summary>
-        /// ObjectPart type
-        /// </summary>
-        ObjectPart = 71,
-
-        /// <summary>
-        /// ObjectField type
-        /// </summary>
-        ObjectField = 72,
-
-        /// <summary>
-        /// ObjectValue type
-        /// </summary>
-        ObjectValue = 73,
-
-        /// <summary>
-        /// ObjectMessage type
-        /// </summary>
-        ObjectMessage = 74,
-
+                
         /// <summary>
         /// Object prefix type
         /// </summary>
@@ -609,12 +584,7 @@ namespace Integra.Space.Language
         /// Enumerable take type
         /// </summary>
         ObservableTake = 515,
-
-        /// <summary>
-        /// Observable select for event lock type
-        /// </summary>
-        ObservableWhereForEventLock = 516,
-
+        
         /// <summary>
         /// Observable create type
         /// </summary>

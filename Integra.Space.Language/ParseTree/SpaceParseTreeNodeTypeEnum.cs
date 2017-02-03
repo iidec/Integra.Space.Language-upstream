@@ -689,5 +689,10 @@ namespace Integra.Space.Language
         /// Doc goes here.
         /// </summary>
         into = 192,
+
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        ID_LIST = 193
     }
 }

@@ -5,10 +5,8 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System.Collections.Generic;
-    using Exceptions;
-    using Integra.Space.Language.Grammars;
-    using Irony.Parsing;
+    using Common;
+    using Grammars;
 
     /// <summary>
     /// Class that implements the logic to parse commands
@@ -26,10 +24,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Implements the logic to parse commands.
         /// </summary>
+        /// <param name="parameters">Binding parameters.</param>
         /// <returns>Execution plan.</returns>
-        public System.Tuple<PlanNode, Common.CommandObject> Evaluate()
+        public System.Tuple<PlanNode, CommandObject> Evaluate(params BindingParameter[] parameters)
         {
-            return (System.Tuple<PlanNode, Common.CommandObject>)this.EvaluateParseTree();
+            return (System.Tuple<PlanNode, CommandObject>)this.EvaluateParseTree(parameters);
         }
     }
 }

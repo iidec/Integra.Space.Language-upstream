@@ -55,9 +55,16 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             {
                 this.BeginEvaluate(thread);
                 PlanNode sourceIdentifier = (PlanNode)this.identifier.Evaluate(thread);
-                this.EndEvaluate(thread);
 
                 string databaseIdentifier = null;
+                if (thread.App.Globals.ContainsKey("Database"))
+                {
+                    Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
+                    databaseIdentifier = (string)databaseBinding.GetValueRef(thread);
+                }
+
+                this.EndEvaluate(thread);
+                
                 if (sourceIdentifier.Properties.ContainsKey("DatabaseIdentifier") && sourceIdentifier.Properties["DatabaseIdentifier"] != null)
                 {
                     databaseIdentifier = sourceIdentifier.Properties["DatabaseIdentifier"].ToString();

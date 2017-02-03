@@ -66,7 +66,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.EndEvaluate(thread);
 
-            return new AlterDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

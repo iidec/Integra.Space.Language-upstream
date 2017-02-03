@@ -56,9 +56,15 @@ namespace Integra.Space.Language.Resources
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 
-		///	CE14: Error in 'sum' function.
+		///	CE14: Error in agregation function {0}.
 		/// </summary>
-		public static string CE14 { get { return global::Integra.Space.Language.COMPILATION_ERRORS.CE14; } }
+		public static string CE14(object arg0)
+		{
+			return string.Format(global::Integra.Space.Language.COMPILATION_ERRORS.CE14, new object[]
+			{
+				arg0,
+			});
+		}
 	
 		/// <summary>
 		/// Looks up a localized string similar to: 

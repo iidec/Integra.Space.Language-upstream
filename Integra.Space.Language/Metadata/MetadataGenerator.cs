@@ -9,7 +9,6 @@ namespace Integra.Space.Language.Metadata
     using System.Collections.Generic;
     using System.Linq;
     using Integra.Space.Language.Exceptions;
-    using Integra.Space.Language.Runtime;
     using Irony.Parsing;
 
     /// <summary>

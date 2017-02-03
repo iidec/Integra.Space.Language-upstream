@@ -67,7 +67,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
             this.EndEvaluate(thread);
 
-            return new AlterLoginNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterLoginNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

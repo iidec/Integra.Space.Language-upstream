@@ -4,22 +4,48 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
 using System.Collections.Generic;
 using Microsoft.Reactive.Testing;
-using Integra.Space.Language.Runtime;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reflection;
+using Integra.Space.Compiler;
+using Integra.Space.Database;
+using System.Reflection.Emit;
+using Ninject;
+using Integra.Space.LanguageUnitTests.TestObject;
 
 namespace Integra.Space.LanguageUnitTests.Operations
 {
     [TestClass]
     public class UnaryArithmeticExpressionNodeTests
     {
-        private IObservable<object> Process(string eql, DefaultSchedulerFactory dsf, ITestableObservable<EventObject> input)
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
         {
             bool printLog = false;
             bool debugMode = false;
             bool measureElapsedTime = false;
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("Test");
+            AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                asmBuilder,
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
+        private IObservable<object> Process<T>(string eql, DefaultSchedulerFactory dsf, ITestableObservable<T> input)
+        {
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.Process(context, eql, dsf);
@@ -37,12 +63,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeInteger()
         {
-            string eql = "from SpaceObservable1 select -1 as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas select -1 as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<int> results = dsf.TestScheduler.Start(
@@ -64,12 +90,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeDouble()
         {
-            string eql = "from SpaceObservable1 select -10.21 as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas select -10.21 as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<double> results = dsf.TestScheduler.Start(
@@ -91,12 +117,12 @@ namespace Integra.Space.LanguageUnitTests.Operations
         [TestMethod]
         public void UnaryNegativeDecimal()
         {
-            string eql = "from SpaceObservable1 select -1m as resultado into SourceXYZ";
+            string eql = "from SourceParaPruebas select -1m as resultado into SourceXYZ";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
 
-            ITestableObservable<EventObject> input = dsf.TestScheduler.CreateHotObservable(
-                new Recorded<Notification<EventObject>>(100, Notification.CreateOnNext(TestObjects.EventObjectTest1)),
-                new Recorded<Notification<EventObject>>(200, Notification.CreateOnCompleted<EventObject>())
+            ITestableObservable<TestObject1> input = dsf.TestScheduler.CreateHotObservable(
+                new Recorded<Notification<TestObject1>>(100, Notification.CreateOnNext(new TestObject1())),
+                new Recorded<Notification<TestObject1>>(200, Notification.CreateOnCompleted<TestObject1>())
                 );
 
             ITestableObserver<decimal> results = dsf.TestScheduler.Start(

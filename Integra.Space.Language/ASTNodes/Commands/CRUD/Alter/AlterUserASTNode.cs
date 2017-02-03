@@ -66,7 +66,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             
             this.EndEvaluate(thread);
-            return new AlterUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new AlterUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

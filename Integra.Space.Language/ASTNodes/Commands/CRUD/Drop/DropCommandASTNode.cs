@@ -114,7 +114,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             
             foreach (CommandObject commandObject in commandObjects)
             {
-                listOfDrops.Add(new DropObjectNode(commandObject, this.Location.Line, this.Location.Column, this.GetNodeText()));
+                listOfDrops.Add(new DropObjectNode(commandObject, this.Location.Line, this.Location.Column, this.NodeText));
             }
 
             return listOfDrops.ToArray();

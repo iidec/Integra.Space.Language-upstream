@@ -10,7 +10,7 @@ namespace Integra.Space
     /// <summary>
     /// Event result class
     /// </summary>
-    public class EventResult : IEventResultSerializable
+    public class EventResult : EventBase, IEventResultSerializable
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="EventResult"/> class.

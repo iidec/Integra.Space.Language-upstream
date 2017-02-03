@@ -71,11 +71,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.EndEvaluate(thread);
 
             QueryParser parser = new QueryParser(this.queryString);
-            Tuple<PlanNode, CommandObject> query = parser.Evaluate();
+            Tuple<PlanNode, CommandObject> query = parser.Evaluate(new BindingParameter("Database", databaseName));
             
             this.CheckAllowedOptions(optionsAux);
 
-            return new CreateStreamNode(commandObject, this.queryString, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateStreamNode(commandObject, this.queryString, query.Item1, optionsAux, query.Item2, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

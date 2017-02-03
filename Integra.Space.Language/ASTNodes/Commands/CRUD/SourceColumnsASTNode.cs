@@ -29,6 +29,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         private string columnIdentifier;
 
         /// <summary>
+        /// Column length.
+        /// </summary>
+        private uint? columnLength;
+
+        /// <summary>
         /// First method called
         /// </summary>
         /// <param name="context">Contains the actual context</param>
@@ -36,9 +41,23 @@ namespace Integra.Space.Language.ASTNodes.Commands
         public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);
-            
-            this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
-            this.columnType = (Type)ChildrenNodes[1].Token.Value;
+
+            int childCount = ChildrenNodes.Count;
+            if (childCount == 2)
+            {
+                this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
+                this.columnType = (Type)ChildrenNodes[1].Token.Value;
+            }
+            else if (childCount == 3)
+            {
+                this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
+                this.columnType = (Type)ChildrenNodes[1].Token.Value;
+                this.columnLength = (uint)(int)ChildrenNodes[2].Token.Value;
+            }
+            else if (childCount == 1)
+            {
+                this.columnIdentifier = (string)ChildrenNodes[0].Token.Value;
+            }
         }
 
         /// <summary>
@@ -52,7 +71,14 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
 
-            return Tuple.Create(this.columnIdentifier, this.columnType);
+            SourceColumnTypeNode type = null;
+            if (ChildrenNodes.Count > 1)
+            {
+                type = new SourceColumnTypeNode(this.columnType, this.columnLength, null);
+            }
+
+            SourceColumnNode column = new SourceColumnNode(this.columnIdentifier, type);
+            return column;
         }
     }
 }

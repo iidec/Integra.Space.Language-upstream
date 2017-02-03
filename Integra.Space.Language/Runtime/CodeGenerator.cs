@@ -71,7 +71,7 @@ namespace Integra.Space.Language.Runtime
         /// <summary>
         /// Compilation context.
         /// </summary>
-        private CompilerConfiguration config;
+        private CodeGeneratorConfiguration config;
 
         /// <summary>
         /// Observer of the ObservableCreate node.
@@ -106,7 +106,7 @@ namespace Integra.Space.Language.Runtime
         /// Initializes a new instance of the <see cref="CodeGenerator"/> class
         /// </summary>
         /// <param name="config">Compilation context.</param>
-        public CodeGenerator(CompilerConfiguration config)
+        public CodeGenerator(CodeGeneratorConfiguration config)
         {
             if (config.Scheduler == null)
             {
@@ -1420,9 +1420,10 @@ namespace Integra.Space.Language.Runtime
                     // RIGHTSOURCE = parameterName;
                     this.sources.Add(RIGHTSOURCE, parameterName);
                 }
-
+                
                 /* aqui se debe obtener el tipo de entrada del objeto */
                 currentParameter = Expression.Parameter((Type)actualNode.Properties["SourceType"], parameterName);
+
                 this.parameterList.Add(currentParameter);
             }
 
@@ -2160,6 +2161,11 @@ namespace Integra.Space.Language.Runtime
         /// <returns>Observable buffer expression.</returns>
         private Expression CreateObservableBuffer<I>(PlanNode actualNode, Expression incomingObservable, Expression bufferTimeOrSize)
         {
+            /*
+             * public static IObservable<IList<TSource>> Buffer<TSource>(this IObservable<TSource> source, int count);
+             * public static IObservable<IList<TSource>> Buffer<TSource>(this IObservable<TSource> source, TimeSpan timeSpan, IScheduler scheduler);             
+             */
+            
             ParameterExpression result = Expression.Variable(typeof(IObservable<IList<I>>), "ResultObservableBuffer");
             ParameterExpression paramException = Expression.Variable(typeof(Exception));
 

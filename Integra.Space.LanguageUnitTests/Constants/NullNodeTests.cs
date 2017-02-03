@@ -1,24 +1,47 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
 using System.Reflection;
 using System.Linq;
+using Integra.Space.Compiler;
+using Integra.Space.Database;
+using System.Reflection.Emit;
+using Ninject;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
     [TestClass]
     public class NullNodeTests
     {
+        private CodeGeneratorConfiguration GetCodeGeneratorConfig(DefaultSchedulerFactory dsf)
+        {
+            bool printLog = false;
+            bool debugMode = false;
+            bool measureElapsedTime = false;
+            bool isTestMode = true;
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGeneratorConfiguration config = new CodeGeneratorConfiguration(
+                login,
+                dsf,
+                AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), AssemblyBuilderAccess.RunAndSave),
+                kernel,
+                printLog: printLog,
+                debugMode: debugMode,
+                measureElapsedTime: measureElapsedTime,
+                isTestMode: isTestMode
+                );
+
+            return config;
+        }
+
         [TestMethod]
         public void ConstantNull()
         {
             string eql = "null";
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            bool printLog = false;
-            bool debugMode = false;
-            bool measureElapsedTime = false;
-            CompilerConfiguration context = new CompilerConfiguration() { PrintLog = printLog, QueryName = string.Empty, Scheduler = dsf, DebugMode = debugMode, MeasureElapsedTime = measureElapsedTime, IsTestMode = true };
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
             Assembly assembly = fp.ProcessWithExpressionParser(context, eql, dsf);

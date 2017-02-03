@@ -11,7 +11,6 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
     using Irony.Interpreter;
     using Irony.Interpreter.Ast;
     using Irony.Parsing;
-    using Runtime;
 
     /// <summary>
     /// JoinNode class
@@ -43,7 +42,7 @@ namespace Integra.Space.Language.ASTNodes.MetadataQuery
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            TemporalStreamNode command = (TemporalStreamNode)this.metadataQuery.Evaluate(thread);
+            DMLCommand command = (DMLCommand)this.metadataQuery.Evaluate(thread);
             this.EndEvaluate(thread);
 
             return command;

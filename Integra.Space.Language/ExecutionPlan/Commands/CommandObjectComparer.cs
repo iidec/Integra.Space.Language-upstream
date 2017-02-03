@@ -6,6 +6,7 @@
 namespace Integra.Space.Language
 {
     using System.Collections.Generic;
+    using Common;
 
     /// <summary>
     /// Command object comparer class.

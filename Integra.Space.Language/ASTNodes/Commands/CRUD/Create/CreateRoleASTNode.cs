@@ -88,7 +88,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 optionsAux[RoleOptionEnum.Add] = usersAux;
             }
 
-            return new CreateRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.GetNodeText());
+            return new CreateRoleNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

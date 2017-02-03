@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Integra.Space.Language;
-using Integra.Space.Language.Runtime;
+using Integra.Space.Compiler;
+using System.Reflection;
+using Integra.Space.Database;
+using Ninject;
 
 namespace Integra.Space.LanguageUnitTests.Constants
 {
@@ -14,7 +18,10 @@ namespace Integra.Space.LanguageUnitTests.Constants
             ExpressionParser parser = new ExpressionParser("'01/01/2014'");
             PlanNode plan = parser.Evaluate();
 
-            CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+            Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
+            CodeGenerator te = new CodeGenerator(new CodeGeneratorConfiguration(login, new DefaultSchedulerFactory(), AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), System.Reflection.Emit.AssemblyBuilderAccess.Run), kernel, printLog: true));
             Func<DateTime> result = (Func<DateTime>)te.CompileDelegate(plan);
 
             DateTime parsedDate;
@@ -27,9 +34,11 @@ namespace Integra.Space.LanguageUnitTests.Constants
         public void ConstantTimeSpanValue()
         {
             ExpressionParser parser = new ExpressionParser("'00:00:00:01'");
-            PlanNode plan = parser.Evaluate();
+            PlanNode plan = parser.Evaluate(); Login login = new SpaceDbContext().Logins.First();
+            StandardKernel kernel = new StandardKernel();
+            kernel.Bind<ISourceTypeFactory>().ToConstructor(x => new SourceTypeFactory());
 
-            CodeGenerator te = new CodeGenerator(new CompilerConfiguration() {  PrintLog = true, QueryName = string.Empty, Scheduler = new DefaultSchedulerFactory() });
+            CodeGenerator te = new CodeGenerator(new CodeGeneratorConfiguration(login, new DefaultSchedulerFactory(), AppDomain.CurrentDomain.DefineDynamicAssembly(new AssemblyName("Test"), System.Reflection.Emit.AssemblyBuilderAccess.Run), kernel, printLog: true));
             Func<TimeSpan> result = (Func<TimeSpan>)te.CompileDelegate(plan);
 
             TimeSpan parsedDate;

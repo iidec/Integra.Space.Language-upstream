@@ -21,19 +21,47 @@ namespace Integra.Space.Language
         private Dictionary<string, object> properties;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="PlanNode"/> class.
+        /// </summary>
+        /// <param name="line">Node line.</param>
+        /// <param name="column">Node column.</param>
+        /// <param name="nodeType">Node type.</param>
+        public PlanNode(int line, int column, PlanNodeTypeEnum nodeType)
+        {
+            this.Line = line;
+            this.Column = column;
+            this.NodeType = nodeType;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PlanNode"/> class.
+        /// </summary>
+        /// <param name="line">Node line.</param>
+        /// <param name="column">Node column.</param>
+        /// <param name="nodeType">Node type.</param>
+        /// <param name="nodeText">Node text.</param>
+        public PlanNode(int line, int column, PlanNodeTypeEnum nodeType, string nodeText)
+        {
+            this.Line = line;
+            this.Column = column;
+            this.NodeText = nodeText;
+            this.NodeType = nodeType;
+        }
+
+        /// <summary>
         /// Gets or sets the plan node type
         /// </summary>
         public PlanNodeTypeEnum NodeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the line of the evaluated sentence
+        /// Gets the line of the evaluated sentence
         /// </summary>
-        public int Line { get; set; }
+        public int Line { get; private set; }
 
         /// <summary>
-        /// Gets or sets the evaluated sentence column
+        /// Gets the evaluated sentence column
         /// </summary>
-        public int Column { get; set; }
+        public int Column { get; private set; }
 
         /// <summary>
         /// Gets or sets the text of the actual node
@@ -67,10 +95,7 @@ namespace Integra.Space.Language
         /// <returns>The node cloned.</returns>
         public PlanNode Clone()
         {
-            PlanNode planCloned = new PlanNode();
-            planCloned.NodeType = this.NodeType;
-            planCloned.Line = this.Line;
-            planCloned.Column = this.Column;
+            PlanNode planCloned = new PlanNode(this.Line, this.Column, this.NodeType);
             planCloned.NodeText = this.NodeText;
 
             foreach (KeyValuePair<string, object> kvp in this.Properties)

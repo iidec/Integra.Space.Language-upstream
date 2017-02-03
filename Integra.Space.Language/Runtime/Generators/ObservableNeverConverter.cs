@@ -22,12 +22,12 @@ namespace Integra.Space.Language.Runtime
         /// Initializes a new instance of the <see cref="ObservableNeverConverter"/> class.
         /// </summary>
         /// <param name="config">Compiler configuration.</param>
-        public ObservableNeverConverter(CompilerConfiguration config) : base(config)
+        public ObservableNeverConverter(CodeGeneratorConfiguration config) : base(config)
         {
         }
 
         /// <inheritdoc />
-        protected override Expression TranformNode(CompilationContext context)
+        protected override Expression TranformNode(CodeGeneratorScope context)
         {
             Type genericType = typeof(Unit);
             ParameterExpression result = Expression.Variable(typeof(IObservable<>).MakeGenericType(genericType), "ObservableNever");
