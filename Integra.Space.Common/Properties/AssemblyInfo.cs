@@ -37,5 +37,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo("Integra.Space.Compiler.CodeGeneration")]
 [assembly: InternalsVisibleTo("Integra.Space.Database")]
 [assembly: InternalsVisibleTo("Integra.Space.Language")]
+[assembly: InternalsVisibleTo("Integra.Space")]
+[assembly: InternalsVisibleTo("Integra.Space.UnitTests")]
 [assembly: InternalsVisibleTo("Integra.Space.Language.Analysis")]
 [assembly: InternalsVisibleTo("Integra.Space.LanguageUnitTests")]
