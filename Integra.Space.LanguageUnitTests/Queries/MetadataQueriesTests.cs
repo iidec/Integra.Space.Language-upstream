@@ -47,7 +47,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
-            Delegate d = fp.ProcessWithCommandParser<T>(context, eql, new TestRuleValidator());
+            Delegate d = fp.ProcessWithCommandParser(context, eql, new TestRuleValidator());
 
             if (isTestMode)
             {

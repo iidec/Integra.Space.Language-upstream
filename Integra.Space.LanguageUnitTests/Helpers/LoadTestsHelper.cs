@@ -1,13 +1,9 @@
-﻿using Integra.Space.LanguageUnitTests.Database;
-using Integra.Space.LanguageUnitTests.TestObject;
+﻿using Integra.Space.LanguageUnitTests.TestObject;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Integra.Space.LanguageUnitTests.Helpers
 {

@@ -108,6 +108,7 @@
     <Compile Include="ASTNodes\Commands\CommandListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\DictionaryASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ApplyExtensionListASTNode.cs" />
+    <Compile Include="ASTNodes\Commands\Go\GoASTNode.cs" />
     <Compile Include="ASTNodes\Commands\ListASTNode.cs" />
     <Compile Include="ASTNodes\Commands\CRUD\TruncateASTNode.cs" />
     <Compile Include="ASTNodes\Commands\Permissions\AddOrRemoveCommandASTNode.cs" />
@@ -197,6 +198,8 @@
     <Compile Include="ExecutionPlan\Commands\Crud\SpaceCrudCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\CommandOption.cs" />
     <Compile Include="ExecutionPlan\Commands\DMLCommand.cs" />
+    <Compile Include="ExecutionPlan\Commands\Batch\BatchNode.cs" />
+    <Compile Include="ExecutionPlan\Commands\Batch\GoCommandNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Metadata\TruncateNode.cs" />
     <Compile Include="ExecutionPlan\Commands\ReferencedSource.cs" />
     <Compile Include="ExecutionPlan\Commands\SystemCommand.cs" />

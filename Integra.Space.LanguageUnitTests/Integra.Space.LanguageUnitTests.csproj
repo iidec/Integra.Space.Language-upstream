@@ -117,6 +117,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Commands\BatchTests.cs" />
     <Compile Include="Commands\CommandTests.cs" />
     <Compile Include="Constants\BooleanNodeTests.cs" />
     <Compile Include="Constants\DateTimeFunctionNodeTests.cs" />
@@ -124,33 +125,6 @@
     <Compile Include="Constants\NullNodeTests.cs" />
     <Compile Include="Constants\NumberNodeTests.cs" />
     <Compile Include="Constants\StringNodeTests.cs" />
-    <Compile Include="Database\ActualResult.cs">
-      <DependentUpon>SpaceTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Database\Event.cs">
-      <DependentUpon>SpaceTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Database\ExpectedResult.cs">
-      <DependentUpon>SpaceTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Database\SpaceTests.Context.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SpaceTests.Context.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Database\SpaceTests.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SpaceTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Database\SpaceTests.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SpaceTests.edmx</DependentUpon>
-    </Compile>
-    <Compile Include="Database\Test.cs">
-      <DependentUpon>SpaceTests.tt</DependentUpon>
-    </Compile>
     <Compile Include="TestObject\TestServerObject.cs" />
     <Compile Include="TestRuleValidator.cs" />
     <Compile Include="FakeEvents\FakeEv.cs" />
@@ -186,13 +160,6 @@
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <EntityDeploy Include="Database\SpaceTests.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>SpaceTests.Designer.cs</LastGenOutput>
-    </EntityDeploy>
-    <None Include="Database\SpaceTests.edmx.diagram">
-      <DependentUpon>SpaceTests.edmx</DependentUpon>
-    </None>
     <None Include="LoadTests\LoadTest1.loadtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -218,18 +185,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Database\SpaceTests.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>SpaceTests.edmx</DependentUpon>
-      <LastGenOutput>SpaceTests.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="Database\SpaceTests.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>SpaceTests.edmx</DependentUpon>
-      <LastGenOutput>SpaceTests.cs</LastGenOutput>
-    </Content>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

@@ -99,6 +99,11 @@ namespace Integra.Space.Common
         Insert = 32768,
 
         /// <summary>
+        /// Action command go.
+        /// </summary>
+        Go = 65536,
+
+        /// <summary>
         /// Commands for add, delete o edit a space object.
         /// </summary>
         CrudCommands = Create | Alter | Drop,
