@@ -62,8 +62,12 @@
     <Compile Include="Enums\SystemRolesEnum.cs" />
     <Compile Include="Enums\SystemSourceEnum.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ResultBase.cs" />
-    <Compile Include="ResultType.cs" />
+    <Compile Include="Results\ErrorResult.cs" />
+    <Compile Include="Results\WarningResult.cs" />
+    <Compile Include="Results\ResultBase.cs" />
+    <Compile Include="Results\ResultType.cs" />
+    <Compile Include="Results\InfoResult.cs" />
+    <Compile Include="Results\SuccessResult.cs" />
     <Compile Include="Scheduler\IQuerySchedulerFactory.cs" />
     <Compile Include="Scheduler\SchedulerTypeEnum.cs" />
   </ItemGroup>
