@@ -55,6 +55,7 @@ namespace Integra.Space.Language.Grammars
             KeyTerm terminalUse = ToTerm("use", "use");
             KeyTerm terminalTruncate = ToTerm("truncate", "truncate");
             KeyTerm terminalInsert = ToTerm("insert", "insert");
+            KeyTerm terminalGo = ToTerm("go", "go");
 
             /* SPACE OBJECTS */
             KeyTerm terminalServer = ToTerm("server", "server");
@@ -534,6 +535,12 @@ namespace Integra.Space.Language.Grammars
             nt_INSERT.AstConfig.DefaultNodeCreator = () => new InsertASTNode();
             /************************************************/
 
+            /* GO */
+            NonTerminal nt_GO = new NonTerminal("GO", typeof(GoASTNode));
+            nt_GO.AstConfig.NodeType = null;
+            nt_GO.AstConfig.DefaultNodeCreator = () => new GoASTNode();
+            /************************************************/
+
             /* RULES */
 
             nt_SECOND_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST, terminalComa, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
@@ -803,6 +810,13 @@ namespace Integra.Space.Language.Grammars
 
             /************************************************/
 
+            /* GO */
+
+            nt_GO.Rule = terminalGo
+                         | terminalGo + terminalUnsignedIntValue;
+
+            /************************************************/
+
             nt_COMMAND_NODE.Rule = nt_PERMISSIONS_COMMANDS
                                         .AddOr(nt_ADD_OR_REMOVE_USERS_TO_ROLE_COMMAND)
                                         .AddOr(nt_DROP_COMMAND)
@@ -825,6 +839,7 @@ namespace Integra.Space.Language.Grammars
                                         .AddOr(nt_USE, EQLFunctionalityEnum.Use, validator)
                                         .AddOr(nt_TAKE_OWNERSHIP, EQLFunctionalityEnum.TakeOwnership, validator)
                                         .AddOr(nt_TRUNCATE_SOURCE, EQLFunctionalityEnum.TruncateSource, validator)
+                                        .AddOr(nt_GO, EQLFunctionalityEnum.Go, validator)
                                         .AddDefault();
 
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);

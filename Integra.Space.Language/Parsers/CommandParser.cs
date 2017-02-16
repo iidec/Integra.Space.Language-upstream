@@ -61,9 +61,9 @@ namespace Integra.Space.Language
         /// Implements the logic to parse commands.
         /// </summary>
         /// <returns>Execution plan.</returns>
-        public SystemCommand[] Evaluate()
+        public BatchNode[] Evaluate()
         {
-            return (SystemCommand[])this.EvaluateParseTree();
+            return (BatchNode[])this.EvaluateParseTree();
         }
 
         /// <summary>

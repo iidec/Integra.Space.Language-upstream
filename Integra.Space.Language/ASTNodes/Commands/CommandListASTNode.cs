@@ -35,7 +35,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// <returns>return a plan node</returns>
         protected override object DoEvaluate(ScriptThread thread)
         {
-            List<SystemCommand> resultList = new List<SystemCommand>();
+            List<BatchNode> resultList = new List<BatchNode>();
             thread.CurrentNode = this;
             Binding b1 = thread.Bind("Database", BindingRequestFlags.Write | BindingRequestFlags.ExistingOrNew);
             b1.SetValueRef(thread, null);
@@ -51,22 +51,40 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// </summary>
         /// <param name="resultList">Resultant command list.</param>
         /// <param name="thread">Script thread.</param>
-        private void GetResultCommandList(List<SystemCommand> resultList, ScriptThread thread)
+        private void GetResultCommandList(List<BatchNode> resultList, ScriptThread thread)
         {
+            BatchNode batch = new BatchNode();
+
             foreach (AstNodeBase child in this.GetChildNodes())
             {
                 var evaluatedChild = child.Evaluate(thread);
                 if (evaluatedChild.GetType().IsArray)
                 {
-                    foreach (SystemCommand command in evaluatedChild as IEnumerable<SystemCommand>)
-                    {
-                        resultList.Add(command);
-                    }
+                    // los comandos de permisos son los que devuelven un array
+                    // porque los comandos de permisos generan multiple objetos comando, uno por cada permiso.
+                    batch.Commands.AddRange((IEnumerable<SystemCommand>)evaluatedChild);
                 }
                 else
                 {
-                    resultList.Add((SystemCommand)evaluatedChild);
+                    // si el comando es go, agrego el conjunto de comandos como un batch al resultado y creo un nuevo batch
+                    if (evaluatedChild is GoCommandNode)
+                    {
+                        batch.Go = (GoCommandNode)evaluatedChild;
+                        resultList.Add(batch);
+                        batch = new BatchNode();
+                    }
+                    else
+                    {
+                        batch.Commands.Add((SystemCommand)evaluatedChild);
+                    }
                 }
+            }
+
+            // si la lista de comandos del batch no esta vacía quiere decir que no se especificó un 'go' explicitamente, por lo tanto, 
+            // agrego el batch al la lista de resultado.
+            if (batch.Commands.Count > 0)
+            {
+                resultList.Add(batch);
             }
         }
     }

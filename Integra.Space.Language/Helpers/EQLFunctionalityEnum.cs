@@ -198,6 +198,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Stream status option.
         /// </summary>
-        StreamStatus
+        StreamStatus,
+
+        /// <summary>
+        /// Go functionality.
+        /// </summary>
+        Go
     }
 }

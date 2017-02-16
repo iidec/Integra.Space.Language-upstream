@@ -61,19 +61,15 @@ namespace Integra.Space.Compiler
         }
 
         /// <summary>
-        /// Doc goes here.
+        /// Proccess only one command.
         /// </summary>
-        /// <typeparam name="T">Entity type.</typeparam>
         /// <param name="context">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParser<T>(CodeGeneratorConfiguration context, string script, IGrammarRuleValidator ruleValidator)
+        public Delegate ProcessWithCommandParser(CodeGeneratorConfiguration context, string script, IGrammarRuleValidator ruleValidator)
         {
-            /*MetadataQueryParser parser = new MetadataQueryParser(script);
-            PlanNode executionPlan = parser.Evaluate();*/
-
             CommandParser parser = new CommandParser(script, ruleValidator);
-            SystemCommand metadataCommand = parser.Evaluate().First();
+            SystemCommand command = parser.Evaluate().First().Commands.First();
             
             SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
             modBuilder.CreateModuleBuilder();
@@ -81,13 +77,13 @@ namespace Integra.Space.Compiler
             CodeGenerator te = new CodeGenerator(context);
 
             PlanNode executionPlan = null;
-            if(metadataCommand is TemporalStreamNode)
+            if(command is TemporalStreamNode)
             {
-                executionPlan = ((TemporalStreamNode)metadataCommand).ExecutionPlan;
+                executionPlan = ((TemporalStreamNode)command).ExecutionPlan;
             }
             else
             {
-                executionPlan = ((QueryCommandForMetadataNode)metadataCommand).ExecutionPlan;
+                executionPlan = ((QueryCommandForMetadataNode)command).ExecutionPlan;
             }
 
             return te.CompileDelegate(executionPlan);
