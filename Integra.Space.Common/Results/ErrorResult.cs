@@ -15,7 +15,7 @@ namespace Integra.Space.Common
         /// </summary>
         /// <param name="code">Result code.</param>
         /// <param name="message">Result message.</param>
-        public ErrorResult(int code, string message) : base(code, message, ResultType.Warning)
+        public ErrorResult(int code, string message) : base(code, message, ResultType.Error)
         {
         }
     }
