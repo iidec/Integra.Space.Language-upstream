@@ -56,7 +56,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 CommandOption<TOptionEnum> option = (CommandOption<TOptionEnum>)child.Evaluate(thread);
                 if (resultDictionary.ContainsKey(option.Option))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("Option '{0}' is specified more than once.", option));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)ResultCodes.DuplicateCommandOption, option));
                 }
                 else
                 {

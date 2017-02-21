@@ -87,7 +87,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             PermissionsEnum granularPermission;
             if (!System.Enum.TryParse<PermissionsEnum>(permissionString, true, out granularPermission))
             {
-                throw new System.Exception("Permission not defined.");
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.BadPermission((int)ResultCodes.BadPermission, permissionString));
             }
 
             return granularPermission;

@@ -79,7 +79,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                throw new Exception("Invalid alter source statement.");
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.CommandError((int)ResultCodes.CommandError));
+                return Tuple.Create(string.Empty, new List<SourceColumnNode>());
             }
         }
     }

@@ -102,7 +102,7 @@ namespace Integra.Space.Language.ASTNodes.Base
                 {
                     if (node.IsPunctuationOrEmptyTransient())
                     {
-                        throw new System.Exception();
+                        return nodeText;
                     }
 
                     if (node.ChildNodes.Count > 0)

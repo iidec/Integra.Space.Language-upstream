@@ -41,7 +41,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             b1.SetValueRef(thread, null);
 
             this.GetResultCommandList(resultList, thread);
-            thread.CurrentNode = this;
+            thread.CurrentNode = this.Parent;
 
             return resultList.ToArray();
         }
@@ -58,6 +58,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             foreach (AstNodeBase child in this.GetChildNodes())
             {
                 var evaluatedChild = child.Evaluate(thread);
+
                 if (evaluatedChild.GetType().IsArray)
                 {
                     // los comandos de permisos son los que devuelven un array
@@ -70,6 +71,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
                     if (evaluatedChild is GoCommandNode)
                     {
                         batch.Go = (GoCommandNode)evaluatedChild;
+                        this.SetBatchResults(thread, batch);
+                        thread.App.LastScript.ParserMessages.Clear();
                         resultList.Add(batch);
                         batch = new BatchNode();
                     }
@@ -84,7 +87,39 @@ namespace Integra.Space.Language.ASTNodes.Commands
             // agrego el batch al la lista de resultado.
             if (batch.Commands.Count > 0)
             {
+                this.SetBatchResults(thread, batch);
+                thread.App.LastScript.ParserMessages.Clear();
                 resultList.Add(batch);
+            }
+        }
+
+        /// <summary>
+        /// Adds the results to the specified batch.
+        /// </summary>
+        /// <param name="thread">Script thread</param>
+        /// <param name="batch">Batch of commands.</param>
+        private void SetBatchResults(ScriptThread thread, BatchNode batch)
+        {
+            var parseTree = thread.App.LastScript;
+            foreach (var parserMessage in parseTree.ParserMessages)
+            {
+                if (parserMessage.Level == Irony.ErrorLevel.Error)
+                {
+                    batch.Results.Add(new ParseErrorResult((int)ResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                }
+                else if (parserMessage.Level == Irony.ErrorLevel.Info)
+                {
+                    batch.Results.Add(new ParseSuccessResult((int)ResultCodes.InfoParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                }
+                else if (parserMessage.Level == Irony.ErrorLevel.Warning)
+                {
+                    batch.Results.Add(new ParseSuccessResult((int)ResultCodes.WarningParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                }
+            }
+
+            if (!batch.HasErrors())
+            {
+                batch.Results.Add(new ParseSuccessResult((int)ResultCodes.SuccessParseResultCode, Resources.ParseResults.SuccessBatchParse, this.Location.Line, this.Location.Column));
             }
         }
     }

@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="BatchNode.cs" company="Integra.Space.Language">
-//     Copyright (c) Integra.Space.Common. All rights reserved.
+// <copyright file="ParseContext.cs" company="Integra.Space.Language">
+//     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
@@ -10,53 +10,46 @@ namespace Integra.Space.Language
     using Common;
 
     /// <summary>
-    /// Batch node class.
+    /// Parse context class.
     /// </summary>
-    internal class BatchNode
+    internal class ParseContext
     {
         /// <summary>
-        /// Go command.
+        /// Batch array.
         /// </summary>
-        private GoCommandNode go;
-        
+        private BatchNode[] batches;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="BatchNode"/> class.
+        /// Initializes a new instance of the <see cref="ParseContext"/> class.
         /// </summary>
-        public BatchNode()
+        public ParseContext()
         {
-            this.Commands = new List<SystemCommand>();
-            this.go = new GoCommandNode(1, 0, 0, "go");
             this.Results = new List<ResultBase>();
         }
 
         /// <summary>
-        /// Gets the batch.
+        /// Gets or sets the batch objects resultants of the incoming string parse execution.
         /// </summary>
-        public List<SystemCommand> Commands { get; private set; }
-
-        /// <summary>
-        /// Gets the results of the batch
-        /// </summary>
-        public List<ResultBase> Results { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the go command.
-        /// </summary>
-        public GoCommandNode Go
+        public BatchNode[] Batches
         {
             get
             {
-                return this.go;
+                return this.batches;
             }
 
             set
             {
-                if (this.go == null)
+                if (this.batches == null)
                 {
-                    this.go = value;
+                    this.batches = value;
                 }
             }
         }
+
+        /// <summary>
+        /// Gets the parse execution results.
+        /// </summary>
+        public List<ResultBase> Results { get; private set; }
 
         /// <summary>
         /// Returns a value indicating whether the parse process finished with errors.

@@ -5,16 +5,8 @@ using System;
 namespace Integra.Space.LanguageUnitTests.Commands
 {
     [TestClass]
-    public class BatchTests
+    public class BatchTests : BaseTest
     {
-        public void Process(string command)
-        {
-            CommandParser cp = new CommandParser(command, new TestRuleValidator());
-            var spaceCommands = cp.Evaluate();
-
-            Console.WriteLine();
-        }
-
         [TestMethod]
         public void TestGo()
         {

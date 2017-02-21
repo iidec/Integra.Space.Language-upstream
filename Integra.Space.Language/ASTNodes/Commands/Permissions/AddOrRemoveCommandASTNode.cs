@@ -76,7 +76,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                 }
             }
 
@@ -91,7 +91,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (!rolesAux.Add(new CommandObject(SystemObjectEnum.DatabaseRole, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Alter, false)))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("The role '{0}' is specified more than once."));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedDatabaseRole((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                 }
             }
             

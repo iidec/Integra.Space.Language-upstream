@@ -71,7 +71,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            this.CheckAllowedOptions(optionsAux);
+            this.CheckAllowedOptions(optionsAux, thread);
 
             return new CreateSourceNode(commandObject, columnsAux, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }

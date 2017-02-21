@@ -58,7 +58,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (resultList.Any(x => x.NodeType == extension.NodeType))
                 {
-                    throw new Exceptions.ParseException(string.Format("The extension is defined more than once: '{0}'.", extension.NodeText));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateApplyExtension((int)ResultCodes.DuplicateApplyExtension, extension.NodeText));
                 }
 
                 resultList.Add(extension);

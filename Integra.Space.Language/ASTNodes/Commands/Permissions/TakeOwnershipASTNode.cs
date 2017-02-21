@@ -73,7 +73,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             ActionCommandEnum actionAux;
             if (!System.Enum.TryParse(this.action, true, out actionAux))
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.action));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandAction((int)ResultCodes.InvalidCommandAction, this.action));
             }
             
             if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))

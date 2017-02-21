@@ -117,6 +117,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="BaseTest.cs" />
     <Compile Include="Commands\BatchTests.cs" />
     <Compile Include="Commands\CommandTests.cs" />
     <Compile Include="Constants\BooleanNodeTests.cs" />

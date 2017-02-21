@@ -65,18 +65,19 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Dictionary<SchemaOptionEnum, object> optionsAux = new Dictionary<SchemaOptionEnum, object>();
             CommandOption<SchemaOptionEnum> commandOption = null;
             SchemaOptionEnum userOptionAux;
+
+            this.BeginEvaluate(thread);
+
             if (System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null)
             {
                 commandOption = new CommandOption<SchemaOptionEnum>(userOptionAux, this.optionValue);
+                this.AddCommandOption(optionsAux, commandOption, thread);
             }
             else
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid user option {0}.", this.spaceUserOption));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)ResultCodes.InvalidCommandOption, this.spaceUserOption));
             }
             
-            this.AddCommandOption(optionsAux, commandOption);
-
-            this.BeginEvaluate(thread);
             this.EndEvaluate(thread);
 
             return new AlterSchemaNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);

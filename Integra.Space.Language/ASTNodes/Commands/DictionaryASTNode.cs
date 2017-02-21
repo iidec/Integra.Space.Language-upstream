@@ -64,7 +64,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 }
                 else
                 {
-                    throw new Exceptions.ParseException(string.Format("The column '{0}' is already defined.", t.Item1));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)ResultCodes.DuplicateColumn, t.Item1));
                 }
             }
 

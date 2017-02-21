@@ -79,7 +79,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             {
                 if (columnsWithValues.ContainsKey(column))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("The column '{0}' is defined more than once."));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)ResultCodes.DuplicateColumn, column));
                 }
 
                 columnsWithValues.Add(column, valueQueue.Dequeue());

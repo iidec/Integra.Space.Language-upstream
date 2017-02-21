@@ -64,9 +64,9 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
-            
-            this.CheckAllowedOptions(optionsAux);
-            
+
+            this.CheckAllowedOptions(optionsAux, thread);
+
             HashSet<CommandObject> usersAux = new HashSet<CommandObject>(new CommandObjectComparer());
             if (optionsAux.ContainsKey(RoleOptionEnum.Add))
             {
@@ -81,7 +81,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                     if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Control, false)))
                     {
-                        throw new Exceptions.SyntaxException(string.Format("The user '{0}' is specified more than once."));
+                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                     }
                 }
 

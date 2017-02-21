@@ -69,7 +69,7 @@ namespace Integra.Space.Compiler
         public Delegate ProcessWithCommandParser(CodeGeneratorConfiguration context, string script, IGrammarRuleValidator ruleValidator)
         {
             CommandParser parser = new CommandParser(script, ruleValidator);
-            SystemCommand command = parser.Evaluate().First().Commands.First();
+            SystemCommand command = parser.Evaluate().Batches.First().Commands.First();
             
             SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
             modBuilder.CreateModuleBuilder();
