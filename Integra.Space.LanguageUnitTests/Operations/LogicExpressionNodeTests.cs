@@ -42,7 +42,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
-            Assembly assembly = fp.Process(context, eql, dsf);
+            Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
 
             Type[] types = assembly.GetTypes();
             Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));

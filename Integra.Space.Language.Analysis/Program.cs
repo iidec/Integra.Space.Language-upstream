@@ -57,7 +57,7 @@ namespace Integra.Space.Language.Analysis
                         }
 
                         QueryParser parser = new QueryParser(eql);
-                        PlanNode plan = parser.Evaluate().Item1;
+                        PlanNode plan = parser.Evaluate().Payload.Item1;
 
                         Console.WriteLine("Plan generated.");
                         Console.WriteLine("Creating graph...");
@@ -157,7 +157,7 @@ namespace Integra.Space.Language.Analysis
                     Console.WriteLine("Metadata created.");
                     Console.WriteLine("Transforming plan...");
 
-                    PlanNode executionPlanNode = parser.Evaluate().Item1;
+                    PlanNode executionPlanNode = parser.Evaluate().Payload.Item1;
 
                     SpaceAssemblyBuilder sasmBuilder = new SpaceAssemblyBuilder("SpaceQueryAssembly_" + string.Empty);
                     AssemblyBuilder asmBuilder = sasmBuilder.CreateAssemblyBuilder();

@@ -14,7 +14,8 @@ namespace Integra.Space.Language
     /// </summary>
     /// <typeparam name="TGrammar">Grammar type.</typeparam>
     /// <typeparam name="TLanguageRuntime">Language runtime class.</typeparam>
-    internal abstract class SpaceParser<TGrammar, TLanguageRuntime>
+    /// <typeparam name="TPayload">Data type of the data returned from the parse context.</typeparam>
+    internal abstract class SpaceParser<TGrammar, TLanguageRuntime, TPayload>
         where TGrammar : InterpretedLanguageGrammar, new()
         where TLanguageRuntime : LanguageRuntime, new()
     {
@@ -31,15 +32,16 @@ namespace Integra.Space.Language
         /// <summary>
         /// Result list.
         /// </summary>
-        private ParseContext context;
+        private ParseContextBase<TPayload> context;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SpaceParser{TGrammar, TLanguageRuntime}"/> class.
+        /// Initializes a new instance of the <see cref="SpaceParser{TGrammar, TLanguageRuntime, TPayload}"/> class.
         /// </summary>
         /// <param name="commandText">Command text</param>
         public SpaceParser(string commandText)
         {
             this.commandText = commandText;
+            this.context = new ParseContextBase<TPayload>();
         }
 
         /// <summary>
@@ -56,6 +58,23 @@ namespace Integra.Space.Language
 
                 return this.parseTree;
             }
+        }
+
+        /// <summary>
+        /// Implements the logic to parse commands.
+        /// </summary>
+        /// <param name="parameters">Binding parameters.</param>
+        /// <returns>Execution plan.</returns>
+        public ParseContextBase<TPayload> Evaluate(params BindingParameter[] parameters)
+        {
+            TPayload payload = (TPayload)this.EvaluateParseTree();
+
+            if (payload != null)
+            {
+                this.context.Payload = payload;
+            }
+
+            return this.context;
         }
 
         /// <summary>

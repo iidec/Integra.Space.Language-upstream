@@ -287,6 +287,7 @@
       <DependentUpon>SR.tt</DependentUpon>
     </Compile>
     <Compile Include="ExecutionPlan\PlanNodeTypeExtensions.cs" />
+    <Compile Include="Results\ParseContextBase.cs" />
     <Compile Include="Results\ParseContext.cs" />
     <Compile Include="Results\ParseWarningResult.cs" />
     <Compile Include="Results\ParseInfoResult.cs" />

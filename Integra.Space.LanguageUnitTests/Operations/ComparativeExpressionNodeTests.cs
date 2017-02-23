@@ -48,7 +48,7 @@ namespace Integra.Space.LanguageUnitTests.Operations
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
-            Assembly assembly = fp.Process(context, eql, dsf);
+            Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
 
             Type[] types = assembly.GetTypes();
             Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
@@ -711,7 +711,13 @@ namespace Integra.Space.LanguageUnitTests.Operations
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();            
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
             QueryParser parser = new QueryParser(eql);
-            PlanNode executionPlan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+            if (parseContext.HasErrors())
+            {
+                Assert.Fail();
+            }
+
+            PlanNode executionPlan = parseContext.Payload.Item1;
             SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
             modBuilder.CreateModuleBuilder();
 

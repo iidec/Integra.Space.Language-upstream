@@ -14,7 +14,7 @@ namespace Integra.Space.Language.Analysis.Metadata.Syntax
         {
             EQLSyntaxTree syntaxTree = new EQLSyntaxTree();
             QueryParser parser = new QueryParser(text);
-            PlanNode plan = parser.Evaluate().Item1;
+            PlanNode plan = parser.Evaluate().Payload.Item1;
             SyntaxNode root = new SyntaxNode("Query");
             syntaxTree.Parse(plan, root);
             return root;

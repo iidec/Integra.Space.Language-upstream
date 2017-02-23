@@ -37,13 +37,18 @@ namespace Integra.Space.LanguageUnitTests.Constants
         [TestMethod]
         public void StringConstant()
         {
-            ExpressionParser parser = new ExpressionParser("\"hello world! :D\"");
-            PlanNode plan = parser.Evaluate();
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-            CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(dsf));
-            Func<IScheduler,string> result = (Func<IScheduler, string>)te.CompileDelegate(plan);
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            Assembly assembly = fp.ProcessWithExpressionParser(context, "\"hello world! :D\"", dsf);
+            Type[] types = assembly.GetTypes();
+            Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
+            IQueryInformation queryInfoObject = (IQueryInformation)Activator.CreateInstance(queryInfo);
+            Type queryType = queryInfoObject.GetQueryType();
+            object queryObject = Activator.CreateInstance(queryType);
+            MethodInfo result = queryObject.GetType().GetMethod("MainFunction");
 
-            Assert.AreEqual<string>("hello world! :D", result(dsf.TestScheduler), "El plan obtenido difiere del plan esperado.");
+            Assert.AreEqual<string>("hello world! :D", (string)result.Invoke(queryObject, new object[] { dsf.TestScheduler }), "El plan obtenido difiere del plan esperado.");
         }
     }
 }

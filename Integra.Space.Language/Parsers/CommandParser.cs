@@ -5,9 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using System.Collections.Generic;
     using System.Diagnostics;
-    using Common;
     using Integra.Space.Language.Grammars;
     using Irony.Interpreter;
     using Irony.Parsing;
@@ -75,7 +73,7 @@ namespace Integra.Space.Language
 
             if (batches != null)
             {
-                this.context.Batches = batches;
+                this.context.Payload = batches;
             }
 
             return this.context;

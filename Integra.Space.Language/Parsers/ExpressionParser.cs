@@ -12,7 +12,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Class that implements the logic to parse conditional expressions
     /// </summary>
-    internal sealed class ExpressionParser : SpaceParser<ExpressionGrammar, ExpressionLanguageRuntime>
+    internal sealed class ExpressionParser : SpaceParser<ExpressionGrammar, ExpressionLanguageRuntime, PlanNode>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionParser"/> class.
@@ -20,16 +20,6 @@ namespace Integra.Space.Language
         /// <param name="commandText">Command text</param>
         public ExpressionParser(string commandText) : base(commandText)
         {
-        }
-
-        /// <summary>
-        /// Implements the logic to parse commands.
-        /// </summary>
-        /// <param name="parameters">Binding parameters.</param>
-        /// <returns>Execution plan.</returns>
-        public PlanNode Evaluate(params BindingParameter[] parameters)
-        {
-            return (PlanNode)this.EvaluateParseTree(parameters);
         }
     }
 }

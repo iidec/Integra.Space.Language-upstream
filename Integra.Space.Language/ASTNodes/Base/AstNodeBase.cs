@@ -88,6 +88,33 @@ namespace Integra.Space.Language.ASTNodes.Base
         }
 
         /// <summary>
+        /// Gets the results from an internal parse, the goal of this method is to get the results of a stream query parse.
+        /// </summary>
+        /// <param name="thread">Thread of the actual grammar</param>
+        /// <param name="results">Results of the stream query parse.</param>
+        protected void GetQueryParseResults(ScriptThread thread, IEnumerable<Common.ResultBase> results)
+        {
+            foreach (var result in results)
+            {
+                if (result is ParseErrorResult)
+                {
+                    ParseErrorResult r = (ParseErrorResult)result;
+                    thread.App.LastScript.ParserMessages.Add(new Irony.LogMessage(Irony.ErrorLevel.Error, new SourceLocation(this.Position, r.Line, r.Column), r.Message, null));
+                }
+                else if (result is ParseWarningResult)
+                {
+                    ParseWarningResult r = (ParseWarningResult)result;
+                    thread.App.LastScript.ParserMessages.Add(new Irony.LogMessage(Irony.ErrorLevel.Error, new SourceLocation(this.Position, r.Line, r.Column), r.Message, null));
+                }
+                else if (result is ParseInfoResult)
+                {
+                    ParseInfoResult r = (ParseInfoResult)result;
+                    thread.App.LastScript.ParserMessages.Add(new Irony.LogMessage(Irony.ErrorLevel.Error, new SourceLocation(this.Position, r.Line, r.Column), r.Message, null));
+                }
+            }
+        }
+
+        /// <summary>
         /// Gets the test of the non terminal children.
         /// </summary>
         /// <param name="childrenNodes">Non terminal children nodes.</param>

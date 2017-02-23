@@ -43,7 +43,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
         {
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
             FakePipeline fp = new FakePipeline();
-            Assembly assembly = fp.Process(context, eql, dsf);
+            Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
 
             Type[] types = assembly.GetTypes();
             Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
@@ -2099,7 +2099,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SourceParaPruebas",
                                                                 "count()")
                                                                 );
-                PlanNode plan = parser.Evaluate().Item1;
+                ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+                if(parseContext.HasErrors())
+                {
+                    Assert.Fail();
+                }
+
+                PlanNode plan = parseContext.Payload.Item1;
 
                 CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
                 Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
@@ -2130,7 +2136,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                 "SourceParaPruebas",
                                                                 "sum((double)TransactionAmount)")
                                                                 );
-                PlanNode plan = parser.Evaluate().Item1;
+                ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+                if (parseContext.HasErrors())
+                {
+                    Assert.Fail();
+                }
+
+                PlanNode plan = parseContext.Payload.Item1;
 
                 CodeGenerator te = new CodeGenerator(this.GetCodeGeneratorConfig(new DefaultSchedulerFactory()));
                 Func<IObservable<TestObject1>, IObservable<object>> result = (Func<IObservable<TestObject1>, IObservable<object>>)te.CompileDelegate(plan);
@@ -2214,7 +2226,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((double)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+            if (parseContext.HasErrors())
+            {
+                Assert.Fail();
+            }
+
+            PlanNode plan = parseContext.Payload.Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2231,7 +2249,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "count()",
                                                                                             "sum((double)TransactionAmount)");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+            if (parseContext.HasErrors())
+            {
+                Assert.Fail();
+            }
+
+            PlanNode plan = parseContext.Payload.Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2247,7 +2271,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "TransactionAmount",
                                                                                             "TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+            if (parseContext.HasErrors())
+            {
+                Assert.Fail();
+            }
+
+            PlanNode plan = parseContext.Payload.Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
@@ -2262,7 +2292,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                                                                             "TransactionAmount",
                                                                                             "TransactionCurrencyCode");
             QueryParser parser = new QueryParser(command);
-            PlanNode plan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, Common.CommandObject>> parseContext = parser.Evaluate();
+            if (parseContext.HasErrors())
+            {
+                Assert.Fail();
+            }
+
+            PlanNode plan = parseContext.Payload.Item1;
 
             Assert.AreEqual<string>(command, plan.NodeText);
         }
