@@ -56,7 +56,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)ResultCodes.InvalidSystemObjectType, this.spaceObject));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)LanguageResultCodes.InvalidSystemObjectType, this.spaceObject));
                 return @object;
             }
         }

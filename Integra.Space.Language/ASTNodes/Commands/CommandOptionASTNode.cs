@@ -73,7 +73,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             TOptionEnum userOptionAux;
             if (!(System.Enum.TryParse(this.spaceUserOption, true, out userOptionAux) && this.optionValue != null))
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)ResultCodes.InvalidCommandOption, this.spaceUserOption));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)LanguageResultCodes.InvalidCommandOption, this.spaceUserOption));
             }
 
             return new CommandOption<TOptionEnum>(userOptionAux, this.optionValue);

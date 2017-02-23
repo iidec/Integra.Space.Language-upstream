@@ -64,7 +64,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 }
                 else
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)ResultCodes.DuplicateColumn, t.Item1));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)LanguageResultCodes.DuplicateColumn, t.Item1));
                 }
             }
 

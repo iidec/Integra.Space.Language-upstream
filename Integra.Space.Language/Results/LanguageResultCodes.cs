@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="ResultCodes.cs" company="Integra.Space.Language">
+// <copyright file="LanguageResultCodes.cs" company="Integra.Space.Language">
 //     Copyright (c) Integra.Space.Language. All rights reserved.
 // </copyright>
 //-----------------------------------------------------------------------
@@ -8,7 +8,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Result codes class.
     /// </summary>
-    internal enum ResultCodes
+    internal enum LanguageResultCodes
     {
         /// <summary>
         /// Success parse code.

@@ -56,7 +56,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 CommandOption<TOptionEnum> option = (CommandOption<TOptionEnum>)child.Evaluate(thread);
                 if (resultDictionary.ContainsKey(option.Option))
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)ResultCodes.DuplicateCommandOption, option));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)LanguageResultCodes.DuplicateCommandOption, option));
                 }
                 else
                 {

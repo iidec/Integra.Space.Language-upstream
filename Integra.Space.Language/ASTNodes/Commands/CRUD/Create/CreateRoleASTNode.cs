@@ -81,7 +81,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                     if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Control, false)))
                     {
-                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
+                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)LanguageResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                     }
                 }
 

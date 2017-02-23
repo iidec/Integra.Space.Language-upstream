@@ -105,7 +105,7 @@ namespace Integra.Space.Language
                 // Get the top stack frame
                 StackFrame frame = st.GetFrame(0);
 
-                this.context.Results.Add(new ParseErrorResult((int)ResultCodes.ParseError, string.Format("File name: {0}. Message: {1}", frame.GetFileName(), e.Message), frame.GetFileLineNumber(), frame.GetFileColumnNumber()));
+                this.context.Results.Add(new ParseErrorResult((int)LanguageResultCodes.ParseError, string.Format("File name: {0}. Message: {1}", frame.GetFileName(), e.Message), frame.GetFileLineNumber(), frame.GetFileColumnNumber()));
                 return null;
             }
         }
@@ -127,14 +127,14 @@ namespace Integra.Space.Language
                 {
                     foreach (var parserMessage in parseTreeAux.ParserMessages)
                     {
-                        this.context.Results.Add(new ParseErrorResult((int)ResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                        this.context.Results.Add(new ParseErrorResult((int)LanguageResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                     }
                 }
             }
             else
             {
                 string errorString = string.Join(",", language.Errors);
-                this.context.Results.Add(new Common.ErrorResult((int)ResultCodes.GrammarError, string.Format("The language data has the following grammar error level: {0}. {1}", language.ErrorLevel, errorString)));
+                this.context.Results.Add(new Common.ErrorResult((int)LanguageResultCodes.GrammarError, string.Format("The language data has the following grammar error level: {0}. {1}", language.ErrorLevel, errorString)));
             }
 
             return parseTreeAux;

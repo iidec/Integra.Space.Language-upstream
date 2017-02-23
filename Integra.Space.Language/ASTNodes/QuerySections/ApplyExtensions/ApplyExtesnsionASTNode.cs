@@ -75,7 +75,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             PlanNodeTypeEnum nodeType;
             if (!System.Enum.TryParse<PlanNodeTypeEnum>(this.applyWord + this.extensionReservedWord, true, out nodeType))
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidApplyExtension((int)ResultCodes.InvalidApplyExtension, this.extensionReservedWord));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidApplyExtension((int)LanguageResultCodes.InvalidApplyExtension, this.extensionReservedWord));
             }
 
             this.result = new PlanNode(this.Location.Line, this.Location.Column, nodeType);

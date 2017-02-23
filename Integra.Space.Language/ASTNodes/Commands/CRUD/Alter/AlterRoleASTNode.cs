@@ -83,7 +83,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                     if (!usersToAdd.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
                     {
-                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, databaseName + "." + identifierWithPath.Item2 + "." + identifierWithPath.Item3));
+                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)LanguageResultCodes.RepeatedSystemObject, databaseName + "." + identifierWithPath.Item2 + "." + identifierWithPath.Item3));
                     }
                 }
 
@@ -104,7 +104,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                     if (!usersToRemove.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
                     {
-                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, databaseName + "." + identifierWithPath.Item2 + "." + identifierWithPath.Item3));
+                        thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)LanguageResultCodes.RepeatedSystemObject, databaseName + "." + identifierWithPath.Item2 + "." + identifierWithPath.Item3));
                     }
                 }
 

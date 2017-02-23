@@ -76,7 +76,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (!usersAux.Add(new CommandObject(SystemObjectEnum.DatabaseUser, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.None, false)))
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedUser((int)LanguageResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                 }
             }
 
@@ -91,7 +91,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (!rolesAux.Add(new CommandObject(SystemObjectEnum.DatabaseRole, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Alter, false)))
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedDatabaseRole((int)ResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedDatabaseRole((int)LanguageResultCodes.RepeatedSystemObject, identifierWithPath.Item3));
                 }
             }
             

@@ -293,7 +293,7 @@
     <Compile Include="Results\ParseInfoResult.cs" />
     <Compile Include="Results\ParseSuccessResult.cs" />
     <Compile Include="Results\ParseErrorResult.cs" />
-    <Compile Include="Results\ResultCodes.cs" />
+    <Compile Include="Results\LanguageResultCodes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

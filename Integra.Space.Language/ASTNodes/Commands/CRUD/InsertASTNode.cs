@@ -79,7 +79,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             {
                 if (columnsWithValues.ContainsKey(column))
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)ResultCodes.DuplicateColumn, column));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateColumn((int)LanguageResultCodes.DuplicateColumn, column));
                 }
 
                 columnsWithValues.Add(column, valueQueue.Dequeue());

@@ -116,14 +116,14 @@ namespace Integra.Space.Language.General.Validations
                         }
                         else
                         {
-                            this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(ResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
+                            this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(LanguageResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(ResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
+                this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(LanguageResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
             }
 
             return selectedType;

@@ -84,7 +84,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
             if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
             {
-                context.AddMessage(Irony.ErrorLevel.Error, this.Location, Resources.ParseResults.InvalidCommandAction((int)ResultCodes.InvalidCommandAction, this.spaceAction));
+                context.AddMessage(Irony.ErrorLevel.Error, this.Location, Resources.ParseResults.InvalidCommandAction((int)LanguageResultCodes.InvalidCommandAction, this.spaceAction));
             }
 
             this.systemObjectTypeName = (string)ChildrenNodes[1].Token.Value;
@@ -117,7 +117,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             SystemObjectEnum systemObjectType;
             if (!System.Enum.TryParse(this.systemObjectTypeName, true, out systemObjectType))
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)ResultCodes.InvalidSystemObjectType, this.systemObjectTypeName));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)LanguageResultCodes.InvalidSystemObjectType, this.systemObjectTypeName));
             }
 
             if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
@@ -138,7 +138,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             if (actualOptions.ContainsKey(optionToAdd.Option))
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)ResultCodes.DuplicateCommandOption, optionToAdd.Option.ToString()));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)LanguageResultCodes.DuplicateCommandOption, optionToAdd.Option.ToString()));
             }
             else
             {

@@ -105,21 +105,21 @@ namespace Integra.Space.Language.ASTNodes.Commands
             {
                 if (parserMessage.Level == Irony.ErrorLevel.Error)
                 {
-                    batch.Results.Add(new ParseErrorResult((int)ResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                    batch.Results.Add(new ParseErrorResult((int)LanguageResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                 }
                 else if (parserMessage.Level == Irony.ErrorLevel.Info)
                 {
-                    batch.Results.Add(new ParseSuccessResult((int)ResultCodes.InfoParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                    batch.Results.Add(new ParseSuccessResult((int)LanguageResultCodes.InfoParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                 }
                 else if (parserMessage.Level == Irony.ErrorLevel.Warning)
                 {
-                    batch.Results.Add(new ParseSuccessResult((int)ResultCodes.WarningParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                    batch.Results.Add(new ParseSuccessResult((int)LanguageResultCodes.WarningParseResultCode, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                 }
             }
 
             if (!batch.HasErrors())
             {
-                batch.Results.Add(new ParseSuccessResult((int)ResultCodes.SuccessParseResultCode, Resources.ParseResults.SuccessBatchParse, this.Location.Line, this.Location.Column));
+                batch.Results.Add(new ParseSuccessResult((int)LanguageResultCodes.SuccessParseResultCode, Resources.ParseResults.SuccessBatchParse, this.Location.Line, this.Location.Column));
             }
         }
     }

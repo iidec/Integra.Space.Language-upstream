@@ -79,7 +79,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.CommandError((int)ResultCodes.CommandError));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.CommandError((int)LanguageResultCodes.CommandError));
                 return Tuple.Create(string.Empty, new List<SourceColumnNode>());
             }
         }

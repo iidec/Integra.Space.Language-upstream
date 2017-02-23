@@ -58,7 +58,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
 
                 if (resultList.Any(x => x.NodeType == extension.NodeType))
                 {
-                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateApplyExtension((int)ResultCodes.DuplicateApplyExtension, extension.NodeText));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateApplyExtension((int)LanguageResultCodes.DuplicateApplyExtension, extension.NodeText));
                 }
 
                 resultList.Add(extension);

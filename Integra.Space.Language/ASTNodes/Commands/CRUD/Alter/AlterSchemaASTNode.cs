@@ -75,7 +75,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)ResultCodes.InvalidCommandOption, this.spaceUserOption));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)LanguageResultCodes.InvalidCommandOption, this.spaceUserOption));
             }
             
             this.EndEvaluate(thread);
