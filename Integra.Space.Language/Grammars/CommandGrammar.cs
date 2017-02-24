@@ -842,6 +842,8 @@ namespace Integra.Space.Language.Grammars
                                         .AddOr(nt_GO, EQLFunctionalityEnum.Go, validator)
                                         .AddDefault();
 
+            nt_COMMAND_NODE.ErrorRule = this.SyntaxError + nt_GO;
+
             nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
 
             this.Root = nt_COMMAND_NODE_LIST;

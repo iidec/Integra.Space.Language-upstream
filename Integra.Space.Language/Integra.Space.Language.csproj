@@ -213,6 +213,8 @@
     <Compile Include="ExecutionPlan\Commands\TemporalStream\TemporalStreamNode.cs" />
     <Compile Include="ExecutionPlan\Commands\Use\UseCommandNode.cs" />
     <Compile Include="ExecutionPlan\ISpaceASTNode.cs" />
+    <Compile Include="Grammars\BatchGrammar.cs" />
+    <Compile Include="Grammars\BatchGrammarRuntime.cs" />
     <Compile Include="Grammars\TemporalStreamGrammar.cs" />
     <Compile Include="Grammars\TemporalStreamLanguageRuntime.cs" />
     <Compile Include="Helpers\BnfTermExtensions.cs" />
