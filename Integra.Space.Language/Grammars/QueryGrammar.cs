@@ -187,6 +187,14 @@ namespace Integra.Space.Language.Grammars
             /* USER QUERY */
             nt_USER_QUERY.Rule = nt_SOURCE_DEFINITION + nt_WHERE + nt_SELECT + nt_INTO
                                     | nt_SOURCE_DEFINITION + nt_WHERE + nt_APPLY_WINDOW + nt_GROUP_BY_OP + nt_SELECT + nt_ORDER_BY + nt_INTO;
+
+            nt_USER_QUERY.ErrorRule = this.SyntaxError + terminalFrom
+                                            | this.SyntaxError + terminalWhere
+                                            | this.SyntaxError + terminalSelect
+                                            | this.SyntaxError + terminalApply
+                                            | this.SyntaxError + terminalInto
+                                            | this.SyntaxError + terminalgroup
+                                            | this.SyntaxError + terminalOrder;
             /* **************************** */
             /* APPLY WINDOW */
             nt_APPLY_WINDOW.Rule = terminalApply + terminalWindow + terminalOf + terminalDateTimeValue;
@@ -264,6 +272,7 @@ namespace Integra.Space.Language.Grammars
             /* **************************** */
             /* VALORES CON ALIAS */
             nt_VALUES_WITH_ALIAS_FOR_PROJECTION.Rule = this.expressionGrammar.ProjectionValue + terminalAs + terminalId;
+            nt_VALUES_WITH_ALIAS_FOR_PROJECTION.ErrorRule = this.SyntaxError + terminalComa;
 
             /* SYSTEM OBJECT IDENTIFIER */
             nt_FOURTH_LEVEL_OBJECT_IDENTIFIER.Rule = terminalId + terminalPunto + terminalId + terminalPunto + terminalId

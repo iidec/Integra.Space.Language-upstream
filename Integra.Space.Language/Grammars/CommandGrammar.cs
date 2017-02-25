@@ -541,6 +541,10 @@ namespace Integra.Space.Language.Grammars
             nt_GO.AstConfig.DefaultNodeCreator = () => new GoASTNode();
             /************************************************/
 
+            NonTerminal nt_OPTIONAL_SEMI = new NonTerminal("OPTIONA_SEMI", typeof(ASTNodes.Base.AstNodeBase));
+            nt_OPTIONAL_SEMI.AstConfig.NodeType = null;
+            nt_OPTIONAL_SEMI.AstConfig.DefaultNodeCreator = () => new ASTNodes.Base.AstNodeBase();
+
             /* RULES */
 
             nt_SECOND_LEVEL_ID_LIST.Rule = this.MakePlusRule(nt_SECOND_LEVEL_ID_LIST, terminalComa, nt_SECOND_LEVEL_OBJECT_IDENTIFIER);
@@ -842,9 +846,22 @@ namespace Integra.Space.Language.Grammars
                                         .AddOr(nt_GO, EQLFunctionalityEnum.Go, validator)
                                         .AddDefault();
 
-            nt_COMMAND_NODE.ErrorRule = this.SyntaxError + nt_GO;
+            nt_COMMAND_NODE.ErrorRule = this.SyntaxError + terminalGo
+                                        | this.SyntaxError + terminalCreate
+                                        | this.SyntaxError + terminalAlter
+                                        | this.SyntaxError + terminalDrop
+                                        | this.SyntaxError + terminalGrant
+                                        | this.SyntaxError + terminalDeny
+                                        | this.SyntaxError + terminalRevoke
+                                        | this.SyntaxError + terminalTake
+                                        | this.SyntaxError + terminalInsert
+                                        | this.SyntaxError + terminalTruncate
+                                        | this.SyntaxError + terminalPuntoYComa;
 
-            nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, terminalPuntoYComa, nt_COMMAND_NODE);
+            nt_OPTIONAL_SEMI.Rule = terminalPuntoYComa
+                                    | this.Empty;
+
+            nt_COMMAND_NODE_LIST.Rule = this.MakePlusRule(nt_COMMAND_NODE_LIST, nt_OPTIONAL_SEMI, nt_COMMAND_NODE);
 
             this.Root = nt_COMMAND_NODE_LIST;
 
