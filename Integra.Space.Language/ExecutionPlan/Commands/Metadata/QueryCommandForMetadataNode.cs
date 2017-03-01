@@ -31,8 +31,7 @@ namespace Integra.Space.Language
         public QueryCommandForMetadataNode(Common.ActionCommandEnum action, PlanNode executionPlan, Common.CommandObject outputSource, int line, int column, string nodeText, string databaseName) : base(action, line, column, nodeText, databaseName)
         {
             Contract.Assert(executionPlan != null);
-            this.ExecutionPlan = executionPlan;            
-            this.OutputSource = outputSource;
+            this.ExecutionPlan = executionPlan;
 
             this.inputSources = new List<ReferencedSource>();
             List<PlanNode> fromNodes = NodesFinder.FindNode(executionPlan, new PlanNodeTypeEnum[] { PlanNodeTypeEnum.ObservableFrom });
@@ -47,6 +46,13 @@ namespace Integra.Space.Language
                 }
 
                 this.inputSources.Add(new ReferencedSource(inputSource.DatabaseName, inputSource.SchemaName, inputSource.Name, sourceAlias));
+            }
+
+            // agrego la fuente si fue especificada.
+            if (outputSource != null)
+            {
+                this.CommandObjects.Add(outputSource);
+                this.OutputSource = outputSource;
             }
         }
 
