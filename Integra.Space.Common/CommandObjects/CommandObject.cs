@@ -10,7 +10,7 @@ namespace Integra.Space.Common
     /// <summary>
     /// Command object class.
     /// </summary>
-    internal sealed class CommandObject
+    internal class CommandObject
     {
         /// <summary>
         /// Value indicating whether the object is a new one or not.

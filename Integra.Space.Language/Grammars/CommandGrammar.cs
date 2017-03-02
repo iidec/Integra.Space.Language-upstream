@@ -6,8 +6,6 @@
 namespace Integra.Space.Language.Grammars
 {
     using System;
-    using System.Collections.Generic;
-    using ASTNodes;
     using ASTNodes.Commands;
     using ASTNodes.Identifier;
     using ASTNodes.MetadataQuery;
@@ -134,7 +132,7 @@ namespace Integra.Space.Language.Grammars
             NumberLiteral terminalUnsignedIntValue = new NumberLiteral("unsigned_int_value", NumberOptions.IntOnly);
 
             /* SIMBOLOS */
-            KeyTerm terminalComa = ToTerm(",", "coma");
+            KeyTerm terminalComa = ToTerm(",", "coma");            
             KeyTerm terminalPuntoYComa = ToTerm(";", "puntoYComa");
             KeyTerm terminalPunto = ToTerm(".", "punto");
             KeyTerm terminalParentesisIz = ToTerm("(", "parentesisIzquierdo");

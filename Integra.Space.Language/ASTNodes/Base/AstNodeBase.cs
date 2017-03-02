@@ -61,7 +61,7 @@ namespace Integra.Space.Language.ASTNodes.Base
         /// </summary>
         /// <param name="context">Contains the actual context</param>
         /// <param name="treeNode">Contains the tree of the context</param>
-        public override void Init(Irony.Ast.AstContext context, ParseTreeNode treeNode)
+        public override void Init(AstContext context, ParseTreeNode treeNode)
         {
             base.Init(context, treeNode);            
             this.childrenNodes = treeNode.GetMappedChildNodes();
