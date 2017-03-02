@@ -11,7 +11,7 @@ namespace Integra.Space.Language
     /// <summary>
     /// Command action node class.
     /// </summary>
-    internal abstract class CompiledCommand : SystemCommand
+    internal class CompiledCommand : SystemCommand
     {
         /// <summary>
         /// Line of the evaluated sentence.
