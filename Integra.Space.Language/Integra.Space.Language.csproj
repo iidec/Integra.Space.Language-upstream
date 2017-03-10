@@ -246,6 +246,7 @@
     <Compile Include="ParseTree\SpaceParseTreeNodeTypeEnum.cs" />
     <Compile Include="ParseTree\SpaceParseTreeNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Public\ProcessorBase.cs" />
     <Compile Include="Resources\ParseResults.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

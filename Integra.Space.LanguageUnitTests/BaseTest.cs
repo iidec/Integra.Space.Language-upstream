@@ -1,7 +1,7 @@
 ﻿namespace Integra.Space.LanguageUnitTests
 {
     using Compiler;
-    using Integra.Space.Language;
+    using Language;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using Ninject;
     using System;

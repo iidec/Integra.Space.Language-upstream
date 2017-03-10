@@ -29,7 +29,7 @@ namespace Integra.Space.Language
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
         /// <param name="databaseName">Database name for the command execution.</param>
-        public TemporalStreamNode(Common.ActionCommandEnum action, PlanNode executionPlan, CommandObject outputSource, int line, int column, string nodeText, string databaseName) : base(action, line, column, nodeText, databaseName)
+        public TemporalStreamNode(ActionCommandEnum action, PlanNode executionPlan, CommandObject outputSource, int line, int column, string nodeText, string databaseName) : base(action, line, column, nodeText, databaseName)
         {
             Contract.Assert(executionPlan != null);
             this.ExecutionPlan = executionPlan;

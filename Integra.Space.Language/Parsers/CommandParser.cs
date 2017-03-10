@@ -6,7 +6,7 @@
 namespace Integra.Space.Language
 {
     using System.Diagnostics;
-    using Integra.Space.Language.Grammars;
+    using Grammars;
     using Irony.Interpreter;
     using Irony.Parsing;
 
