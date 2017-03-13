@@ -5,9 +5,17 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Common
 {
+    /// <summary>
+    /// Error result class.
+    /// </summary>
     public class ErrorResult : ResultBase
     {
-        public ErrorResult(int code, string message) : base(code, message, ResultType.Warning)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ErrorResult"/> class.
+        /// </summary>
+        /// <param name="code">Result code.</param>
+        /// <param name="message">Result message.</param>
+        public ErrorResult(int code, string message) : base(code, message, ResultType.Error)
         {
         }
     }

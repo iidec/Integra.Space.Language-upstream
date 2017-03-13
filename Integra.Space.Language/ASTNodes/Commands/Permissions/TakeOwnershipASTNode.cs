@@ -69,19 +69,13 @@ namespace Integra.Space.Language.ASTNodes.Commands
             Binding databaseBinding = thread.Bind("Database", BindingRequestFlags.Read);
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
-
-            ActionCommandEnum actionAux;
-            if (!System.Enum.TryParse(this.action, true, out actionAux))
-            {
-                throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.action));
-            }
-            
+                        
             if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
             {
                 databaseName = identifierWithPath.Item1;
             }
 
-            return new TakeOwnershipCommandNode(actionAux, new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.NodeText);
+            return new TakeOwnershipCommandNode(new CommandObject(objectTypeAux, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.TakeOwnership, false), this.Location.Line, this.Location.Column, this.NodeText);
         }
     }
 }

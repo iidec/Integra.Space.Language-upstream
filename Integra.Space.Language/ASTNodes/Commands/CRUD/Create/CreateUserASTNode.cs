@@ -62,7 +62,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 optionsAux = (Dictionary<UserOptionEnum, object>)this.options.Evaluate(thread);
             }
 
-            this.CheckAllowedOptions(optionsAux);
+            this.CheckAllowedOptions(optionsAux, thread);
 
             this.EndEvaluate(thread);
             return new CreateUserNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);

@@ -75,7 +75,7 @@ namespace Integra.Space.Language.ASTNodes.QuerySections
             PlanNodeTypeEnum nodeType;
             if (!System.Enum.TryParse<PlanNodeTypeEnum>(this.applyWord + this.extensionReservedWord, true, out nodeType))
             {
-                throw new Exceptions.ParseException(string.Format("Invalid apply extension '{0}'", this.extensionReservedWord));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidApplyExtension((int)LanguageResultCodes.InvalidApplyExtension, this.extensionReservedWord));
             }
 
             this.result = new PlanNode(this.Location.Line, this.Location.Column, nodeType);

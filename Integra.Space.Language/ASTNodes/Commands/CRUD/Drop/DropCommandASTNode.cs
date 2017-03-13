@@ -58,7 +58,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 {
                     if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
                     {
-                        throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.spaceAction));
+                        return ActionCommandEnum.Unspecified;
                     }
                 }
 
@@ -76,6 +76,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
+            if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
+            {
+                context.AddMessage(Irony.ErrorLevel.Error, this.Location, Resources.ParseResults.InvalidCommandAction((int)LanguageResultCodes.InvalidCommandAction, this.spaceAction));
+            }
+
             this.systemObjectTypeName = AddChild(NodeUseType.ValueRead, "SpaceObject", ChildrenNodes[1]) as AstNodeBase;
             this.identifiers = AddChild(NodeUseType.ValueRead, "SpaceObjectS", ChildrenNodes[2]) as StatementListNode;
         }
@@ -104,7 +109,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 
                 if (!commandObjects.Add(new CommandObject(objectType, databaseName, identifierWithPath.Item2, identifierWithPath.Item3, PermissionsEnum.Alter, false)))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("The identifier '{0}' is specified more than once."));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.RepeatedSystemObject((int)LanguageResultCodes.RepeatedSystemObjectType, identifierWithPath.Item3));
                 }
             }
 

@@ -11,6 +11,7 @@ namespace Integra.Space.Compiler
     using Scheduler;
     using Language;
     using Ninject;
+    using Common;
 
     /// <summary>
     /// Fake pipeline class.
@@ -20,61 +21,102 @@ namespace Integra.Space.Compiler
         /// <summary>
         /// Doc goes here.
         /// </summary>
-        /// <param name="context">Compilation context.</param>
+        /// <param name="config">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly Process(CodeGeneratorConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly ProcessWithQueryParser(CodeGeneratorConfiguration config, string script, IQuerySchedulerFactory schedulerFactory)
         {
             QueryParser parser = new QueryParser(script);
-            PlanNode executionPlan = parser.Evaluate().Item1;
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = parser.Evaluate();
+            PlanNode executionPlan = parseContext.Payload.Item1;
 
-            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
+            if (parseContext.HasErrors())
+            {
+                throw new Exception();
+            }
+
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(config.AsmBuilder);
             modBuilder.CreateModuleBuilder();
 
-            TreeTransformations tt = new TreeTransformations(context.AsmBuilder, executionPlan, context.Kernel.Get<ISourceTypeFactory>());
+            TreeTransformations tt = new TreeTransformations(config.AsmBuilder, executionPlan, config.Kernel.Get<ISourceTypeFactory>());
             tt.Transform();
                         
-            CodeGenerator te = new CodeGenerator(context);
+            CodeGenerator te = new CodeGenerator(config);
 
             return te.Compile(executionPlan);
+        }
+        /// <summary>
+        /// Doc goes here.
+        /// </summary>
+        /// <param name="config">Compilation context.</param>
+        /// <param name="script">EQL query.</param>
+        /// <param name="schedulerFactory">Scheduler factory.</param>
+        /// <returns>The assembly created.</returns>
+        public ParseContextBase<Tuple<PlanNode, CommandObject>> ProcessWithQueryParser2(CodeGeneratorConfiguration config, string script, IQuerySchedulerFactory schedulerFactory)
+        {
+            QueryParser parser = new QueryParser(script);
+            return parser.Evaluate();
         }
 
         /// <summary>
         /// Doc goes here.
         /// </summary>
-        /// <param name="context">Compilation context.</param>
+        /// <param name="config">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <param name="schedulerFactory">Scheduler factory.</param>
         /// <returns>The assembly created.</returns>
-        public Assembly ProcessWithExpressionParser(CodeGeneratorConfiguration context, string script, IQuerySchedulerFactory schedulerFactory)
+        public Assembly ProcessWithExpressionParser(CodeGeneratorConfiguration config, string script, IQuerySchedulerFactory schedulerFactory)
         {
             ExpressionParser parser = new ExpressionParser(script);
-            PlanNode executionPlan = parser.Evaluate();
-            
-            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
+            ParseContextBase<PlanNode> parseContext = parser.Evaluate();
+
+            if (parseContext.HasErrors())
+            {
+                throw new Exception();
+            }
+
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(config.AsmBuilder);
             modBuilder.CreateModuleBuilder();
             
-            CodeGenerator te = new CodeGenerator(context);
+            CodeGenerator te = new CodeGenerator(config);
 
-            return te.Compile(executionPlan);
+            return te.Compile(parseContext.Payload);
         }
 
         /// <summary>
         /// Proccess only one command.
         /// </summary>
-        /// <param name="context">Compilation context.</param>
+        /// <param name="config">Compilation context.</param>
         /// <param name="script">EQL query.</param>
         /// <returns>The assembly created.</returns>
-        public Delegate ProcessWithCommandParser(CodeGeneratorConfiguration context, string script, IGrammarRuleValidator ruleValidator)
+        public Delegate ProcessWithCommandParser(CodeGeneratorConfiguration config, string script, IGrammarRuleValidator ruleValidator)
         {
-            CommandParser parser = new CommandParser(script, ruleValidator);
-            SystemCommand command = parser.Evaluate().First().Commands.First();
-            
-            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(context.AsmBuilder);
+            SpaceModuleBuilder modBuilder = new SpaceModuleBuilder(config.AsmBuilder);
             modBuilder.CreateModuleBuilder();
-                        
-            CodeGenerator te = new CodeGenerator(context);
+            CodeGenerator te = new CodeGenerator(config);
+
+            CommandParser parser = new CommandParser(script, ruleValidator);
+            ParseContext parseContext = parser.Evaluate();
+            SystemCommand command = null;
+            if (parseContext.HasErrors())
+            {
+                throw new Exception();
+            }
+            else
+            {
+                foreach (var batch in parseContext.Payload)
+                {
+                    if (batch.HasErrors())
+                    {
+                        throw new Exception();
+                    }
+                    else
+                    {
+                        command = batch.Commands.First();
+                    }
+                }
+            }
 
             PlanNode executionPlan = null;
             if(command is TemporalStreamNode)

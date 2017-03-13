@@ -51,7 +51,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.spaceAction));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandAction((int)LanguageResultCodes.InvalidCommandAction, this.spaceAction));
+                return ActionCommandEnum.Unspecified;
             }
         }
     }

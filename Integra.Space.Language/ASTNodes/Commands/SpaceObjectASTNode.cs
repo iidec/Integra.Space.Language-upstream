@@ -56,7 +56,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             }
             else
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid object {0}.", this.spaceObject));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)LanguageResultCodes.InvalidSystemObjectType, this.spaceObject));
+                return @object;
             }
         }
     }

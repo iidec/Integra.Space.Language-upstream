@@ -10,12 +10,17 @@ namespace Integra.Space.Common
     /// <summary>
     /// Command object class.
     /// </summary>
-    internal sealed class CommandObject
+    internal class CommandObject
     {
         /// <summary>
         /// Value indicating whether the object is a new one or not.
         /// </summary>
         private bool? isNew;
+
+        /// <summary>
+        /// Database where the command object belogs.
+        /// </summary>
+        private string databaseName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CommandObject"/> class.
@@ -100,9 +105,23 @@ namespace Integra.Space.Common
         public string SchemaName { get; private set; }
 
         /// <summary>
-        /// Gets the database name of the object.
+        /// Gets or sets the database name of the object.
         /// </summary>
-        public string DatabaseName { get; private set; }
+        public string DatabaseName
+        {
+            get
+            {
+                return this.databaseName;
+            }
+
+            set
+            {
+                if (string.IsNullOrWhiteSpace(this.databaseName))
+                {
+                    this.databaseName = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the required granular permission to execute the command that contains this object.

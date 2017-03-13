@@ -82,7 +82,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 {
                     if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
                     {
-                        throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.spaceAction));
+                        return ActionCommandEnum.Unspecified;
                     }
                 }
 
@@ -100,6 +100,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
             base.Init(context, treeNode);
 
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
+            if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
+            {
+                context.AddMessage(Irony.ErrorLevel.Error, this.Location, Resources.ParseResults.InvalidCommandAction((int)LanguageResultCodes.InvalidCommandAction, this.spaceAction));
+            }
+
             this.systemObjectTypeName = (string)ChildrenNodes[1].Token.Value;
             this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[2]) as AstNodeBase; // (string)ChildrenNodes[2].Token.Value;
         }
@@ -128,7 +133,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             SystemObjectEnum systemObjectType;
             if (!System.Enum.TryParse(this.systemObjectTypeName, true, out systemObjectType))
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid object {0}.", this.systemObjectTypeName));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)LanguageResultCodes.InvalidSystemObjectType, this.systemObjectTypeName));
             }
 
             if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
@@ -143,13 +148,14 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// Checks whether the command contains options that are not allowed in the actual command.
         /// </summary>
         /// <param name="actualOptions">Specified options at the command.</param>
-        protected void CheckAllowedOptions(Dictionary<TOption, object> actualOptions)
+        /// <param name="thread">Thread of the evaluated grammar</param>
+        protected void CheckAllowedOptions(Dictionary<TOption, object> actualOptions, ScriptThread thread)
         {
             foreach (TOption option in actualOptions.Keys)
             {
                 if (this.notAllowedOptions.Contains(option))
                 {
-                    throw new Exceptions.SyntaxException(string.Format("'{0}' option is not allowed.", option.ToString()));
+                    thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidCommandOption((int)LanguageResultCodes.InvalidCommandOption, option.ToString()));
                 }
             }
         }
@@ -159,11 +165,12 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// </summary>
         /// <param name="actualOptions">Actual dictionary of options.</param>
         /// <param name="optionToAdd">Command option that will be added to the dictionary of options.</param>
-        protected void AddCommandOption(Dictionary<TOption, object> actualOptions, CommandOption<TOption> optionToAdd)
+        /// <param name="thread">Thread of the evaluated grammar</param>
+        protected void AddCommandOption(Dictionary<TOption, object> actualOptions, CommandOption<TOption> optionToAdd, ScriptThread thread)
         {
             if (actualOptions.ContainsKey(optionToAdd.Option))
             {
-                throw new Exceptions.SyntaxException(string.Format("{0} option is defined more than once.", optionToAdd.Option.ToString()));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.DuplicateCommandOption((int)LanguageResultCodes.DuplicateCommandOption, optionToAdd.Option.ToString()));
             }
             else
             {

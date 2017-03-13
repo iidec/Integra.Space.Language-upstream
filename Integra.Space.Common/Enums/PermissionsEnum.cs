@@ -58,7 +58,7 @@ namespace Integra.Space.Common
         /// <summary>
         /// Permission authenticate server.
         /// </summary>
-        AutheticateServer = 9,
+        AuthenticateServer = 9,
 
         /// <summary>
         /// Permission authenticate.

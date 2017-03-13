@@ -358,9 +358,15 @@ namespace Integra.Space.Language.Grammars
                                     | terminalNot + terminalParentesisIz + this.logicExpression + terminalParentesisDer
                                     | nt_COMPARATIVE_EXPRESSION;
 
+            this.logicExpression.ErrorRule = this.SyntaxError + terminalAnd
+                                                | this.SyntaxError + terminalOr
+                                                | this.SyntaxError + terminalNot;
+
             this.logicExpressionForOnCondition.Rule = this.logicExpressionForOnCondition + terminalAnd + this.logicExpressionForOnCondition
                                                     | terminalParentesisIz + this.logicExpressionForOnCondition + terminalParentesisDer
                                                     | nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION;
+
+            this.logicExpressionForOnCondition.ErrorRule = this.SyntaxError + terminalAnd;
 
             /* **************************** */
             /* EXPRESIONES COMPARATIVAS */
@@ -376,16 +382,42 @@ namespace Integra.Space.Language.Grammars
                                             | terminalNot + terminalParentesisIz + nt_COMPARATIVE_EXPRESSION + terminalParentesisDer
                                             | nt_ARITHMETIC_EXPRESSION;
 
+            nt_COMPARATIVE_EXPRESSION.ErrorRule = this.SyntaxError + terminalIgualIgual
+                                                    | this.SyntaxError + terminalNoIgual
+                                                    | this.SyntaxError + terminalMayorIgual
+                                                    | this.SyntaxError + terminalMayorQue
+                                                    | this.SyntaxError + terminalMenorIgual
+                                                    | this.SyntaxError + terminalMenorQue
+                                                    | this.SyntaxError + terminalLike
+                                                    | this.SyntaxError + terminalBetween;
+
             nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION.Rule = this.nonConstantValues + terminalIgualIgual + this.nonConstantValues
                                                                 | nt_EXPLICIT_CAST_FOR_ON_CONDITION + terminalIgualIgual + nt_EXPLICIT_CAST_FOR_ON_CONDITION
                                                                 | terminalParentesisIz + nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION + terminalParentesisDer
                                                                 | this.nonConstantValues
                                                                 | nt_EXPLICIT_CAST_FOR_ON_CONDITION;
+
+            nt_COMPARATIVE_EXPRESSION_FOR_ON_CONDITION.ErrorRule = this.SyntaxError + terminalIgualIgual;
             /* **************************** */
             /* EXPRESIONES ARITMETICAS */
             nt_ARITHMETIC_EXPRESSION.Rule = nt_ARITHMETIC_EXPRESSION + terminalMenos + nt_ARITHMETIC_EXPRESSION
                                             | nt_UNARY_ARITHMETIC_EXPRESSION
                                             | terminalParentesisIz + nt_ARITHMETIC_EXPRESSION + terminalParentesisDer;
+
+            nt_ARITHMETIC_EXPRESSION.ErrorRule = this.SyntaxError + terminalMenos
+                                                | this.SyntaxError + terminalYear
+                                                | this.SyntaxError + terminalMonth
+                                                | this.SyntaxError + terminalDay
+                                                | this.SyntaxError + terminalHour
+                                                | this.SyntaxError + terminalMinute
+                                                | this.SyntaxError + terminalSecond
+                                                | this.SyntaxError + terminalMillisecond
+                                                | this.SyntaxError + terminalAbs
+                                                | this.SyntaxError + terminalLeft
+                                                | this.SyntaxError + terminalRight
+                                                | this.SyntaxError + terminalUpper
+                                                | this.SyntaxError + terminalLower
+                                                | this.SyntaxError + terminalIsnull;
             /* **************************** */
             /* OPERACION ARITMETICA UNARIA */
             nt_UNARY_ARITHMETIC_EXPRESSION.Rule = terminalMenos + this.nonConstantValues
@@ -394,7 +426,7 @@ namespace Integra.Space.Language.Grammars
                                                     | terminalParentesisIz + nt_UNARY_ARITHMETIC_EXPRESSION + terminalParentesisDer;
 
             nt_CONSTANT_UNARY_ARITHMETIC_EXPRESSION.Rule = terminalMenos + this.numericValues
-                                                            | terminalMas + this.numericValues;
+                                                            | terminalMas + this.numericValues;            
             /* **************************** */
 
             /* PROJECTION VALUES */

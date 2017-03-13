@@ -22,7 +22,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
         /// Options AST node.
         /// </summary>
         private CommandOptionListASTNode<DatabaseOptionEnum> options;
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateDatabaseASTNode"/> class.
         /// </summary>
@@ -63,8 +63,8 @@ namespace Integra.Space.Language.ASTNodes.Commands
             string databaseName = (string)databaseBinding.GetValueRef(thread);
             this.EndEvaluate(thread);
 
-            this.CheckAllowedOptions(optionsAux);
-            
+            this.CheckAllowedOptions(optionsAux, thread);
+
             return new CreateDatabaseNode(commandObject, optionsAux, this.Location.Line, this.Location.Column, this.NodeText);
         }
     }

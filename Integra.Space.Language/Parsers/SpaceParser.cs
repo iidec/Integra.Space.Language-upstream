@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Language
 {
-    using Exceptions;
+    using System.Diagnostics;
     using Irony.Interpreter;
     using Irony.Parsing;
 
@@ -14,7 +14,8 @@ namespace Integra.Space.Language
     /// </summary>
     /// <typeparam name="TGrammar">Grammar type.</typeparam>
     /// <typeparam name="TLanguageRuntime">Language runtime class.</typeparam>
-    internal abstract class SpaceParser<TGrammar, TLanguageRuntime>
+    /// <typeparam name="TPayload">Data type of the data returned from the parse context.</typeparam>
+    internal abstract class SpaceParser<TGrammar, TLanguageRuntime, TPayload>
         where TGrammar : InterpretedLanguageGrammar, new()
         where TLanguageRuntime : LanguageRuntime, new()
     {
@@ -29,12 +30,18 @@ namespace Integra.Space.Language
         private ParseTree parseTree;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SpaceParser{TGrammar, TLanguageRuntime}"/> class.
+        /// Result list.
+        /// </summary>
+        private ParseContextBase<TPayload> context;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SpaceParser{TGrammar, TLanguageRuntime, TPayload}"/> class.
         /// </summary>
         /// <param name="commandText">Command text</param>
         public SpaceParser(string commandText)
         {
             this.commandText = commandText;
+            this.context = new ParseContextBase<TPayload>();
         }
 
         /// <summary>
@@ -58,12 +65,29 @@ namespace Integra.Space.Language
         /// </summary>
         /// <param name="parameters">Binding parameters.</param>
         /// <returns>Execution plan.</returns>
+        public ParseContextBase<TPayload> Evaluate(params BindingParameter[] parameters)
+        {
+            TPayload payload = (TPayload)this.EvaluateParseTree();
+
+            if (payload != null)
+            {
+                this.context.Payload = payload;
+            }
+
+            return this.context;
+        }
+
+        /// <summary>
+        /// Implements the logic to parse commands.
+        /// </summary>
+        /// <param name="parameters">Binding parameters.</param>
+        /// <returns>Execution plan.</returns>
         protected virtual object EvaluateParseTree(params BindingParameter[] parameters)
         {
+            ScriptApp app = new ScriptApp(new TLanguageRuntime());
+
             try
             {
-                ScriptApp app = new ScriptApp(new TLanguageRuntime());
-
                 foreach (var parameter in parameters)
                 {
                     app.Globals.Add(parameter.Name, parameter.Value);
@@ -71,13 +95,16 @@ namespace Integra.Space.Language
 
                 return app.Evaluate(this.ParseTree);
             }
-            catch (SyntaxException e)
-            {
-                throw e;
-            }
             catch (System.Exception e)
             {
-                throw new ParseException(Resources.SR.InterpretationException, e);
+                // Get stack trace for the exception with source file information
+                StackTrace st = new StackTrace(e, true);
+
+                // Get the top stack frame
+                StackFrame frame = st.GetFrame(0);
+
+                this.context.Results.Add(new ParseErrorResult((int)LanguageResultCodes.ParseError, string.Format("File name: {0}. Message: {1}", frame.GetFileName(), e.Message), frame.GetFileLineNumber(), frame.GetFileColumnNumber()));
+                return null;
             }
         }
 
@@ -98,14 +125,14 @@ namespace Integra.Space.Language
                 {
                     foreach (var parserMessage in parseTreeAux.ParserMessages)
                     {
-                        throw new SyntaxException(Resources.SR.SyntaxError(parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
+                        this.context.Results.Add(new ParseErrorResult((int)LanguageResultCodes.ParseError, parserMessage.Message, parserMessage.Location.Line, parserMessage.Location.Column));
                     }
                 }
             }
             else
             {
                 string errorString = string.Join(",", language.Errors);
-                throw new System.Exception(string.Format("The language data has the following grammar error level '{0}'. Errors:\n{1}", language.ErrorLevel, errorString));
+                this.context.Results.Add(new Common.ErrorResult((int)LanguageResultCodes.GrammarError, string.Format("The language data has the following grammar error level: {0}. {1}", language.ErrorLevel, errorString)));
             }
 
             return parseTreeAux;

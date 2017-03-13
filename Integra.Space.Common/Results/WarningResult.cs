@@ -5,8 +5,16 @@
 //-----------------------------------------------------------------------
 namespace Integra.Space.Common
 {
+    /// <summary>
+    /// Success result class.
+    /// </summary>
     public class WarningResult : ResultBase
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WarningResult"/> class.
+        /// </summary>
+        /// <param name="code">Result code.</param>
+        /// <param name="message">Result message.</param>
         public WarningResult(int code, string message) : base(code, message, ResultType.Warning)
         {
         }

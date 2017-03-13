@@ -34,16 +34,6 @@ namespace Integra.Space.Common
         Alter = 4,
 
         /// <summary>
-        /// Action command start.
-        /// </summary>
-        Start = 8,
-
-        /// <summary>
-        /// Action command stop.
-        /// </summary>
-        Stop = 16,
-
-        /// <summary>
         /// Action command grant.
         /// </summary>
         Grant = 32,
@@ -107,12 +97,7 @@ namespace Integra.Space.Common
         /// Commands for add, delete o edit a space object.
         /// </summary>
         CrudCommands = Create | Alter | Drop,
-
-        /// <summary>
-        /// Commands to change the space object status.
-        /// </summary>
-        StatusCommands = Start | Stop,
-
+        
         /// <summary>
         /// Commands to manage permissions over space objects.
         /// </summary>

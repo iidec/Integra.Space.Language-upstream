@@ -116,22 +116,14 @@ namespace Integra.Space.Language.General.Validations
                         }
                         else
                         {
-                            ErrorNode error = new ErrorNode();
-                            error.Column = this.Plan.Column;
-                            error.Line = this.Plan.Line;
-                            error.NodeText = this.Plan.NodeText;
-                            error.Title = "Casteo implícito de tipos incompatibles";
-                            error.Message = "No es posible castear los tipos " + this.LeftType.ToString() + " y " + this.RightType.ToString() + " porque son incompatibles.";
-                            Errors errores = new Errors(this.Thread);
-                            errores.AlmacenarError(error);
-                            selectedType = null;
+                            this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(LanguageResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                throw new Exception("Invalid types -> left type: " + this.LeftType + ", right type: " + this.RightType, e);
+                this.Thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidTypes(LanguageResultCodes.InvalidTypes, this.LeftType, this.RightType), this.Plan.Line, this.Plan.Column);
             }
 
             return selectedType;

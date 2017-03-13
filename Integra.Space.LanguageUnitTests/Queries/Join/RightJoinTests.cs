@@ -1,4 +1,5 @@
-﻿using Integra.Space.Compiler;
+﻿using Integra.Space.Common;
+using Integra.Space.Compiler;
 using Integra.Space.Language;
 using Integra.Space.LanguageUnitTests.TestObject;
 using Microsoft.Reactive.Testing;
@@ -42,7 +43,7 @@ namespace Integra.Space.LanguageUnitTests.Queries
             CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
 
             FakePipeline fp = new FakePipeline();
-            Assembly assembly = fp.Process(context, eql, dsf);
+            Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
 
             Type[] types = assembly.GetTypes();
             Type queryInfo = assembly.GetTypes().First(x => x.GetInterface("IQueryInformation") == typeof(IQueryInformation));
@@ -866,22 +867,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió una constante en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió una constante en la condición ON.");
         }
 
         [TestMethod]
@@ -896,22 +888,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un valor no constante en la condición del primer WHERE.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un valor no constante en la condición del primer WHERE.");
         }
 
         #endregion Constants in on condition
@@ -931,22 +914,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -961,22 +935,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -992,22 +957,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1023,22 +979,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1054,22 +1001,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1085,22 +1023,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1116,22 +1045,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1147,22 +1067,13 @@ namespace Integra.Space.LanguageUnitTests.Queries
                                 "SELECT t1.PrimaryAccountNumber as c1, t2.PrimaryAccountNumber as c2 into SourceXYZ ";
 
             DefaultSchedulerFactory dsf = new DefaultSchedulerFactory();
-
-            try
+            CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
+            FakePipeline fp = new FakePipeline();
+            ParseContextBase<Tuple<PlanNode, CommandObject>> parseContext = fp.ProcessWithQueryParser2(context, eql, dsf);
+            if (!parseContext.HasErrors())
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
-                CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
-                FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
             }
-            catch (Exception e)
-            {
-                Assert.IsTrue(e is Integra.Space.Language.Exceptions.SyntaxException);
-                return;
-            }
-
-            Assert.Fail("Error: se permitió un operador de comparación inválido en la condición ON.");
         }
 
         [TestMethod]
@@ -1180,11 +1091,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             try
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
                 CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
             }
             catch (Exception e)
             {
@@ -1210,11 +1119,9 @@ namespace Integra.Space.LanguageUnitTests.Queries
 
             try
             {
-                QueryParser parser = new QueryParser(eql);
-                PlanNode plan = parser.Evaluate().Item1;
                 CodeGeneratorConfiguration context = this.GetCodeGeneratorConfig(dsf);
                 FakePipeline fp = new FakePipeline();
-                Assembly assembly = fp.Process(context, eql, dsf);
+                Assembly assembly = fp.ProcessWithQueryParser(context, eql, dsf);
             }
             catch (Exception e)
             {

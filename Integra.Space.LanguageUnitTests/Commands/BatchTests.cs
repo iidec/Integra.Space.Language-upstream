@@ -5,16 +5,8 @@ using System;
 namespace Integra.Space.LanguageUnitTests.Commands
 {
     [TestClass]
-    public class BatchTests
+    public class BatchTests : BaseTest
     {
-        public void Process(string command)
-        {
-            CommandParser cp = new CommandParser(command, new TestRuleValidator());
-            var spaceCommands = cp.Evaluate();
-
-            Console.WriteLine();
-        }
-
         [TestMethod]
         public void TestGo()
         {
@@ -32,7 +24,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
-        public void TestBatchWothGo()
+        public void TestBatchWithGo()
         {
             string command = $@"create login endpoint1 with password = ""pass123"";
                                 create login login1 with password = ""pass123"", status = on;
@@ -43,9 +35,9 @@ namespace Integra.Space.LanguageUnitTests.Commands
         }
 
         [TestMethod]
-        public void TestBatchWothGoWithCounter()
+        public void TestBatchWithGoWithCounter()
         {
-            string command = $@"create login endpoint1 with password = ""pass123"";
+            string command = $@"create login endpoint1 with password = ""pass123""
                                 create login login1 with password = ""pass123"", status = on;
                                 create login login2 with password = ""pass123"", status = off;
                                 go 3";
@@ -55,7 +47,7 @@ namespace Integra.Space.LanguageUnitTests.Commands
 
 
         [TestMethod]
-        public void TestBatchWothGo2()
+        public void TestBatchWithGo2()
         {
             string command = $@"create login endpoint1 with password = ""pass123"";
                                 create login login1 with password = ""pass123"", status = on;

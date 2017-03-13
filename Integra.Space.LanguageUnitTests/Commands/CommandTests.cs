@@ -6,16 +6,8 @@ using Integra.Space.Common;
 namespace Integra.Space.LanguageUnitTests.Commands
 {
     [TestClass]
-    public class CommandTests
-    {
-        public void Process(string command)
-        {
-            CommandParser cp = new CommandParser(command, new TestRuleValidator());
-            var spaceCommands = cp.Evaluate();
-
-            Console.WriteLine();
-        }
-        
+    public class CommandTests : BaseTest
+    {        
         #region insert
 
         [TestMethod]

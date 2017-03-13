@@ -19,12 +19,11 @@ namespace Integra.Space.Language
         /// <summary>
         /// Initializes a new instance of the <see cref="TakeOwnershipCommandNode"/> class.
         /// </summary>
-        /// <param name="action">Space command action.</param>
         /// <param name="commandObject">Command object.</param>
         /// <param name="line">Line of the evaluated sentence.</param>
         /// <param name="column">Column evaluated sentence column.</param>
         /// <param name="nodeText">Text of the actual node.</param>
-        public TakeOwnershipCommandNode(ActionCommandEnum action, CommandObject commandObject, int line, int column, string nodeText) : base(action, commandObject, line, column, nodeText)
+        public TakeOwnershipCommandNode(CommandObject commandObject, int line, int column, string nodeText) : base(ActionCommandEnum.TakeOwnership, commandObject, line, column, nodeText)
         {
         }
     }

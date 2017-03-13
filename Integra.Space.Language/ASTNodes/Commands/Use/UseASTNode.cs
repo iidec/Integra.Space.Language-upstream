@@ -49,8 +49,6 @@ namespace Integra.Space.Language.ASTNodes.Commands
         protected override object DoEvaluate(ScriptThread thread)
         {
             this.BeginEvaluate(thread);
-            Binding b1 = thread.Bind("Database", BindingRequestFlags.Write | BindingRequestFlags.ExistingOrNew);
-            b1.SetValueRef(thread, this.identifier);
             this.EndEvaluate(thread);
 
             return new UseCommandNode(this.identifier, this.Location.Line, this.Location.Column, this.NodeText);            

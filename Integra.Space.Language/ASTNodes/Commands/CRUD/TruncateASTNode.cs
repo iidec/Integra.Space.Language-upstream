@@ -61,7 +61,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
                 {
                     if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
                     {
-                        throw new Exceptions.SyntaxException(string.Format("Invalid action {0}.", this.spaceAction));
+                        return ActionCommandEnum.Unspecified;
                     }
                 }
 
@@ -78,6 +78,11 @@ namespace Integra.Space.Language.ASTNodes.Commands
         {
             base.Init(context, treeNode);
             this.spaceAction = (string)ChildrenNodes[0].Token.Value;
+            if (!System.Enum.TryParse(this.spaceAction, true, out this.action))
+            {
+                context.AddMessage(Irony.ErrorLevel.Error, this.Location, Resources.ParseResults.InvalidCommandAction((int)LanguageResultCodes.InvalidCommandAction, this.spaceAction));
+            }
+
             this.systemObjectTypeName = (string)ChildrenNodes[1].Token.Value;
             this.identifier = AddChild(Irony.Interpreter.Ast.NodeUseType.ValueRead, "IDENTIFIER_WITH_PATH", ChildrenNodes[2]) as AstNodeBase;
         }
@@ -106,7 +111,7 @@ namespace Integra.Space.Language.ASTNodes.Commands
             SystemObjectEnum systemObjectType;
             if (!System.Enum.TryParse(this.systemObjectTypeName, true, out systemObjectType))
             {
-                throw new Exceptions.SyntaxException(string.Format("Invalid object {0}.", this.systemObjectTypeName));
+                thread.App.Parser.Context.AddParserError(Resources.ParseResults.InvalidSystemObjectType((int)LanguageResultCodes.InvalidSystemObjectType, this.systemObjectTypeName));
             }
 
             if (!string.IsNullOrWhiteSpace(identifierWithPath.Item1))
